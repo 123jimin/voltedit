@@ -1,0 +1,30 @@
+div.veditor div.toolbar-tab {
+	user-select: none;
+}
+
+div.veditor div.toolbar-tab>ul li {
+	display: inline-block;
+	padding: .2em .4em .3em;
+	margin-left: .2em;
+
+	color: white;
+}
+
+div.veditor div.toolbar-tab>ul li:hover {
+	background-color: #BBB;
+}
+
+div.veditor div.toolbar-tab>ul li.active {
+	background-color: #EEE; color: black;
+}
+
+div.veditor div.toolbar-panels {
+	height: 5em;
+}
+
+div.veditor div.toolbar-panel.active {
+	display: block;
+	height: 100%;
+
+	background-color: #EEE;
+}

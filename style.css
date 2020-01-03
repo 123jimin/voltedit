@@ -13,8 +13,7 @@ div.veditor {
 
 div.veditor div.toolbar {
 	flex: 0 1 auto;
-	padding: .3em 1em;
-	background-color: #DDD;
+	background-color: #999;
 	box-shadow: 0 3px 4px black;
 }
 
