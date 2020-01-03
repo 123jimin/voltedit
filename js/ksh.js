@@ -10,7 +10,7 @@ const KSH_LASER_LOOKUP = Object.freeze(((str) => {
 const KSH_LINE_TYPE = Object.freeze({'HEADER': 0, 'BODY': 1});
 const KSH_REGEX = Object.freeze({
 	'OPTION': /^([^=]+)=(.+)$/,
-	'LINE': /^([012]{4})\|(.{2})\|([0-9A-Za-o\-:]{2})(?:(@\(|@\)|@<|@>|S<|S>)(\d+))?$/
+	'LINE': /^([012]{4})\|(.{2})\|([0-9A-Za-o\-:]{2})(?:(@\(|@\)|@<|@>|S<|S>)([0-9;]+))?$/
 });
 
 /// Just a data class representing time signatures
