@@ -1,6 +1,6 @@
 class VChartData {
 	constructor() {
-		// KSON-based structure
+		// KSON-based structure with some modifications
 		this.version = "Unknown VOLTEdit chart data";
 		this.meta = {
 			'title': "", 'artist': "", 'chart_author': "",
@@ -12,7 +12,13 @@ class VChartData {
 			'resolution': 240,
 		};
 		this.gauge = {};
+		
+		// XXX: Unlike KSON, NoteInfo.bt and NoteInfo.fx are each an array of dictionaries,
+		// where each dictoinary's key is `Interval.y` and value is `Interval.l`.
+		// Similarly, NoteInfo.laser is an array of two dictionaries,
+		// each dictionary's key is `LaserSection.y` and value is the rest.
 		this.note = {};
+
 		this.audio = {};
 		this.camera = {};
 		this.bg = {};

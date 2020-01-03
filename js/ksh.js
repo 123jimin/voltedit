@@ -40,6 +40,52 @@ class KSHLine {
 	}
 }
 
+/// A class representing a laser segment
+class KSHGraph {
+	/// isRelative: whether the graph is relative (true for lasers, false for zooms)
+	constructor(isRelative, options) {
+		this.isRelative = isRelative;
+		if(isRelative) {
+			this.collapseTick = options.collapseTick || 0;
+			this.range = options.range || 1;
+			this.iy = options.y || 0;
+		} else {
+			this.collapseTick = 0;
+			this.range = 1;
+			this.iy = 0;
+		}
+		// Array of relative y values
+		this.ys = [];
+		// Array of values
+		this.vs = [];
+		// Arrays of final values
+		this.vfs = [];
+	}
+	push(y, v) {
+		let lastInd = this.ys.length - 1;
+		if(y < this.ys[lastInd]) throw new Error("Invalid insertion order in KSHGraph!");
+		if(y <= this.ys[lastInd] + this.collapseTick) {
+			this.vfs[lastInd] = v;
+		} else {
+			this.ys.push(y);
+			this.vs.push(v);
+			this.vfs.push(v);
+		}
+	}
+	toKSON() {
+		let segments = [];
+		// TODO: simplify using curves
+		for(let i=0; i<this.ys.length; i++) {
+			let segment = {'v': this.vs[i]};
+			segment[this.isRelative ? 'ry' : 'y'] = this.ys[i] - this.iy;
+			if(this.vfs[i] != this.vs[i]) segment.vf = this.vfs[i];
+
+			segments.push(segment);
+		}
+		return segments;
+	}
+}
+
 /// Helper class which parses KSH charts and stores parsed data in the KSHData class
 class KSHParser {
 	constructor(ksh) {
@@ -274,7 +320,98 @@ class KSHData extends VChartData {
 			measure_tick += measure_len;
 		});
 	}
+	/// Processes notes and lasers
 	_setKSONNoteInfo() {
+		const noteInfo = this.note = {'bt': [{}, {}, {}, {}], 'fx': [{}, {}], 'laser': [{}, {}]};
+
+		// Stores [start, len] long note infos
+		// Index 0-3: BT, 4-5: FX
+		let longInfo = [null, null, null, null, null, null];
+		const getNoteInfoDict = (lane) => lane < 4 ? noteInfo.bt[lane] : noteInfo.fx[lane-4];
+		const cutLongNote = (lane) => {
+			if(longInfo[lane] === null) return;
+			getNoteInfoDict(lane)[longInfo[lane][0]] = longInfo[lane][1];
+			longInfo[lane] = null;
+		};
+		const addLongInfo = (lane, y, l) => {
+			if(longInfo[lane] === null) longInfo[lane] = [y, 0];
+			if(longInfo[lane][0] + longInfo[lane][1] != y) {
+				throw new Error("Invalid ksh long notes!");
+			}
+			longInfo[lane][1] += l;
+		};
+		
+		// Stores current laser segments and how wide should they be
+		let laserSegments = [null, null];
+		let laserRange = [1, 1];
+		const cutLaserSegment = (lane) => {
+			if(laserSegments[lane] === null) return;
+			let laser = {'v': laserSegments[lane].toKSON()};
+			if(laserSegments[lane].range !== 1) laser.wide = laserSegments[lane].range;
+			noteInfo.laser[lane][laserSegments[lane].iy] = laser;
+			laserSegments[lane] = null;
+		};
+		const addLaserSegment = (lane, y, v) => {
+			if(laserSegments[lane] === null)
+				laserSegments[lane] = new KSHGraph(true, {'y': y, 'range': laserRange[lane], 'collapseTick': KSH_LASER_SLAM_TICK});
+			laserSegments[lane].push(y, v);
+		};
+
+		this._ksmMeasures.forEach((measure) => {
+			measure.forEach((kshLine) => {
+				kshLine.mods.forEach(([key, value]) => {
+					switch(key) {
+						case 'laserrange_l':
+							laserRange[0] = value === "2x" ? 2 : 1;
+							break;
+						case 'laserrange_r':
+							laserRange[1] = value === "2x" ? 2 : 1;
+							break;
+					}
+				});
+				// BT
+				for(let i=0; i<4; i++) {
+					const c = kshLine.bt[i];
+					if(c === '0' || c === '1') cutLongNote(i);
+					if(c === '0') continue;
+					if(c === '1') {
+						// Single short note
+						getNoteInfoDict(i)[kshLine.tick] = 0;
+						continue;
+					}
+					addLongInfo(i, kshLine.tick, kshLine.len);
+				}
+				// FX
+				for(let i=0; i<2; i++) {
+					const c = kshLine.fx[i];
+					if(c === '0' || c === '2') cutLongNote(4+i);
+					if(c === '0') continue;
+					if(c === '2') {
+						// Single short note
+						getNoteInfoDict(4+i)[kshLine.tick] = 0;
+						continue;
+					}
+					addLongInfo(4+i, kshLine.tick, kshLine.len);
+				}
+				// Laser
+				for(let i=0; i<2; i++) {
+					const c = kshLine.laser[i];
+					if(c === '-') {
+						cutLaserSegment(i);
+						continue;
+					}
+					if(c === ':') continue;
+
+					const pos = KSH_LASER_VALUES.indexOf(c);
+					if(pos === -1) throw new Error("Invalid ksh laser pos value!");
+
+					addLaserSegment(i, kshLine.tick, pos/50);
+				}
+			});
+		});
+
+		for(let i=0; i<6; ++i) cutLongNote(i);
+		for(let i=0; i<2; ++i) cutLaserSegment(i);
 	}
 }
 
