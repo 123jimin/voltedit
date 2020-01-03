@@ -13,10 +13,43 @@ const KSH_REGEX = Object.freeze({
 	'LINE': /^([012]{4})\|(.{2})\|([0-9A-Za-o\-:]{2})(?:(@\(|@\)|@<|@>|S<|S>)(\d+))?$/
 });
 
+/// Just a data class representing time signatures
+class KSHTimeSig {
+	constructor(str) {
+		const timeSig = this.timeSig = str.split('/').map((x) => parseInt(x));
+		if(timeSig.length != 2 || timeSig.some((x) => !isFinite(x) || x < 1))
+			throw new Error("Invalid ksh time signature! [invalid value]");
+		if(KSH_DEFAULT_MEASURE_TICK % timeSig[1] != 0)
+			throw new Error("Invalid ksh time signature! [invalid denom]");
+	}
+	toKSON() {
+		return {'n': this.timeSig[0], 'd': this.timeSig[1]};
+	}
+}
+
+/// A data class representing a single KSH chartline with modifiers
+class KSHLine {
+	constructor(match, mods) {
+		this.bt = match[1]; this.fx = match[2];
+		this.laser = match[3]; this.rot = match[4] || "";
+		this.mods = mods || [];
+		// Location and length of this line in ticks
+		// Will be computed later in _setKSONBeatInfo of KSHData
+		this.tick = 0;
+		this.len = 0;
+	}
+}
+
+/// Helper class which parses KSH charts and stores parsed data in the KSHData class
 class KSHParser {
 	constructor(ksh) {
 		this.ksh = ksh;
 		this.currLineType = KSH_LINE_TYPE.HEADER;
+		
+		// Lines of measures, being read
+		this.queue = [];
+		// Lines of modifiers, which will be applied to the following line.
+		this.modifiers = [];
 	}
 	readLine(line) {
 		if(line === "") return;
@@ -27,8 +60,16 @@ class KSHParser {
 				return this._readBodyLine(line);
 		}
 	}
+	end() {
+		// If there's no `--` at the end, then the KSH file is malformed.
+		// Let's gracefully add the last measure.
+		if(this.queue.length > 0) {
+			console.warn("Processing a KSH file with no `--` at the end...");
+			this._onReadMeasure();
+		}
+	}
 	_readHeaderLine(line) {
-		if(line == "--") {
+		if(line === "--") {
 			this.currLineType = KSH_LINE_TYPE.BODY;
 			return;
 		}
@@ -40,9 +81,34 @@ class KSHParser {
 		this.ksh.setKSHMeta(key, value);
 	}
 	_readBodyLine(line) {
+		if(line === "--") {
+			this._onReadMeasure();
+			return;
+		}
+		
+		// TODO: handle these later, if possible (custom FX effects)
+		if(line[0] === '#') return;
+
+		let match = line.match(KSH_REGEX.OPTION);
+		if(match) {
+			this.modifiers.push([match[1], match[2]]);
+			return;
+		}
+
+		match = line.match(KSH_REGEX.LINE);
+		if(match) {
+			this.queue.push(new KSHLine(match, this.modifiers));
+			this.modifiers = [];
+			return;
+		}
+	}
+	_onReadMeasure() {
+		this.ksh.addKSHMeasure(this.queue);
+		this.queue = [];
 	}
 }
 
+/// Main KSH chart class, reading KSH charts and convert it to internal representation(KSON)
 class KSHData extends VChartData {
 	constructor(str) {
 		super();
@@ -51,16 +117,20 @@ class KSHData extends VChartData {
 		this._ksmMeta = {
 			'version': "ksh",
 		};
+		this._ksmMeasures = [];
 
 		str.split('\n').map((line) => this.parser.readLine(line.replace(/^[\r\n\uFEFF]+|[\r\n]+$/g, '')));
+		this.parser.end();
 
-		this._setKSONVersion();
-		this._setKSONMeta();
-		this._setKSONBgmInfo();
+		this._setKSONData();
 	}
 
 	setKSHMeta(key, value) {
 		this._ksmMeta[key] = value;
+	}
+
+	addKSHMeasure(measure) {
+		this._ksmMeasures.push(measure);
 	}
 
 	_getDiffIdx() {
@@ -72,12 +142,27 @@ class KSHData extends VChartData {
 			default: return 3;
 		}
 	}
-	
+
+	/// Fills VChartData data
+	_setKSONData() {
+		this._setKSONVersion();
+		this._setKSONMeta();
+		this._setKSONBgmInfo();
+
+		if('total' in this._ksmMeta) {
+			let total = parseInt(this._ksmMeta);
+			if(!isFinite(total)) throw new Error("Invalid ksh `total` value!");
+			if(total < 100) total = 100;
+			this.gauge = {'total': total};
+		}
+
+		this._setKSONBeatInfo();
+		this._setKSONNoteInfo();
+	}
 	_setKSONVersion() {
 		const ver = (this._ksmMeta.ver || "").trim();
 		this.version = ver ? `ksh ${ver}` : "ksh";
 	}
-
 	_setKSONMeta() {
 		const meta = this.meta = {};
 		const ksmMeta = this._ksmMeta;
@@ -95,11 +180,10 @@ class KSHData extends VChartData {
 			if(!isFinite(meta.std_bpm) || meta.std_bpm < 0)
 				throw new Error("Invalid ksh `to` value!");
 		}
-	if('jacket' in ksmMeta) meta.jacket_filename = ksmMeta.jacket;
-	if('illustrator' in ksmMeta) meta.jacket_author = ksmMeta.illustrator;
-	if('information' in ksmMeta) meta.information = ksmMeta.information;
+		if('jacket' in ksmMeta) meta.jacket_filename = ksmMeta.jacket;
+		if('illustrator' in ksmMeta) meta.jacket_author = ksmMeta.illustrator;
+		if('information' in ksmMeta) meta.information = ksmMeta.information;
 	}
-
 	_setKSONBgmInfo() {
 		const bgmInfo = this.audio.bgm = {};
 		const ksmMeta = this._ksmMeta;
@@ -124,6 +208,73 @@ class KSHData extends VChartData {
 			const preview_duration = parseInt(ksmMeta.plength);
 			if(isFinite(preview_duration) && preview_duration > 0) bgmInfo.preview_duration = preview_duration;
 		}
+	}
+	/// Processes timing of the chart, and computes `tick` and `len` of each line
+	_setKSONBeatInfo() {
+		const beatInfo = this.beat = {'bpm': [], 'time_sig': [], 'scroll_speed': [], 'resolution': KSH_DEFAULT_MEASURE_TICK / 4};
+		const ksmMeta = this._ksmMeta;
+
+		if('t' in ksmMeta) {
+			const initBPM = parseFloat(ksmMeta.t);
+			if(initBPM <= 0 || !isFinite(initBPM)) throw new Error("Invalid ksh init BPM!");
+			beatInfo.bpm.push({'y': 0, 'v': initBPM});
+		}
+
+		if('beat' in ksmMeta) {
+			beatInfo.time_sig.push({'idx': 0, 'v': (new KSHTimeSig(ksmMeta.beat)).toKSON()});
+		}
+
+		let measure_tick = 0; // Tick of the current measure being processed
+		let time_sig = [4, 4]; // Default time signature, which is the common time signature.
+
+		this._ksmMeasures.forEach((measure, measure_idx) => {
+			if(measure.length === 0) throw new Error("Malformed ksh measure!");
+			
+			// Check the timing signature of this measure.
+			measure[0].mods.forEach(([key, value]) => {
+				switch(key) {
+					case 'beat':
+						const newTimeSig = new KSHTimeSig(value);
+						time_sig = newTimeSig.timeSig;
+						beatInfo.time_sig.push({'idx': measure_idx, 'v': newTimeSig.toKSON()});
+						break;
+				}
+			});
+
+			const measure_len = (KSH_DEFAULT_MEASURE_TICK / time_sig[1]) * time_sig[0];
+			if(measure_len % measure.length != 0)
+				throw new Error("Invalid ksh measure line count!");
+			const tick_per_line = measure_len / measure.length;
+
+			measure.forEach((kshLine, line_idx) => {
+				let tick = kshLine.tick = measure_tick + tick_per_line * line_idx;
+				kshLine.len = tick_per_line;
+
+				kshLine.mods.forEach(([key, value]) => {
+					const intValue = parseInt(value);
+					const floatValue = parseFloat(value);
+					switch(key) {
+						case 'beat':
+							// `beat`s are already processed above.
+							// If a `beat` is in the middle of a measure, then the chart is invalid.
+							if(line_idx > 0) throw new Error("Invalid ksh time signature! [invalid location]");
+							break;
+						case 't':
+							if(floatValue <= 0 || !isFinite(floatValue)) throw new Error("Invalid ksh BPM value!");
+							beatInfo.bpm.push({'y': tick, 'v': floatValue});
+							break;
+						case 'stop':
+							if(intValue <= 0 || !isFinite(intValue)) throw new Error("Invalid ksh stop length!");
+							// TODO: add ScrollSpeedPoints
+							break;
+					}
+				});
+			});
+
+			measure_tick += measure_len;
+		});
+	}
+	_setKSONNoteInfo() {
 	}
 }
 
