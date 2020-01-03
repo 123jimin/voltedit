@@ -1,0 +1,52 @@
+body {
+	background-color: #111;
+	font-size: 15px;
+}
+
+div.veditor {
+	position: absolute;
+	left: 0; right: 0; top: 0; bottom: 0;
+
+	display: flex;
+	flex-flow: column;
+}
+
+div.veditor div.toolbar {
+	flex: 0 1 auto;
+	padding: .3em 1em;
+	background-color: #DDD;
+	box-shadow: 0 3px 4px black;
+}
+
+div.veditor div.chart {
+	flex: 1 1 auto;
+	height: 100%;
+	overflow: hidden;
+}
+
+div.veditor div.drop-file-indicator {
+	position: absolute; z-index: 1000;
+	left: 0; right: 0; top: 0;
+
+	transition: opacity 0.2s ease-out;
+	background-color: hsla(180, 50%, 50%, 0.5);
+	opacity: 0; height: 0; overflow: hidden;
+	user-select: none;
+
+	color: white;
+	display: flex;
+	align-items: center;
+	justify-items: center;
+}
+
+div.veditor div.drop-file-indicator>span {
+	width: 100%;
+	font-size: 4em;
+	font-family: sans-serif;
+	font-weight: bold;
+	text-align: center;
+}
+
+div.veditor div.drop-file-indicator.active {
+	opacity: 1; bottom: 0; height: auto;
+}

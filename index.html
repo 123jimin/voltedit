@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+	<!--
+		License for HTML, JS, and CSS codes, except external libraries:
+			MIT License by @123jimin on GitHub
+	-->
+	<head>
+		<meta charset='utf-8'/>
+		<title>VOLTEdit: web-based KSON chart editor</title>
+		<link rel='stylesheet' href="//common.0xF.kr/css/reset.css"/>
+		<link rel='stylesheet' href="./style.css"/>
+	</head>
+	<body>
+		<div id='editor' class='veditor'>
+			<div class='toolbar'>
+				Currently in development...
+			</div>
+			<div class='chart'></div>
+			<div class='drop-file-indicator'>
+				<span class='txt-drop-file-here'>Drop to Open</span>
+			</div>
+		</div>
+
+		<!-- External Libraries (These are not written by me) -->
+		<script src="//common.0xF.kr/js/three.min.js"></script>
+		<script src="//common.0xF.kr/js/svg.min.js"></script>
+
+		<!-- Chart Reading and Writing -->
+		<script src="./js/chart-data.js"></script>
+		<script src="./js/kson.js"></script>
+		<script src="./js/ks.js"></script>
+
+		<!-- Chart Editor -->
+		<script src="./js/chart-view.js"></script>
+		<script src="./js/editor.js"></script>
+
+		<!-- extern int main(int argc, char* argv[]); -->
+		<script src="./main.js" defer></script>
+	</body>
+</html>
