@@ -1,9 +1,9 @@
 // Let's fix the zoom 1:1 for now.
 const CHARTV = Object.freeze((() => {
-	const NOTE_WIDTH =  20; // Width for a single note (and laser)
+	const NOTE_WIDTH =  15; // Width for a single note (and laser)
 	const MARGIN_SIDE = 15; // Left and right margins for the chart
 	const MARGIN_BOTTOM = 10; // Bottom margin for the chart
-	const WHOLE_NOTE = 400; // Length for a measure
+	const WHOLE_NOTE = 480; // Length for a measure
 	const FULL_WIDTH = NOTE_WIDTH*11 + MARGIN_SIDE*2; // Width of the view
 	const HALF_WIDTH = FULL_WIDTH/2;
 	const LASER_LEFT = -2.5 * NOTE_WIDTH;
