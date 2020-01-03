@@ -102,6 +102,28 @@ class KSHData extends VChartData {
 
 	_setKSONBgmInfo() {
 		const bgmInfo = this.audio.bgm = {};
+		const ksmMeta = this._ksmMeta;
+
+		if('m' in ksmMeta) {
+			const m = ksmMeta.m.split(';')[0];
+			if(m !== "") bgmInfo.filename = m;
+		}
+		if('mvol' in ksmMeta) {
+			const mvol = parseInt(ksmMeta.mvol);
+			if(isFinite(mvol) && mvol != 100 && mvol >= 0) bgmInfo.vol = mvol;
+		}
+		if('o' in ksmMeta) {
+			const offset = parseInt(ksmMeta.o);
+			if(isFinite(offset) && offset != 0) bgmInfo.offset = offset;
+		}
+		if('po' in ksmMeta) {
+			const preview_offset = parseInt(ksmMeta.po);
+			if(isFinite(preview_offset) && preview_offset > 0) bgmInfo.preview_offset = preview_offset;
+		}
+		if('plength' in ksmMeta) {
+			const preview_duration = parseInt(ksmMeta.plength);
+			if(isFinite(preview_duration) && preview_duration > 0) bgmInfo.preview_duration = preview_duration;
+		}
 	}
 }
 
