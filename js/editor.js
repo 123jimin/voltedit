@@ -58,7 +58,7 @@ class VEditor {
 			const chartData = VChartData.create(fileContents[0]);
 
 			if(chartData === null) {
-				alert("Failed to read the chart data!");
+				alert(L10N.t('error-reading-chart-data'));
 				return;
 			}
 
