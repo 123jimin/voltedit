@@ -30,8 +30,27 @@ div.veditor div.toolbar-panel {
 }
 
 div.veditor div.toolbar-panel.active {
-	display: block;
+	display: flex;
+	flex-flow: row;
 	height: 100%;
 
 	background-color: #EEE;
+}
+
+div.veditor div.toolbar-section {
+	min-width: 3em;
+	position: relative;
+	padding: .2em .3em;
+}
+
+div.veditor div.toolbar-section:after {
+	content: ""; position: absolute;
+	right: 0; width: 1px; top: .2em; bottom: .2em;
+	background-color: #DDD;
+}
+
+div.veditor div.toolbar-section>h4 {
+	font-size: .7em; text-align: center;
+	color: #AAA;
+	user-select: none;
 }

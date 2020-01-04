@@ -25,7 +25,7 @@ const L10N = ((lines) => {
 		}, 'l': function L10N_setLocale(l) {
 			this._l = l.toLowerCase();
 
-			[].forEach.call(document.querySelectorAll("span[class^=txt-]"), (elem) => {
+			[].forEach.call(document.querySelectorAll("span,h1,h2,h3,h4,h5,h6"), (elem) => {
 				[].forEach.call(elem.classList, (className) => {
 					if(!className.startsWith("txt-")) return;
 					const id = className.slice(4);

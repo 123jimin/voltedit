@@ -16,6 +16,16 @@ tab-options
 	en: Options
 	ko: 설정
 
+tab-panel-file
+	en: File
+	ko: 파일
+tab-panel-chart-display
+	en: Chart Display
+	ko: 채보 표시
+tab-panel-language
+	en: Language
+	ko: 언어(Language)
+
 drop-file-here
 	en: Drop to Open File
 	ko: 끌어다 놓아서 파일 열기
