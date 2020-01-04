@@ -120,7 +120,7 @@ class VChartView {
 		this.svg.size(CHARTV.FULL_WIDTH, FULL_HEIGHT);
 		this.svg.viewbox(-CHARTV.FULL_WIDTH/2, VIEW_BOX_TOP, CHARTV.FULL_WIDTH, FULL_HEIGHT);
 
-		this._masterBaseLine.attr('y2', -FULL_HEIGHT);
+		this._updateBaseLines();
 	}
 
 	/// Set the location of the region to be shown (tickLoc = bottom)
@@ -141,9 +141,15 @@ class VChartView {
 	}
 
 	_updateLocation() {
-		const viewBoxTop = this._getViewBoxTop();
-		this._masterBaseLine.y(viewBoxTop);
-		this.svg.viewbox(-CHARTV.FULL_WIDTH/2, viewBoxTop, CHARTV.FULL_WIDTH, this._height);
+		this.svg.viewbox(-CHARTV.FULL_WIDTH/2, this._getViewBoxTop(), CHARTV.FULL_WIDTH, this._height);
+		this._updateBaseLines();
+	}
+
+	_updateBaseLines() {
+		const VIEW_BOX_TOP = this._getViewBoxTop();
+		const VIEW_BOX_BOTTOM = VIEW_BOX_TOP + this._height;
+		this._masterBaseLine.attr('y1', VIEW_BOX_BOTTOM > 0 ? 0 : VIEW_BOX_BOTTOM);
+		this._masterBaseLine.attr('y2', VIEW_BOX_TOP);
 	}
 
 	_requestAnimationFrame(func, priority) {
