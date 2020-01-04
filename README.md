@@ -5,8 +5,9 @@ VOLTEdit is a web-based SDVX chart editor, planned to support KSH and KSON chart
 Currently, these features are available. Note that this editor is in *very* early stage of active development now.
 
 * Importing KSH files via drag-drop
-	* Currently only short notes are visible.
+	* Currently only notes and beat lines are visible.
 * Scrolling view via mouse wheel
+	* I know that this is quite slow. I'll add other methods for navigating.
 
 ## Planned Features
 These are planned features, as of 04 Jan 2020.
@@ -21,22 +22,22 @@ These are planned features, as of 04 Jan 2020.
 
 ### Currently in Development
 These features will be implemented by this weekend.
-* BPM and measure line display
-* Simple ribbon menu navigation
+* BPM and time signature display
 * Editor settings
 	* Language
 	* Editor size
 
 ### High Priority
 These features will be implemented by this month.
-* Reading/writing simple KSON file
+* Writing simple KSON files
 * Reading most of KSH files, including zoom and stop effects
 * Note addition
 * Displaying lasers
+* Toolbar
 
 These features will likely be implemented by Feburary.
+* Reading simple KSON files
 * Audio Playback
-* Toolbar
 * Note deletion, long note edit
 * Displaying most of KSH contents
 
