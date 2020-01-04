@@ -8,7 +8,7 @@ class VToolbar {
 		this.panels = [].slice.call(this.elem.querySelectorAll(".toolbar-panel"));
 
 		if(this.tabs.length != this.panels.length) {
-			throw new Error(`VToolbar: {this.tabs.length} tabs != {this.panels.length} panels!`);
+			throw new Error(`VToolbar: ${this.tabs.length} tabs != ${this.panels.length} panels!`);
 		}
 
 		this.currTab = -1;

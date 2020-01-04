@@ -74,6 +74,7 @@ class VChartView {
 		this._updateLocation();
 
 		this._redrawNotes();
+		this._redrawMeasureLines();
 	}
 
 	_redrawNotes() {
@@ -87,26 +88,36 @@ class VChartView {
 		const noteData = this.editor.chartData.note;
 		if(!noteData) return;
 
-		const putNotes = (shorts, longs, shortDef, x, data) => {
+		const putNotes = (type, shorts, longs, shortDef, longDef, lane, x, data) => {
 			for(let y in data) {
 				const len = data[y];
+				let note = null;
 
 				if(len <= 0) {
-					const note = shorts.use(shortDef).move(x, -this.t2p(+y));
-					continue;
+					note = shorts.use(shortDef).move(x, -this.t2p(+y));
+				}else{
+					note = longs.use(longDef);
+					note.transform({'scaleY': this.t2p(len),
+						'translateX': x+1, 'translateY': -this.t2p(+y)-this.t2p(len)/2});
 				}
 
-				// TODO: draw long notes
+				note.id(`${type}-${lane}-${y}`);
 			}
 		};
 
 		noteData.bt.forEach((btData, lane) => {
-			putNotes(btShorts, btLongs, this._svgDefs.btShort, (lane-2)*CHARTV.NOTE_WIDTH, btData);
+			putNotes('bt', btShorts, btLongs, this._svgDefs.btShort, this._svgDefs.btLong,
+				lane, (lane-2)*CHARTV.NOTE_WIDTH, btData);
 		});
 
 		noteData.fx.forEach((fxData, lane) => {
-			putNotes(fxShorts, fxLongs, this._svgDefs.fxShort, (lane-1)*CHARTV.NOTE_WIDTH*2, fxData);
+			putNotes('fx', fxShorts, fxLongs, this._svgDefs.fxShort, this._svgDefs.fxLong,
+				lane, (lane-1)*CHARTV.NOTE_WIDTH*2, fxData);
 		});
+	}
+
+	_redrawMeasureLines() {
+		const measureLines = this._svgGroups.measureLines.clear();
 	}
 	
 	/// Update the size of the SVG, but do not redraw everything.
@@ -174,6 +185,7 @@ class VChartView {
 		this._currRender.forEach((f) => f());
 		this._currRender = [];
 		this._currRenderPriority = CHARTV_RENDER_PRIORITY.NONE;
+				// TODO: draw long notes
 	}
 
 	_updateHeight() {
@@ -230,20 +242,35 @@ class VChartView {
 		const svgDefs = this.svg.defs();
 		const defs = this._svgDefs = {};
 
-		const SHORT_HEIGHT = 2;
+		const SHORT_BT_HEIGHT = 3;
+		const SHORT_FX_HEIGHT = 4;
 
 		// btShort
 		{
-			const btShort = defs.btShort = svgDefs.rect(CHARTV.NOTE_WIDTH, SHORT_HEIGHT);
-			btShort.move(0, -SHORT_HEIGHT/2).id('btShort');
+			const btShort = defs.btShort = svgDefs.rect(CHARTV.NOTE_WIDTH, SHORT_BT_HEIGHT-1);
+			btShort.id('btShort');
 			btShort.fill('#FFF').stroke({'color': '#AAA', 'width': 1});
 		}
 
 		// fxShort
 		{
-			const fxShort = defs.fxShort = svgDefs.rect(CHARTV.NOTE_WIDTH*2, SHORT_HEIGHT);
-			fxShort.move(0, -SHORT_HEIGHT/2).id('fxShort');
+			const fxShort = defs.fxShort = svgDefs.rect(CHARTV.NOTE_WIDTH*2, SHORT_FX_HEIGHT-1);
+			fxShort.id('fxShort');
 			fxShort.fill('#F90').stroke({'color': '#A40', 'width': 1});
+		}
+
+		// btLong
+		{
+			const btLong = defs.btLong = svgDefs.rect(CHARTV.NOTE_WIDTH-2, 1);
+			btLong.id('btLong');
+			btLong.fill('#FFF');
+		}
+
+		// fxLong
+		{
+			const fxLong = defs.fxLong = svgDefs.rect(CHARTV.NOTE_WIDTH*2, 1);
+			fxLong.id('fxLong');
+			fxLong.fill('#DA0');
 		}
 	}
 }
