@@ -8,6 +8,7 @@ const readFileList = (files) => Promise.all([].map.call(files, (file) => new Pro
 	reader.readAsText(file);
 })));
 
+/// A main editor class
 class VEditor {
 	constructor(elem) {
 		this.elem = elem;
@@ -15,14 +16,17 @@ class VEditor {
 		this.chartData = null;
 		this.view = new VChartView(this);
 		this.toolbar = new VToolbar(this);
+		this.settings = new VSettings();
 
 		this._dropFileIndicator = elem.querySelector('.drop-file-indicator');
 		this._dropFileIndicatorShown = false;
 		this._addEventListeners();
 	}
-	resize() {
+
+	onResize() {
 		this.view.resize();
 	}
+
 	/* Drag Events */
 	onDragEnter(event) {
 		event.preventDefault();
@@ -50,6 +54,7 @@ class VEditor {
 
 		this.openFileList(files);
 	}
+
 	/* Opening Files */
 	openFileList(files) {
 		// TODO: support uploading multiple files (e.g. kson + mp3)
@@ -76,7 +81,7 @@ class VEditor {
 	}
 
 	_addEventListeners() {
-		window.addEventListener('resize', this.resize.bind(this));
+		window.addEventListener('resize', this.onResize.bind(this));
 
 		this.elem.addEventListener('dragenter', this.onDragEnter.bind(this), false);
 		this.elem.addEventListener('dragover', this.onDragOver.bind(this), false);
