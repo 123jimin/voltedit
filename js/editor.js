@@ -14,6 +14,7 @@ class VEditor {
 
 		this.chartData = null;
 		this.view = new VChartView(this);
+		this.toolbar = new VToolbar(this);
 
 		this._dropFileIndicator = elem.querySelector('.drop-file-indicator');
 		this._dropFileIndicatorShown = false;

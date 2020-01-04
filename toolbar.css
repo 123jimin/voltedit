@@ -8,6 +8,8 @@ div.veditor div.toolbar-tab>ul li {
 	margin-left: .2em;
 
 	color: white;
+
+	cursor: pointer;
 }
 
 div.veditor div.toolbar-tab>ul li:hover {
@@ -20,6 +22,11 @@ div.veditor div.toolbar-tab>ul li.active {
 
 div.veditor div.toolbar-panels {
 	height: 5em;
+	overflow-y: hidden;
+}
+
+div.veditor div.toolbar-panel {
+	display: none;
 }
 
 div.veditor div.toolbar-panel.active {
