@@ -56,7 +56,9 @@ class VEditor {
 		if(files.length != 1) return;
 
 		readFileList(files).then((fileContents) => {
+			console.time("parse chart");
 			const chartData = VChartData.create(fileContents[0]);
+			console.timeEnd("parse chart");
 
 			if(chartData === null) {
 				alert(L10N.t('error-reading-chart-data'));
