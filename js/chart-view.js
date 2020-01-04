@@ -65,7 +65,7 @@ class VChartView {
 
 		this._redraw();
 
-		this.elem.addEventListener('wheel', this.onWheel.bind(this));
+		this.elem.addEventListener('wheel', this.onWheel.bind(this), {'passive': true});
 	}
 
 	// Tick to pixel
