@@ -4,7 +4,7 @@ const CHARTV = Object.freeze((() => {
 	const NOTE_WIDTH =  9; // Width for a single note (and laser)
 	const MARGIN_SIDE = 15; // Left and right margins for the chart
 	const MARGIN_BOTTOM = 40; // Bottom margin for the chart
-	const WHOLE_NOTE = NOTE_WIDTH*8*16; // Length for a measure
+	const WHOLE_NOTE = NOTE_WIDTH*20; // Length for a measure
 	const FULL_WIDTH = NOTE_WIDTH*11 + MARGIN_SIDE*2; // Width of the view
 	const HALF_WIDTH = FULL_WIDTH/2;
 	const LASER_LEFT = -2.5 * NOTE_WIDTH;
@@ -70,10 +70,14 @@ class VChartView {
 	
 	/// Clear and redraw everything.
 	_redraw() {
+		this.tickUnit = this._getTickUnitFromChart();
+
 		this._resize();
 		this._updateLocation();
 
 		this._redrawNotes();
+
+		// Draw AFTER other elements are drawn.
 		this._redrawMeasureLines();
 	}
 
@@ -143,7 +147,7 @@ class VChartView {
 	onWheel(event) {
 		if(!this.editor.chartData || !this.editor.chartData.beat) return;
 
-		const deltaTick = (this.editor.chartData.beat.resolution||0)/4;
+		const deltaTick = this.tickUnit / 16;
 		if(event.deltaY < 0) {
 			this.setLocation(this.tickLoc+deltaTick);
 		} else if(event.deltaY > 0) {
@@ -185,7 +189,6 @@ class VChartView {
 		this._currRender.forEach((f) => f());
 		this._currRender = [];
 		this._currRenderPriority = CHARTV_RENDER_PRIORITY.NONE;
-				// TODO: draw long notes
 	}
 
 	_updateHeight() {
@@ -194,6 +197,16 @@ class VChartView {
 
 	_getViewBoxTop() {
 		return CHARTV.MARGIN_BOTTOM-this.t2p(this.tickLoc)-this._height;
+	}
+
+	_getTickUnitFromChart() {
+		const DEFAULT_RESOLUTION = 240;
+
+		if(!this.editor.chartData || !this.editor.chartData.beat) {
+			return DEFAULT_RESOLUTION * 4;
+		}
+
+		return (this.editor.chartData.beat.resolution || DEFAULT_RESOLUTION) * 4;
 	}
 	
 	/// Helper function for creating structures for the SVG.
