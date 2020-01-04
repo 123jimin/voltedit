@@ -63,6 +63,7 @@ class VEditor {
 			}
 
 			this.chartData = chartData;
+			this.view.setLocation(0);
 			this.view.redraw();
 		}).catch((err) => {
 			console.error(err);

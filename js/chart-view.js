@@ -50,6 +50,8 @@ class VChartView {
 		this._currRenderPriority = CHARTV_RENDER_PRIORITY.NONE;
 
 		this._redraw();
+
+		this.elem.addEventListener('wheel', this.onWheel.bind(this));
 	}
 
 	// Tick to pixel
@@ -123,12 +125,25 @@ class VChartView {
 
 	/// Set the location of the region to be shown (tickLoc = bottom)
 	setLocation(tickLoc) {
-		this.tickLoc = tickLoc;
+		this.tickLoc = isFinite(tickLoc) ? tickLoc : 0;
 		this._requestAnimationFrame(this._updateLocation, CHARTV_RENDER_PRIORITY.MINOR);
 	}
 
+	onWheel(event) {
+		if(!this.editor.chartData || !this.editor.chartData.beat) return;
+
+		const deltaTick = (this.editor.chartData.beat.resolution||0)/4;
+		if(event.deltaY < 0) {
+			this.setLocation(this.tickLoc+deltaTick);
+		} else if(event.deltaY > 0) {
+			this.setLocation(this.tickLoc-deltaTick);
+		}
+	}
+
 	_updateLocation() {
-		this.svg.viewbox(-CHARTV.FULL_WIDTH/2, this._getViewBoxTop(), CHARTV.FULL_WIDTH, this._height);
+		const viewBoxTop = this._getViewBoxTop();
+		this._masterBaseLine.y(viewBoxTop);
+		this.svg.viewbox(-CHARTV.FULL_WIDTH/2, viewBoxTop, CHARTV.FULL_WIDTH, this._height);
 	}
 
 	_requestAnimationFrame(func, priority) {
@@ -165,21 +180,25 @@ class VChartView {
 	
 	/// Helper function for creating structures for the SVG.
 	_createGroups() {
+		const baseLines = this.svg.group().addClass('baseLines').attr('buffered-rendering', 'static');
+		// Chart contents which must be moved together
+		const chartGroup = this.svg.group().addClass('chartGroup').attr('buffered-rendering', 'static');
 		const groups = this._svgGroups = {
 			// Background
-			'baseLines': this.svg.group().addClass('baseLines'),
-			'measureLines': this.svg.group().addClass('measureLines'),
+			'baseLines': baseLines,
+			'measureLines': chartGroup.group().addClass('measureLines'),
+			'measureProps': chartGroup.group().addClass('measureProps'),
 			// Notes and lasers
-			'notes': this.svg.group().addClass('notes'),
-			'lasers': this.svg.group().addClass('lasers'),
+			'notes': chartGroup.group().addClass('notes'),
+			'lasers': chartGroup.group().addClass('lasers'),
 			// Editor UI
 			'rangeSelection': this.svg.group().addClass('rangeSelection'),
-			'cursor': this.svg.group().addClass('cursor'),
+			'cursor': this.svg.group().addClass('cursor').attr('buffered-rendering', 'static'),
 		};
 
 		// baseLines
 		{
-			const masterBaseLine = this._masterBaseLine = groups.baseLines.line(0, CHARTV.MARGIN_BOTTOM, 0, -300);
+			const masterBaseLine = this._masterBaseLine = groups.baseLines.line(0, CHARTV.MARGIN_BOTTOM, 0, 0 /* will be adjusted on resize */);
 			masterBaseLine.addClass('baseLine').stroke({'color': "hsl(0, 0%, 30%)", 'width': 1});
 
 			for(let i=-2; i<=2; ++i) {
