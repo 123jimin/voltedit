@@ -1,9 +1,10 @@
-// Let's fix the zoom 1:1 for now.
+// Let's fix the scales for now.
+// This will be changed to something users can configure.
 const CHARTV = Object.freeze((() => {
-	const NOTE_WIDTH =  15; // Width for a single note (and laser)
+	const NOTE_WIDTH =  9; // Width for a single note (and laser)
 	const MARGIN_SIDE = 15; // Left and right margins for the chart
-	const MARGIN_BOTTOM = 10; // Bottom margin for the chart
-	const WHOLE_NOTE = 480; // Length for a measure
+	const MARGIN_BOTTOM = 40; // Bottom margin for the chart
+	const WHOLE_NOTE = NOTE_WIDTH*8*16; // Length for a measure
 	const FULL_WIDTH = NOTE_WIDTH*11 + MARGIN_SIDE*2; // Width of the view
 	const HALF_WIDTH = FULL_WIDTH/2;
 	const LASER_LEFT = -2.5 * NOTE_WIDTH;
@@ -40,8 +41,10 @@ class VChartView {
 
 		this._height = 0;
 		this._svgGroups = null;
+		this._svgDefs = null;
 		this._masterBaseLine = null;
 		this._createGroups();
+		this._createDefs();
 
 		this._currRender = [];
 		this._currRenderPriority = CHARTV_RENDER_PRIORITY.NONE;
@@ -49,10 +52,12 @@ class VChartView {
 		this._redraw();
 	}
 
+	// Tick to pixel
 	t2p(tick) {
 		return tick*CHARTV.WHOLE_NOTE/this.tickUnit;
 	}
 
+	// Pixel to tick
 	p2t(px) {
 		return px*this.tickUnit/CHARTV.WHOLE_NOTE;
 	}
@@ -60,12 +65,49 @@ class VChartView {
 	redraw() {
 		this._requestAnimationFrame(this._redraw, CHARTV_RENDER_PRIORITY.REDRAW);
 	}
-
+	
+	/// Clear and redraw everything.
 	_redraw() {
 		this._resize();
 		this._updateLocation();
+
+		this._redrawNotes();
+	}
+
+	_redrawNotes() {
+		const fxLongs = this._svgGroups.fxLongs.clear();
+		const btLongs = this._svgGroups.btLongs.clear();
+		const fxShorts = this._svgGroups.fxShorts.clear();
+		const btShorts = this._svgGroups.btShorts.clear();
+
+		if(!this.editor.chartData) return;
+
+		const noteData = this.editor.chartData.note;
+		if(!noteData) return;
+
+		const putNotes = (shorts, longs, shortDef, x, data) => {
+			for(let y in data) {
+				const len = data[y];
+
+				if(len <= 0) {
+					const note = shorts.use(shortDef).move(x, -this.t2p(+y));
+					continue;
+				}
+
+				// TODO: draw long notes
+			}
+		};
+
+		noteData.bt.forEach((btData, lane) => {
+			putNotes(btShorts, btLongs, this._svgDefs.btShort, (lane-2)*CHARTV.NOTE_WIDTH, btData);
+		});
+
+		noteData.fx.forEach((fxData, lane) => {
+			putNotes(fxShorts, fxLongs, this._svgDefs.fxShort, (lane-1)*CHARTV.NOTE_WIDTH*2, fxData);
+		});
 	}
 	
+	/// Update the size of the SVG, but do not redraw everything.
 	resize() {
 		this._requestAnimationFrame(this._resize, CHARTV_RENDER_PRIORITY.RESIZE);
 	}
@@ -79,6 +121,7 @@ class VChartView {
 		this._masterBaseLine.attr('y2', -FULL_HEIGHT);
 	}
 
+	/// Set the location of the region to be shown (tickLoc = bottom)
 	setLocation(tickLoc) {
 		this.tickLoc = tickLoc;
 		this._requestAnimationFrame(this._updateLocation, CHARTV_RENDER_PRIORITY.MINOR);
@@ -122,7 +165,7 @@ class VChartView {
 	
 	/// Helper function for creating structures for the SVG.
 	_createGroups() {
-		this._svgGroups = {
+		const groups = this._svgGroups = {
 			// Background
 			'baseLines': this.svg.group().addClass('baseLines'),
 			'measureLines': this.svg.group().addClass('measureLines'),
@@ -136,13 +179,46 @@ class VChartView {
 
 		// baseLines
 		{
-			const masterBaseLine = this._masterBaseLine = this._svgGroups.baseLines.line(0, CHARTV.MARGIN_BOTTOM, 0, -300);
+			const masterBaseLine = this._masterBaseLine = groups.baseLines.line(0, CHARTV.MARGIN_BOTTOM, 0, -300);
 			masterBaseLine.addClass('baseLine').stroke({'color': "hsl(0, 0%, 30%)", 'width': 1});
 
 			for(let i=-2; i<=2; ++i) {
 				if(i == 0) continue;
-				const line = this._svgGroups.baseLines.use(masterBaseLine).move(i*CHARTV.NOTE_WIDTH, 0);
+				const line = groups.baseLines.use(masterBaseLine).move(i*CHARTV.NOTE_WIDTH, 0);
 			}
+		}
+
+		// notes
+		// long notes are drawn first
+		{
+			const notes = groups.notes;
+			
+			groups.fxLongs = notes.group().addClass('fxLongs');
+			groups.btLongs = notes.group().addClass('btLongs');
+			groups.fxShorts = notes.group().addClass('fxShorts');
+			groups.btShorts = notes.group().addClass('btShorts');
+		}
+	}
+	
+	/// Helper function for creating various shapes to be used
+	_createDefs() {
+		const svgDefs = this.svg.defs();
+		const defs = this._svgDefs = {};
+
+		const SHORT_HEIGHT = 2;
+
+		// btShort
+		{
+			const btShort = defs.btShort = svgDefs.rect(CHARTV.NOTE_WIDTH, SHORT_HEIGHT);
+			btShort.move(0, -SHORT_HEIGHT/2).id('btShort');
+			btShort.fill('#FFF').stroke({'color': '#AAA', 'width': 1});
+		}
+
+		// fxShort
+		{
+			const fxShort = defs.fxShort = svgDefs.rect(CHARTV.NOTE_WIDTH*2, SHORT_HEIGHT);
+			fxShort.move(0, -SHORT_HEIGHT/2).id('fxShort');
+			fxShort.fill('#F90').stroke({'color': '#A40', 'width': 1});
 		}
 	}
 }
