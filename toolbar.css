@@ -38,9 +38,15 @@ div.veditor div.toolbar-panel.active {
 }
 
 div.veditor div.toolbar-section {
-	min-width: 3em;
+	min-width: 5em;
 	position: relative;
 	padding: .2em .3em;
+	text-align: center;
+	line-height: 3em;
+}
+
+div.veditor div.toolbar-section.multi-lines {
+	line-height: inherit;
 }
 
 div.veditor div.toolbar-section:after {
@@ -50,7 +56,11 @@ div.veditor div.toolbar-section:after {
 }
 
 div.veditor div.toolbar-section>h4 {
-	font-size: .7em; text-align: center;
-	color: #AAA;
+	position: absolute;
+	left: 0; right: 0; bottom: .6em;
 	user-select: none;
+	font-size: .7em;
+	line-height: 1.2em;
+	text-align: center;
+	color: #AAA;
 }

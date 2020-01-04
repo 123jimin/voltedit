@@ -19,6 +19,9 @@ class VToolbar {
 				this.changeTab(ind);
 			});
 		});
+
+		this._setupHome();
+		this._setupOptions();
 	}
 
 	changeTab(ind) {
@@ -33,5 +36,31 @@ class VToolbar {
 
 		this.tabs[ind].classList.add('active');
 		this.panels[ind].classList.add('active');
+	}
+
+	_setupHome() {
+	}
+
+	_setupOptions() {
+		this._bind('toolbar-language-select', 'ui:language', L10N.l.bind(L10N));
+	}
+
+	_bind(className, configName, onChange) {
+		const elem = this.elem.querySelector(`.${className}`);
+		if(!elem){
+			console.warn(`VToolbar bind failed: class ${className} does not exist!`);
+			return;
+		}
+
+		switch(elem.tagName.toUpperCase()){
+			case 'SELECT':
+				elem.querySelector(`option[value="${this.editor.settings.get(configName)}"]`).setAttribute('selected', true);
+				elem.addEventListener('change', (event) => {
+					this.editor.settings.set(configName, elem.value);
+					onChange(elem.value);
+				});
+				return;
+		}
+		console.warn(`VToolbar bind failed: tag ${elem.tagName} is not well understood.`);
 	}
 }

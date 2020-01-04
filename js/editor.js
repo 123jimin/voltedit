@@ -12,15 +12,18 @@ const readFileList = (files) => Promise.all([].map.call(files, (file) => new Pro
 class VEditor {
 	constructor(elem) {
 		this.elem = elem;
-
 		this.chartData = null;
+		
+		this.settings = new VSettings();
+
 		this.view = new VChartView(this);
 		this.toolbar = new VToolbar(this);
-		this.settings = new VSettings();
 
 		this._dropFileIndicator = elem.querySelector('.drop-file-indicator');
 		this._dropFileIndicatorShown = false;
 		this._addEventListeners();
+
+		L10N.l(this.settings.get('ui:language'));
 	}
 
 	onResize() {
