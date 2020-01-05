@@ -1,7 +1,7 @@
 # VOLTEdit
 VOLTEdit is a web-based SDVX chart editor, planned to support KSH and KSON chart formats.
 
-Icons are from [icons8](https://icons8.com).
+Used "Office S" icons of [icons8](https://icons8.com).
 
 ## Features
 Currently, these features are available. Note that this editor is in *very* early stage of active development now.

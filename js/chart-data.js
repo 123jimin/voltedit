@@ -24,6 +24,52 @@ class VChartData {
 		this.bg = {};
 		this.impl = {};
 	}
+
+	toKSON() {
+		const kson = {
+			'version': this.version,
+			'meta': this.meta,
+			'beat': this.beat,
+			'gauge': this.gauge,
+			'note': this._getKSONNote(),
+			'audio': this.audio,
+			'camera': this.camera,
+			'bg': this.bg,
+			'impl': this.impl
+		};
+
+		return JSON.stringify(kson);
+	}
+
+	_getKSONNote() {
+		const note2arr = (dict) => {
+			const arr = [];
+			for(let y in dict) {
+				const obj = {'y': +y};
+				if(dict[y]) obj.l = +dict[y];
+				arr.push(obj);
+			}
+
+			arr.sort((a, b) => a.y-b.y);
+			return arr;
+		};
+		const laser2arr = (dict) => {
+			const arr = [];
+			for(let y in dict) {
+				const obj = {'y': +y};
+				for(let k in dict[y]) obj[k] = dict[y][k];
+				arr.push(obj);
+			};
+
+			arr.sort((a, b) => a.y-b.y);
+			return arr;
+		};
+		return {
+			'bt': this.note.bt.map(note2arr),
+			'fx': this.note.fx.map(note2arr),
+			'laser': this.note.laser.map(laser2arr)
+		};
+	}
 }
 
 VChartData.create = function VChartData$create(file) {
