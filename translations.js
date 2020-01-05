@@ -29,6 +29,10 @@ tab-panel-language
 	en: Language
 	ko: 언어(Language)
 
+toolbar-default
+	en: Default:
+	ko: 기본 값:
+
 toolbar-note-width
 	en: Note width:
 	ko: 노트 너비:

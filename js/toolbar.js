@@ -71,7 +71,7 @@ class VToolbar {
 				return;
 			case 'INPUT':
 				elem.value = settings.get(configName);
-				elem.title = `Default: ${settings.defaultValue(configName)}`;
+				elem.title = `${L10N.t('toolbar-default')} ${settings.defaultValue(configName)}`;
 				elem.addEventListener('change', (event) => {
 					if(validate(elem.value)){
 						settings.set(configName, elem.value);

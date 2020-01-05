@@ -15,6 +15,7 @@ class VEditor {
 		this.chartData = null;
 		
 		this.settings = new VSettings();
+		L10N.l(this.settings.get('ui:language'));
 
 		this.view = new VChartView(this);
 		this.toolbar = new VToolbar(this);
@@ -22,8 +23,6 @@ class VEditor {
 		this._dropFileIndicator = elem.querySelector('.drop-file-indicator');
 		this._dropFileIndicatorShown = false;
 		this._addEventListeners();
-
-		L10N.l(this.settings.get('ui:language'));
 	}
 
 	onResize() {
