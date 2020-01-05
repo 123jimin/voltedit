@@ -30,6 +30,7 @@ These are planned features, as of 05 Jan 2020.
 These features will be implemented by next weekend.
 * Displaying lasers
 * Scrollbar for faster navigating
+* Setting editor snap ticks (8th, 12th, 16th, ...)
 
 ### High Priority
 These features will be implemented by this month.
@@ -39,6 +40,7 @@ These features will be implemented by this month.
 
 These features will likely be implemented by Feburary.
 * Reading simple KSON files
+* Keyboard Shortcuts
 * Audio Playback
 * Note deletion, long note edit
 * Displaying most of KSH contents
