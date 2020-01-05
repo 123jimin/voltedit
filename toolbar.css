@@ -2,9 +2,13 @@ div.veditor div.toolbar input[type="number"] {
 	width: 3em;
 }
 
+div.veditor div.toolbar button {
+	font-size: .9em;
+	cursor: pointer;
+}
+
 div.veditor div.toolbar button[style*="background-image"] {
 	width: 3em; height: 3em;
-	font-size: .9em;
 	padding: 3.1em 0 0;
 	background-size: 2.7em;
 	background-position: .15em .15em;
