@@ -33,6 +33,13 @@ toolbar-default
 	en: Default:
 	ko: 기본 값:
 
+toolbar-open
+	en: Open
+	ko: 열기
+toolbar-save
+	en: Save
+	ko: 저장
+
 toolbar-note-width
 	en: Note width:
 	ko: 노트 너비:

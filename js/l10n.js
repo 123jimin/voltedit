@@ -25,10 +25,17 @@ const L10N = ((lines) => {
 		}, 'l': function L10N_setLocale(l) {
 			this._l = l.toLowerCase();
 
-			[].forEach.call(document.querySelectorAll("span,h1,h2,h3,h4,h5,h6,label"), (elem) => {
+			[].forEach.call(document.querySelectorAll("button,span,h1,h2,h3,h4,h5,h6,label"), (elem) => {
 				[].forEach.call(elem.classList, (className) => {
-					if(!className.startsWith("txt-")) return;
-					const id = className.slice(4);
+					let id = "";
+					switch(elem.tagName.toUpperCase()){
+						case 'BUTTON':
+							id = className;
+							break;
+						default:
+							if(!className.startsWith("txt-")) return;
+							id = className.slice(4);
+					}
 					if(!(id in this._d)) return;
 					elem.innerText = this.t(id);
 				});

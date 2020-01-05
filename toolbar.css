@@ -1,5 +1,25 @@
-div.veditor input[type="number"] {
+div.veditor div.toolbar input[type="number"] {
 	width: 3em;
+}
+
+div.veditor div.toolbar button[style*="background-image"] {
+	width: 3em; height: 3em;
+	font-size: .9em;
+	padding: 3.1em 0 0;
+	background-size: 2.7em;
+	background-position: .15em .15em;
+	background-repeat: no-repeat;
+	border: none;
+	overflow: visible;
+}
+
+div.veditor div.toolbar button[style*="background-image"]:hover {
+	background-color: #FFF;
+	font-weight: bold;
+}
+
+div.veditor div.toolbar button:focus {
+	outline: 0;
 }
 
 div.veditor div.toolbar-tab {
@@ -31,6 +51,7 @@ div.veditor div.toolbar-panels {
 
 div.veditor div.toolbar-panel {
 	display: none;
+	overflow-y: hidden;
 }
 
 div.veditor div.toolbar-panel.active {
@@ -47,11 +68,10 @@ div.veditor div.toolbar-section {
 	position: relative;
 	padding: .2em .3em;
 	text-align: center;
-	line-height: 4em;
 }
 
-div.veditor div.toolbar-section.multi-lines {
-	line-height: inherit;
+div.veditor div.toolbar-section.short {
+	line-height: 4em;
 }
 
 div.veditor div.toolbar-section:after {

@@ -58,6 +58,8 @@ class VEditor {
 	}
 
 	/* Opening Files */
+	showOpenFileDialog() {
+	}
 	openFileList(files) {
 		// TODO: support uploading multiple files (e.g. kson + mp3)
 		if(files.length != 1) return;
@@ -80,6 +82,10 @@ class VEditor {
 		});
 	}
 	setFileName(fileName) {
+	}
+
+	/* Saving Files */
+	showSaveFileDialog() {
 	}
 
 	_addEventListeners() {
