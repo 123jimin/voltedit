@@ -54,7 +54,7 @@ class VEditor {
 		const files = event.dataTransfer.files;
 		if(files.length == 0) return;
 
-		this.openFileList(files);
+		this.openFileList(files);trimmed 
 	}
 
 	/* Opening Files */
@@ -82,14 +82,28 @@ class VEditor {
 				return;
 			}
 
-			this.chartData = chartData;
+			this.setChartData(chartData);
 			this.view.setLocation(0);
 			this.view.redraw();
 		}).catch((err) => {
 			console.error(err);
 		});
 	}
-	setFileName(fileName) {
+	setChartData(chartData) {
+		if(chartData) this.chartData = chartData;
+		if(!this.chartData) return;
+
+		const trimmedChartName = this.chartData.meta.title.trim();
+		const chartDifficulty = ['NOV','ADV','EXH','INF'][this.chartData.meta.difficulty.idx];
+		
+		this.setChartTitle(`${trimmedChartName} [${chartDifficulty}]`);
+	}
+	setChartTitle(title) {
+		if(title === ""){
+			document.title = "VOLTEdit";
+		}else{
+			document.title = `${title} - VOLTEdit`;
+		}
 	}
 
 	/* Saving Files */
