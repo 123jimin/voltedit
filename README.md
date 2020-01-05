@@ -8,6 +8,7 @@ Currently, these features are available. Note that this editor is in *very* earl
 
 * Importing KSH files via drag-drop
 	* Currently only notes and beat lines are visible.
+* Exporting to KSON format
 * Scrolling view via mouse wheel
 	* I know that this is quite slow. I'll add other methods for navigating.
 * Intuitive ribbon UI
@@ -27,13 +28,12 @@ These are planned features, as of 05 Jan 2020.
 
 ### Currently in Development
 These features will be implemented by next weekend.
-* BPM and time signature display
-* Writing simple KSON files
 * Displaying lasers
+* Scrollbar for faster navigating
 
 ### High Priority
 These features will be implemented by this month.
-* Scrollbar for faster navigating
+* BPM and time signature display
 * Reading most of KSH files, including zoom and stop effects
 * Note addition
 

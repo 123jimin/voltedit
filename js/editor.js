@@ -54,7 +54,7 @@ class VEditor {
 		const files = event.dataTransfer.files;
 		if(files.length == 0) return;
 
-		this.openFileList(files);trimmed 
+		this.openFileList(files);
 	}
 
 	/* Opening Files */
@@ -73,9 +73,9 @@ class VEditor {
 		if(files.length != 1) return;
 
 		readFileList(files).then((fileContents) => {
-			console.time("parse chart");
+			console.time("Parsing");
 			const chartData = VChartData.create(fileContents[0]);
-			console.timeEnd("parse chart");
+			console.timeEnd("Parsing");
 
 			if(chartData === null) {
 				alert(L10N.t('error-reading-chart-data'));
@@ -107,7 +107,26 @@ class VEditor {
 	}
 
 	/* Saving Files */
-	showSaveFileDialog() {
+	saveToKSON() {
+		if(!this.chartData) return;
+		this.saveFile(this.chartData.toKSON(), "chart.kson");
+	}
+	saveToKSH() {
+		if(!this.chartData) return;
+	}
+	saveFile(text, fileName) {
+		const blob = new Blob([text], {'type': "text/plain"});
+
+		const elem = document.createElement('a');
+		elem.setAttribute('href', window.URL.createObjectURL(blob));
+		elem.setAttribute('download', fileName);
+		elem.style.display = 'none';
+
+		document.body.appendChild(elem);
+		elem.click();
+		document.body.removeChild(elem);
+
+		window.URL.revokeObjectURL(blob);
 	}
 
 	_addEventListeners() {

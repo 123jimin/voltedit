@@ -39,8 +39,9 @@ class VToolbar {
 	}
 
 	_setupHome() {
-		this._button('toolbar-open', this.editor.showOpenFileDialog);
-		this._button('toolbar-save', this.editor.showSaveFileDialog);
+		this._button('toolbar-open', 'toolbar-open-desc', this.editor.showOpenFileDialog);
+		this._button('toolbar-save-kson', 'toolbar-save-kson-desc', this.editor.saveToKSON);
+		this._button('toolbar-save-ksh', 'toolbar-save-ksh-desc', this.editor.saveToKSH);
 	}
 
 	_setupOptions() {
@@ -51,12 +52,13 @@ class VToolbar {
 		this._bind('toolbar-margin-bottom', 'editor:margin:bottom', (v) => this.editor.view.scale.setMarginBottom(v));
 	}
 
-	_button(className, onClick) {
+	_button(className, title, onClick) {
 		const elem = this.elem.querySelector(`.${className}`);
 		if(!elem){
 			console.warn(`VToolbar button failed: class ${className} does not exist!`);
 			return;
 		}
+		if(title) elem.title = L10N.t(title);
 		elem.addEventListener('click', (event) => {
 			onClick.call(this.editor);
 		});

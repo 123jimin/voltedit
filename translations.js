@@ -36,9 +36,21 @@ toolbar-default
 toolbar-open
 	en: Open
 	ko: 열기
-toolbar-save
-	en: Save
-	ko: 저장
+toolbar-open-desc
+	en: Choose a chart file to be edited.
+	ko: 편집할 채보 파일을 선택합니다.
+toolbar-save-kson
+	en: KSON
+	ko: KSON
+toolbar-save-kson-desc
+	en: Save as a KSON format. (k-shoot 2)
+	ko: KSON 포맷으로 저장합니다. (케슛 2)
+toolbar-save-ksh
+	en: KSH
+	ko: KSH
+toolbar-save-ksh-desc
+	en: Save as a KSH format. (k-shoot 1.xx)
+	ko: KSH 포맷으로 저장합니다. (케슛 1.xx)
 
 toolbar-note-width
 	en: Note width:
