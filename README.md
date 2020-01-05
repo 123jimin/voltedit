@@ -31,6 +31,7 @@ These features will be implemented by next weekend.
 
 ### High Priority
 These features will be implemented by this month.
+* Scrollbar for faster navigating
 * Reading most of KSH files, including zoom and stop effects
 * Note addition
 
