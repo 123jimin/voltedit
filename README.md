@@ -8,9 +8,12 @@ Currently, these features are available. Note that this editor is in *very* earl
 	* Currently only notes and beat lines are visible.
 * Scrolling view via mouse wheel
 	* I know that this is quite slow. I'll add other methods for navigating.
+* Intuitive ribbon UI
+	* Editor settings, saved via `localStorage`
+* Support for English and Korean
 
 ## Planned Features
-These are planned features, as of 04 Jan 2020.
+These are planned features, as of 05 Jan 2020.
 
 ### Goal
 * KSH/KSON editor which can replace current kshoot editor
@@ -21,19 +24,15 @@ These are planned features, as of 04 Jan 2020.
 * Multilingual (en and ko during development)
 
 ### Currently in Development
-These features will be implemented by this weekend.
+These features will be implemented by next weekend.
 * BPM and time signature display
-* Editor settings
-	* Language
-	* Editor size
+* Writing simple KSON files
+* Displaying lasers
 
 ### High Priority
 These features will be implemented by this month.
-* Writing simple KSON files
 * Reading most of KSH files, including zoom and stop effects
 * Note addition
-* Displaying lasers
-* Toolbar
 
 These features will likely be implemented by Feburary.
 * Reading simple KSON files
