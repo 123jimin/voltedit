@@ -61,24 +61,55 @@ class VChartScale {
 		this.laneRight = +2*this.noteWidth;
 	}
 }
+
 /// Manager for chart colors
+/// TODO: make this work
+class VChartColor {
+	constructor(view) {
+		this.view = view;
+		this.editor = view.editor;
+		this.load();
+	}
+
+	load() {
+		this.hueLaserLeft = 180;
+		this.hueLaserRight = 300;
+
+		this.btFill = '#FFF';
+		this.btBorder = '#AAA';
+		this.btLong = '#EEE';
+
+		this.fxFill = '#F90';
+		this.fxBorder = '#A40';
+		this.fxLong = '#EA0';
+
+		this.measureLine = '#FF0';
+		this.beatLine = '#444';
+		this.baseLines = '#555';
+		this.cursor = '#F00';
+
+		this.textTimeSig = '#9E4';
+		this.textBPM = '#6AF'
+	}
+}
 
 /// Single column view of the chart
 class VChartView {
 	constructor(editor) {
 		this.editor = editor;
 		this.scale = new VChartScale(this);
+		this.color = new VChartColor(this);
 		
 		this.elem = editor.elem.querySelector(".chart");
 		this.elem.style.width = `${this.scale.fullWidth}px`;
 
 		this.svg = SVG().addTo(this.elem).size(this.scale.fullWidth, '100%');
-		this.tickLoc = 0; /// Current location (in ticks)
 		this.tickUnit = 240*4; /// Ticks per *whole* note
+		
+		this.tickLoc = 0; /// Current display location (in ticks)
+		this.cursorLoc = 0; /// Current cursor location (in ticks)
+		
 		this.lastPlayTick = 0; /// Last tick of notes/laser
-
-		this.hueLaserLeft = 180;
-		this.hueLaserRight = 300;
 
 		this._prevNoteWidth = this.scale.noteWidth;
 
@@ -98,14 +129,25 @@ class VChartView {
 		this.elem.addEventListener('wheel', this.onWheel.bind(this), {'passive': true});
 	}
 
-	// Tick to pixel
+	/// Tick to pixel
 	t2p(tick) {
 		return tick*this.scale.wholeNote/this.tickUnit;
 	}
 
-	// Pixel to tick
+	/// Pixel to tick
 	p2t(px) {
 		return px*this.tickUnit/this.scale.wholeNote;
+	}
+
+	/// Set the location of the region to be shown (tickLoc = bottom)
+	setLocation(tickLoc) {
+		this.tickLoc = isFinite(tickLoc) ? tickLoc : 0;
+		this._requestAnimationFrame(this._updateLocation, CHARTV_RENDER_PRIORITY.MINOR);
+	}
+
+	setCursor(cursorLoc) {
+		this.cursorLoc = isFinite(cursorLoc) && cursorLoc > 0 ? cursorLoc : 0;
+		this._requestAnimationFrame(this._redrawCursor, CHARTV_RENDER_PRIORITY.MINOR);
 	}
 
 	redraw() {
@@ -125,6 +167,7 @@ class VChartView {
 
 		// Call after notes and lasers are drawn, to use updated lastPlayTick.
 		this._redrawMeasures();
+		this._redrawEditorUI();
 	}
 
 	_redrawNotes() {
@@ -219,6 +262,14 @@ class VChartView {
 			measureTick += currMeasureLength;
 		}
 	}
+
+	_redrawEditorUI() {
+		this._redrawCursor();
+	}
+
+	_redrawCursor() {
+		this._svgGroups.cursor.attr('y', RD(-this.t2p(this.cursorLoc)));
+	}
 	
 	/// Update the size of the SVG, but do not redraw everything.
 	resize() {
@@ -243,13 +294,7 @@ class VChartView {
 			line.x(i*this.scale.noteWidth);
 		});
 
-		// TODO: set other things properly
-	}
-
-	/// Set the location of the region to be shown (tickLoc = bottom)
-	setLocation(tickLoc) {
-		this.tickLoc = isFinite(tickLoc) ? tickLoc : 0;
-		this._requestAnimationFrame(this._updateLocation, CHARTV_RENDER_PRIORITY.MINOR);
+		// TODO: set other things properly (e.g. measure line, note defs)
 	}
 
 	onWheel(event) {
@@ -376,7 +421,7 @@ class VChartView {
 		// baseLines
 		{
 			const masterBaseLine = this._masterBaseLine = groups.baseLines.line(0, this.scale.marginBottom, 0, 0 /* will be adjusted on resize */);
-			masterBaseLine.addClass('baseLine').stroke({'color': "hsl(0, 0%, 30%)", 'width': 1});
+			masterBaseLine.addClass('baseLine').stroke({'color': this.color.baseLines, 'width': 1});
 
 			for(let i=-2; i<=2; ++i) {
 				if(i === 0) continue;
@@ -407,6 +452,7 @@ class VChartView {
 	_createNoteDefs() {
 		const svgDefs = this.svg.defs();
 		const defs = this._svgDefs = {};
+		const color = this.color;
 		
 		const SHORT_BT_HEIGHT = 3;
 		const SHORT_FX_HEIGHT = 4;
@@ -414,39 +460,44 @@ class VChartView {
 		// btShort
 		const btShort = defs.btShort = svgDefs.rect(this.scale.noteWidth, SHORT_BT_HEIGHT-1);
 		btShort.id('btShort');
-		btShort.fill('#FFF').stroke({'color': '#AAA', 'width': 1});
+		btShort.fill(color.btFill).stroke({'color': color.btBorder, 'width': 1});
 
 		// fxShort
 		const fxShort = defs.fxShort = svgDefs.rect(this.scale.noteWidth*2, SHORT_FX_HEIGHT-1);
 		fxShort.id('fxShort');
-		fxShort.fill('#F90').stroke({'color': '#A40', 'width': 1});
+		fxShort.fill(color.fxFill).stroke({'color': color.fxBorder, 'width': 1});
 
 		// btLong
 		const btLong = defs.btLong = svgDefs.rect(this.scale.noteWidth-2, 1);
 		btLong.id('btLong');
-		btLong.fill('#FFF');
+		btLong.fill(color.btLong);
 
 		// fxLong
 		const fxLong = defs.fxLong = svgDefs.rect(this.scale.noteWidth*2, 1);
 		fxLong.id('fxLong');
-		fxLong.fill('#DA0');
+		fxLong.fill(color.fxLong);
 	}
 
 	/// Helper function for creating measure lines and cursors
 	_createLineDefs() {
 		const svgDefs = this.svg.defs();
 		const defs = this._svgDefs;
+		const color = this.color;
 
 		// measure line
 		const measureLine = defs.measureLine = svgDefs.line(this.scale.laneLeft, -0.5, this.scale.laneRight, -0.5);
 		measureLine.id('measureLine');
-		measureLine.stroke({'width': 1, 'color': '#FF0'});
+		measureLine.stroke({'width': 1, 'color': color.measureLine});
 
 		// beat line
 		const beatLine = defs.beatLine = svgDefs.line(this.scale.laneLeft, -0.5, this.scale.laneRight, -0.5);
 		beatLine.id('beatLine');
-		beatLine.stroke({'width': 1, 'color': '#444'});
+		beatLine.stroke({'width': 1, 'color': color.beatLine});
 
 		// cursor
+		const cursor = defs.cursor = svgDefs.line(this.scale.laneLeft*1.5, -0.5, this.scale.laneRight*1.5, -0.5);
+		cursor.id('cursor');
+		cursor.stroke({'width': 1, 'color': color.cursor});
+		this._svgGroups.cursor.use(cursor);
 	}
 }
