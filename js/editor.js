@@ -59,6 +59,14 @@ class VEditor {
 
 	/* Opening Files */
 	showOpenFileDialog() {
+		const fileInput = document.createElement('input');
+		fileInput.setAttribute('type', 'file');
+		fileInput.setAttribute('accept', ".ksh, .kson");
+		fileInput.addEventListener('change', (event) => {
+			this.openFileList(fileInput.files);
+			fileInput.remove();
+		});
+		fileInput.click();
 	}
 	openFileList(files) {
 		// TODO: support uploading multiple files (e.g. kson + mp3)
