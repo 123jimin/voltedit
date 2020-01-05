@@ -31,7 +31,7 @@ class VSettings {
 	}
 
 	set(key, value) {
-		if(key in this.settings){
+		if(key in this.fields){
 			this.settings[key] = value;
 			this.save();
 		}else{
