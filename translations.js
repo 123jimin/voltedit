@@ -19,12 +19,28 @@ tab-options
 tab-panel-file
 	en: File
 	ko: 파일
-tab-panel-chart-display
-	en: Chart Display
-	ko: 채보 표시
+tab-panel-chart-display-scale
+	en: Chart Display Scale
+	ko: 채보 표시 크기
+tab-panel-chart-display-color
+	en: Chart Display Color
+	ko: 채보 표시 색
 tab-panel-language
 	en: Language
 	ko: 언어(Language)
+
+toolbar-note-width
+	en: Note width:
+	ko: 노트 너비:
+toolbar-measure-scale
+	en: Measure scale:
+	ko: 마디 길이:
+toolbar-margin-side
+	en: Side margin:
+	ko: 좌우 여백:
+toolbar-margin-bottom
+	en: Bottom margin:
+	ko: 아래 여백:
 
 drop-file-here
 	en: Drop to Open File

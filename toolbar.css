@@ -1,3 +1,7 @@
+div.veditor input[type="number"] {
+	width: 3em;
+}
+
 div.veditor div.toolbar-tab {
 	user-select: none;
 }
@@ -38,11 +42,12 @@ div.veditor div.toolbar-panel.active {
 }
 
 div.veditor div.toolbar-section {
-	min-width: 5em;
+	font-size: .8em;
+	min-width: 6em;
 	position: relative;
 	padding: .2em .3em;
 	text-align: center;
-	line-height: 3em;
+	line-height: 4em;
 }
 
 div.veditor div.toolbar-section.multi-lines {
@@ -59,8 +64,17 @@ div.veditor div.toolbar-section>h4 {
 	position: absolute;
 	left: 0; right: 0; bottom: .6em;
 	user-select: none;
-	font-size: .7em;
+	font-size: .9em;
 	line-height: 1.2em;
 	text-align: center;
 	color: #AAA;
+}
+
+div.veditor div.toolbar-section>table {
+	margin-top: .1em;
+	border-collapse: collapse;
+}
+
+div.veditor div.toolbar-section>table td {
+	padding: .1em .4em;
 }

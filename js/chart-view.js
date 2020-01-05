@@ -1,30 +1,3 @@
-// Let's fix the scales for now.
-// This will be changed to something users can configure.
-const CHARTV = Object.freeze((() => {
-	const NOTE_WIDTH =  9; // Width for a single note (and laser)
-	const MARGIN_SIDE = 15; // Left and right margins for the chart
-	const MARGIN_BOTTOM = 40; // Bottom margin for the chart
-
-	// Following values are computed from above values.
-	const WHOLE_NOTE = NOTE_WIDTH*20; // Length for a measure
-	const FULL_WIDTH = NOTE_WIDTH*11 + MARGIN_SIDE*2; // Width of the view
-	const HALF_WIDTH = FULL_WIDTH/2;
-	const LASER_LEFT = -2.5 * NOTE_WIDTH;
-	const LASER_RIGHT = +2.5 * NOTE_WIDTH;
-
-	const LANE_WIDTH = 4 * NOTE_WIDTH;
-	const LANE_LEFT = -2 * NOTE_WIDTH;
-	const LANE_RIGHT = +2 * NOTE_WIDTH;
-
-	return ({
-		NOTE_WIDTH, WHOLE_NOTE,
-		MARGIN_SIDE, MARGIN_BOTTOM,
-		FULL_WIDTH, HALF_WIDTH,
-		LASER_LEFT, LASER_RIGHT,
-		LANE_WIDTH, LANE_LEFT, LANE_RIGHT
-	});
-})());
-
 const CHARTV_RENDER_PRIORITY = Object.freeze({
 	'NONE': 0,
 	'MINOR': 1,
@@ -38,14 +11,68 @@ const RD = Math.round;
 /// Round to half-int
 const RDH = (x) => RD(x+0.5)-0.5;
 
+/// Manager for chart scales
+class VChartScale {
+	constructor(view) {
+		this.view = view;
+		this.editor = view.editor;
+		this.load();
+	}
+
+	load() {
+		const settings = this.editor.settings;
+		this.noteWidth = settings.get('editor:note:width');
+		this.marginSide = settings.get('editor:margin:side');
+		this.marginBottom = settings.get('editor:margin:bottom');
+		this.measureScale = settings.get('editor:measure:scale');
+
+		this._computeRests();
+	}
+	setNoteWidth(value) {
+		this.noteWidth = value;
+		this._computeRests();
+		this.view.redraw();
+	}
+	setMarginSide(value) {
+		this.marginSide = value;
+		this._computeRests();
+		this.view.resize();
+	}
+	setMarginBottom(value) {
+		this.marginBottom = value;
+		this._computeRests();
+		this.view.resize();
+	}
+	setMeasureScale(value) {
+		this.measureScale = value;
+		this._computeRests();
+		this.view.redraw();
+	}
+
+	_computeRests() {
+		this.wholeNote = this.noteWidth*this.measureScale;
+		this.fullWidth = this.noteWidth*11 + this.marginSide*2;
+		this.halfWidth = this.fullWidth/2;
+		this.laserLeft = -2.5*this.noteWidth;
+		this.laserRight = +2.5*this.noteWidth;
+
+		this.laneWidth = 4*this.noteWidth;
+		this.laneLeft = -2*this.noteWidth;
+		this.laneRight = +2*this.noteWidth;
+	}
+}
+/// Manager for chart colors
+
 /// Single column view of the chart
 class VChartView {
 	constructor(editor) {
 		this.editor = editor;
+		this.scale = new VChartScale(this);
+		
 		this.elem = editor.elem.querySelector(".chart");
-		this.elem.style.width = `${CHARTV.FULL_WIDTH}px`;
+		this.elem.style.width = `${this.scale.fullWidth}px`;
 
-		this.svg = SVG().addTo(this.elem).size(CHARTV.FULL_WIDTH, '100%');
+		this.svg = SVG().addTo(this.elem).size(this.scale.fullWidth, '100%');
 		this.tickLoc = 0; /// Current location (in ticks)
 		this.tickUnit = 240*4; /// Ticks per *whole* note
 		this.lastPlayTick = 0; /// Last tick of notes/laser
@@ -53,10 +80,13 @@ class VChartView {
 		this.hueLaserLeft = 180;
 		this.hueLaserRight = 300;
 
+		this._prevNoteWidth = this.scale.noteWidth;
+
 		this._height = 0;
 		this._svgGroups = null;
 		this._svgDefs = null;
 		this._masterBaseLine = null;
+		this._baseLines = [];
 		this._createGroups();
 		this._createDefs();
 
@@ -70,12 +100,12 @@ class VChartView {
 
 	// Tick to pixel
 	t2p(tick) {
-		return tick*CHARTV.WHOLE_NOTE/this.tickUnit;
+		return tick*this.scale.wholeNote/this.tickUnit;
 	}
 
 	// Pixel to tick
 	p2t(px) {
-		return px*this.tickUnit/CHARTV.WHOLE_NOTE;
+		return px*this.tickUnit/this.scale.wholeNote;
 	}
 
 	redraw() {
@@ -129,12 +159,12 @@ class VChartView {
 
 		noteData.bt.forEach((btData, lane) => {
 			putNotes('bt', btShorts, btLongs, this._svgDefs.btShort, this._svgDefs.btLong,
-				lane, (lane-2)*CHARTV.NOTE_WIDTH, btData);
+				lane, (lane-2)*this.scale.noteWidth, btData);
 		});
 
 		noteData.fx.forEach((fxData, lane) => {
 			putNotes('fx', fxShorts, fxLongs, this._svgDefs.fxShort, this._svgDefs.fxLong,
-				lane, (lane-1)*CHARTV.NOTE_WIDTH*2, fxData);
+				lane, (lane-1)*this.scale.noteWidth*2, fxData);
 		});
 	}
 
@@ -198,10 +228,22 @@ class VChartView {
 	_resize() {
 		const FULL_HEIGHT = this._updateHeight();
 		const VIEW_BOX_TOP = this._getViewBoxTop();
-		this.svg.size(CHARTV.FULL_WIDTH, FULL_HEIGHT);
-		this.svg.viewbox(-CHARTV.FULL_WIDTH/2, VIEW_BOX_TOP, CHARTV.FULL_WIDTH, FULL_HEIGHT);
+		this.svg.size(this.scale.fullWidth, FULL_HEIGHT);
+		this.svg.viewbox(-this.scale.fullWidth/2, VIEW_BOX_TOP, this.scale.fullWidth, FULL_HEIGHT);
 
 		this._updateBaseLines();
+		this._updateNoteWidth();
+	}
+
+	_updateNoteWidth() {
+		if(this._prevNoteWidth === this.scale.noteWidth) return;
+		this._prevNoteWidth = this.scale.noteWidth;
+
+		this._baseLines.forEach(([i, line]) => {
+			line.x(i*this.scale.noteWidth);
+		});
+
+		// TODO: set other things properly
 	}
 
 	/// Set the location of the region to be shown (tickLoc = bottom)
@@ -222,7 +264,7 @@ class VChartView {
 	}
 
 	_updateLocation() {
-		this.svg.viewbox(-CHARTV.FULL_WIDTH/2, this._getViewBoxTop(), CHARTV.FULL_WIDTH, this._height);
+		this.svg.viewbox(-this.scale.fullWidth/2, this._getViewBoxTop(), this.scale.fullWidth, this._height);
 		this._updateBaseLines();
 	}
 
@@ -300,7 +342,7 @@ class VChartView {
 	}
 
 	_getViewBoxTop() {
-		return Math.round(CHARTV.MARGIN_BOTTOM-this.t2p(this.tickLoc)-this._height);
+		return Math.round(this.scale.marginBottom-this.t2p(this.tickLoc)-this._height);
 	}
 
 	_getTickUnitFromChart() {
@@ -333,12 +375,13 @@ class VChartView {
 
 		// baseLines
 		{
-			const masterBaseLine = this._masterBaseLine = groups.baseLines.line(0, CHARTV.MARGIN_BOTTOM, 0, 0 /* will be adjusted on resize */);
+			const masterBaseLine = this._masterBaseLine = groups.baseLines.line(0, this.scale.marginBottom, 0, 0 /* will be adjusted on resize */);
 			masterBaseLine.addClass('baseLine').stroke({'color': "hsl(0, 0%, 30%)", 'width': 1});
 
 			for(let i=-2; i<=2; ++i) {
-				if(i == 0) continue;
-				const line = groups.baseLines.use(masterBaseLine).move(i*CHARTV.NOTE_WIDTH, 0);
+				if(i === 0) continue;
+				const line = groups.baseLines.use(masterBaseLine).x(i*this.scale.noteWidth);
+				this._baseLines.push([i, line]);
 			}
 		}
 
@@ -369,22 +412,22 @@ class VChartView {
 		const SHORT_FX_HEIGHT = 4;
 		
 		// btShort
-		const btShort = defs.btShort = svgDefs.rect(CHARTV.NOTE_WIDTH, SHORT_BT_HEIGHT-1);
+		const btShort = defs.btShort = svgDefs.rect(this.scale.noteWidth, SHORT_BT_HEIGHT-1);
 		btShort.id('btShort');
 		btShort.fill('#FFF').stroke({'color': '#AAA', 'width': 1});
 
 		// fxShort
-		const fxShort = defs.fxShort = svgDefs.rect(CHARTV.NOTE_WIDTH*2, SHORT_FX_HEIGHT-1);
+		const fxShort = defs.fxShort = svgDefs.rect(this.scale.noteWidth*2, SHORT_FX_HEIGHT-1);
 		fxShort.id('fxShort');
 		fxShort.fill('#F90').stroke({'color': '#A40', 'width': 1});
 
 		// btLong
-		const btLong = defs.btLong = svgDefs.rect(CHARTV.NOTE_WIDTH-2, 1);
+		const btLong = defs.btLong = svgDefs.rect(this.scale.noteWidth-2, 1);
 		btLong.id('btLong');
 		btLong.fill('#FFF');
 
 		// fxLong
-		const fxLong = defs.fxLong = svgDefs.rect(CHARTV.NOTE_WIDTH*2, 1);
+		const fxLong = defs.fxLong = svgDefs.rect(this.scale.noteWidth*2, 1);
 		fxLong.id('fxLong');
 		fxLong.fill('#DA0');
 	}
@@ -395,12 +438,12 @@ class VChartView {
 		const defs = this._svgDefs;
 
 		// measure line
-		const measureLine = defs.measureLine = svgDefs.line(CHARTV.LANE_LEFT, -0.5, CHARTV.LANE_RIGHT, -0.5);
+		const measureLine = defs.measureLine = svgDefs.line(this.scale.laneLeft, -0.5, this.scale.laneRight, -0.5);
 		measureLine.id('measureLine');
 		measureLine.stroke({'width': 1, 'color': '#FF0'});
 
 		// beat line
-		const beatLine = defs.beatLine = svgDefs.line(CHARTV.LANE_LEFT, -0.5, CHARTV.LANE_RIGHT, -0.5);
+		const beatLine = defs.beatLine = svgDefs.line(this.scale.laneLeft, -0.5, this.scale.laneRight, -0.5);
 		beatLine.id('beatLine');
 		beatLine.stroke({'width': 1, 'color': '#444'});
 

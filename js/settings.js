@@ -22,6 +22,11 @@ class VSettings {
 
 	_setFields() {
 		this._define('ui:language', "en");
+		
+		this._define('editor:note:width', 9);
+		this._define('editor:margin:side', 15);
+		this._define('editor:margin:bottom', 40);
+		this._define('editor:measure:scale', 20);
 	}
 
 	_define(key, defaultValue) {
@@ -31,7 +36,11 @@ class VSettings {
 	}
 
 	set(key, value) {
+		if(!key) return;
 		if(key in this.fields){
+			if(this.settings[key] === value){
+				return;
+			}
 			this.settings[key] = value;
 			this.save();
 		}else{
@@ -40,6 +49,7 @@ class VSettings {
 	}
 
 	get(key) {
+		if(!key) return null;
 		if(key in this.settings){
 			return this.settings[key];
 		}else if(key in this.fields){

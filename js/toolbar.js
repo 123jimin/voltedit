@@ -42,10 +42,17 @@ class VToolbar {
 	}
 
 	_setupOptions() {
-		this._bind('toolbar-language-select', 'ui:language', L10N.l.bind(L10N));
+		this._bind('toolbar-language-select', 'ui:language', (v) => L10N.l(v));
+		this._bind('toolbar-note-width', 'editor:note:width', (v) => this.editor.view.scale.setNoteWidth(v));
+		this._bind('toolbar-measure-scale', 'editor:measure:scale', (v) => this.editor.view.scale.setMeasureScale(v));
+		this._bind('toolbar-margin-side', 'editor:margin:side', (v) => this.editor.view.scale.setMarginSide(v));
+		this._bind('toolbar-margin-bottom', 'editor:margin:bottom', (v) => this.editor.view.scale.setMarginBottom(v));
 	}
 
-	_bind(className, configName, onChange) {
+	_bind(className, configName, onChange, validate) {
+		const settings = this.editor.settings;
+		if(!validate) validate = () => true;
+
 		const elem = this.elem.querySelector(`.${className}`);
 		if(!elem){
 			console.warn(`VToolbar bind failed: class ${className} does not exist!`);
@@ -54,10 +61,22 @@ class VToolbar {
 
 		switch(elem.tagName.toUpperCase()){
 			case 'SELECT':
-				elem.querySelector(`option[value="${this.editor.settings.get(configName)}"]`).setAttribute('selected', true);
+				elem.querySelector(`option[value="${settings.get(configName)}"]`).setAttribute('selected', true);
 				elem.addEventListener('change', (event) => {
-					this.editor.settings.set(configName, elem.value);
-					onChange(elem.value);
+					if(validate(elem.value)){
+						settings.set(configName, elem.value);
+						onChange(elem.value);
+					}
+				});
+				return;
+			case 'INPUT':
+				elem.value = settings.get(configName);
+				elem.title = `Default: ${settings.defaultValue(configName)}`;
+				elem.addEventListener('change', (event) => {
+					if(validate(elem.value)){
+						settings.set(configName, elem.value);
+						onChange(elem.value);
+					}
 				});
 				return;
 		}
