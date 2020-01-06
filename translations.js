@@ -19,6 +19,9 @@ tab-options
 tab-panel-file
 	en: File
 	ko: 파일
+tab-panel-edit
+	en: Edit
+	ko: 편집
 tab-panel-chart-display-scale
 	en: Chart Display Scale
 	ko: 채보 표시 크기
