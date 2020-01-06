@@ -15,6 +15,8 @@ class VChartScale {
 
 	load() {
 		const settings = this.editor.settings;
+
+		this.columns = 1;
 		this.noteWidth = settings.get('editor:note:width');
 		this.btNoteHeight = 2;
 		this.fxNoteHeight = 3;
@@ -51,8 +53,12 @@ class VChartScale {
 
 	_computeRests() {
 		this.wholeNote = this.noteWidth*this.measureScale;
-		this.fullWidth = this.noteWidth*11 + this.marginSide*2;
+
+		this.columnOffset = this.noteWidth*11+this.marginSide;
+		this.fullWidth = this.columnOffset*this.columns + this.marginSide;
 		this.elemWidth = this.fullWidth + this.scrollBarWidth;
+		
+		this.viewBoxLeft = -(this.noteWidth*5.5+this.marginSide);
 
 		this.laserPosWidth = 5*this.noteWidth;
 		this.laserSlamHeight = this.laserSlamRatio * this.noteWidth - 2;
@@ -64,7 +70,6 @@ class VChartScale {
 }
 
 /// Manager for chart colors
-/// TODO: make this work
 class VChartColor {
 	constructor(view) {
 		this.view = view;
@@ -125,6 +130,7 @@ class VChartView {
 		this._svgDefs = null;
 		this._masterBaseLine = null;
 		this._baseLines = [];
+		this._columnCopies = [];
 		this._createGroups();
 		this._createDefs();
 
@@ -357,8 +363,8 @@ class VChartView {
 
 		this._updateLocation();
 		this._updateNoteWidth();
+		this._updateColumnCopies();
 	}
-
 	_updateNoteWidth() {
 		if(this._prevNoteWidth === this.scale.noteWidth) return;
 		this._prevNoteWidth = this.scale.noteWidth;
@@ -368,6 +374,21 @@ class VChartView {
 		});
 
 		// TODO: set other things properly (e.g. measure line, note defs)
+	}
+	_updateColumnCopies() {
+		if(this._columnCopies.length+1 != this.scale.columns){
+			this._columnCopies = [];
+			const columnCopy = this._svgGroups.columnCopy.clear();
+			const column = this._svgGroups.column;
+
+			for(let i=1; i<this.scale.columns; ++i){
+				this._columnCopies.push(columnCopy.use(column));
+			}
+		}
+
+		for(let i=1; i<this.scale.columns; ++i){
+			this._columnCopies[i-1].attr({'x': this.scale.columnOffset*i, 'y': this._height*i});
+		}
 	}
 
 	onWheel(event) {
@@ -408,16 +429,13 @@ class VChartView {
 	}
 
 	_updateLocation() {
-		this.svg.viewbox(-this.scale.fullWidth/2, this._getViewBoxTop(), this.scale.fullWidth, this._height);
+		this.svg.viewbox(this.scale.viewBoxLeft, this._getViewBoxTop(), this.scale.fullWidth, this._height);
 		this._updateBaseLines();
 		this._updateScrollBar();
 	}
 
 	_updateBaseLines() {
-		const VIEW_BOX_TOP = this._getViewBoxTop();
-		const VIEW_BOX_BOTTOM = VIEW_BOX_TOP + this._height;
-		this._masterBaseLine.attr('y1', VIEW_BOX_BOTTOM > 0 ? 0 : VIEW_BOX_BOTTOM);
-		this._masterBaseLine.attr('y2', VIEW_BOX_TOP);
+		this._masterBaseLine.attr({'y1':0, 'y2': this._getViewBoxTop()-this._height*(this.scale.columns-1)});
 	}
 
 	_updateScrollBar() {
@@ -525,9 +543,10 @@ class VChartView {
 
 	/// Helper function for creating structures for the SVG.
 	_createGroups() {
-		const baseLines = this.svg.group().addClass('baseLines').attr('buffered-rendering', 'static');
+		const column = this.svg.group().addClass('column').id('column');
+		const baseLines = column.group().addClass('baseLines').attr('buffered-rendering', 'static');
 		// Chart contents which must be moved together
-		const chartGroup = this.svg.group().addClass('chartGroup').attr('buffered-rendering', 'static');
+		const chartGroup = column.group().addClass('chartGroup').attr('buffered-rendering', 'static');
 		const groups = this._svgGroups = {
 			// Background
 			'baseLines': baseLines,
@@ -537,8 +556,12 @@ class VChartView {
 			'notes': chartGroup.group().addClass('notes'),
 			'lasers': chartGroup.group().addClass('lasers'),
 			// Editor UI
-			'rangeSelection': this.svg.group().addClass('rangeSelection'),
-			'cursor': this.svg.group().addClass('cursor').attr('buffered-rendering', 'static'),
+			'rangeSelection': column.group().addClass('rangeSelection'),
+			'cursor': column.group().addClass('cursor').attr('buffered-rendering', 'static'),
+			
+			// Columns
+			'column': column,
+			'columnCopy': this.svg.group().addClass('columnCopy').attr('buffered-rendering', 'static'),
 		};
 
 		// baseLines
