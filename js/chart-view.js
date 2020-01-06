@@ -5,12 +5,6 @@ const CHARTV_RENDER_PRIORITY = Object.freeze({
 	'REDRAW': 3
 });
 
-/// Shorthand for Math.round()
-const RD = Math.round;
-
-/// Round to half-int
-const RDH = (x) => RD(x+0.5)-0.5;
-
 /// Manager for chart scales
 class VChartScale {
 	constructor(view) {
@@ -343,8 +337,7 @@ class VChartView {
 		const dy = this._scrollInitMouseY - y;
 		const dt = dy * this._scrollTickPerPixel;
 		let newTick = RD(this._scrollInitTickLoc + dt);
-		if(newTick < 0) newTick = 0;
-		if(newTick > lastTick) newTick = lastTick;
+		newTick = CLIP(newTick, 0, lastTick);
 		this.setLocation(newTick);
 	}
 
@@ -371,10 +364,11 @@ class VChartView {
 		this.scrollBar.style.display = 'block';
 		this.scrollBar.style.width = `${this.scale.scrollBarWidth}px`;
 
-		let scrollBarHeight = 100;
-		if(scrollBarHeight > this._height){
-			scrollBarHeight = this._height;
-		}
+		// Scale the scroll bar so that...
+		// 1. it is roughly proportional to how much the chart is visible
+		// 2. it's between 0.05H and 0.9H
+		const visibleTicks = this.p2t(this._height - this.scale.marginBottom) / lastTick;
+		const scrollBarHeight = RD(this._height*CLIP(visibleTicks, 0.05, 0.9));
 
 		const scrollBarTop = (this._height - scrollBarHeight) * (1 - this.tickLoc / lastTick);
 		this.scrollBar.style.top = `${scrollBarTop}px`;
