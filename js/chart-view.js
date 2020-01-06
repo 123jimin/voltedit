@@ -29,6 +29,8 @@ class VChartScale {
 		this.marginBottom = settings.get('editor:margin:bottom');
 		this.measureScale = settings.get('editor:measure:scale');
 
+		this.scrollBarWidth = 12;
+
 		this._computeRests();
 	}
 	setNoteWidth(value) {
@@ -55,7 +57,8 @@ class VChartScale {
 	_computeRests() {
 		this.wholeNote = this.noteWidth*this.measureScale;
 		this.fullWidth = this.noteWidth*11 + this.marginSide*2;
-		this.halfWidth = this.fullWidth/2;
+		this.elemWidth = this.fullWidth + this.scrollBarWidth;
+
 		this.laserLeft = -2.5*this.noteWidth;
 		this.laserRight = +2.5*this.noteWidth;
 
@@ -104,7 +107,13 @@ class VChartView {
 		this.color = new VChartColor(this);
 
 		this.elem = editor.elem.querySelector(".chart");
-		this.elem.style.width = `${this.scale.fullWidth}px`;
+		this.elem.style.width = `${this.scale.elemWidth}px`;
+
+		this.scrollBar = this.elem.querySelector(".chart-scrollbar");
+		this._scrollTickPerPixel = 0;
+		this._scrolling = false;
+		this._scrollInitTickLoc = 0;
+		this._scrollInitMouseY = 0;
 
 		this.svg = SVG().addTo(this.elem).size(this.scale.fullWidth, '100%');
 		this.tickUnit = 240*4; /// Ticks per *whole* note
@@ -130,6 +139,10 @@ class VChartView {
 		this._redraw();
 
 		this.elem.addEventListener('wheel', this.onWheel.bind(this), {'passive': true});
+
+		this.scrollBar.addEventListener('mousedown', this.startScroll.bind(this));
+		document.addEventListener('mousemove', this.onMouseMove.bind(this), {'passive': true});
+		document.addEventListener('mouseup', this.onMouseUp.bind(this), {'passive': true});
 	}
 
 	/// Tick to pixel
@@ -162,13 +175,14 @@ class VChartView {
 		this.tickUnit = this._getTickUnitFromChart();
 
 		this._resize();
-		this._updateLocation();
 
 		this.lastPlayTick = 0;
 		this._redrawNotes();
 		this._redrawLasers();
 
 		// Call after notes and lasers are drawn, to use updated lastPlayTick.
+		this._updateLocation();
+
 		this._redrawMeasures();
 		this._redrawEditorUI();
 	}
@@ -279,12 +293,9 @@ class VChartView {
 	}
 
 	_resize() {
-		const FULL_HEIGHT = this._updateHeight();
-		const VIEW_BOX_TOP = this._getViewBoxTop();
-		this.svg.size(this.scale.fullWidth, FULL_HEIGHT);
-		this.svg.viewbox(-this.scale.fullWidth/2, VIEW_BOX_TOP, this.scale.fullWidth, FULL_HEIGHT);
+		this.svg.size(this.scale.fullWidth, this._updateHeight());
 
-		this._updateBaseLines();
+		this._updateLocation();
 		this._updateNoteWidth();
 	}
 
@@ -309,10 +320,38 @@ class VChartView {
 			this.setLocation(this.tickLoc-deltaTick);
 		}
 	}
+	startScroll(event) {
+		this._scrolling = true;
+		this._scrollInitMouseY = event.pageY;
+		this._scrollInitTickLoc = this.tickLoc;
+		this.scrollBar.classList.add('drag');
+	}
+	onMouseMove(event) {
+		if(this._scrolling){
+			this.updateLocationFromScrollBar(event.pageY);
+		}
+	}
+	onMouseUp(event) {
+		if(this._scrolling){
+			this._scrolling = false;
+			this.scrollBar.classList.remove('drag');
+			this.updateLocationFromScrollBar(event.pageY);
+		}
+	}
+	updateLocationFromScrollBar(y) {
+		const lastTick = this._getLastTick();
+		const dy = this._scrollInitMouseY - y;
+		const dt = dy * this._scrollTickPerPixel;
+		let newTick = RD(this._scrollInitTickLoc + dt);
+		if(newTick < 0) newTick = 0;
+		if(newTick > lastTick) newTick = lastTick;
+		this.setLocation(newTick);
+	}
 
 	_updateLocation() {
 		this.svg.viewbox(-this.scale.fullWidth/2, this._getViewBoxTop(), this.scale.fullWidth, this._height);
 		this._updateBaseLines();
+		this._updateScrollBar();
 	}
 
 	_updateBaseLines() {
@@ -320,6 +359,28 @@ class VChartView {
 		const VIEW_BOX_BOTTOM = VIEW_BOX_TOP + this._height;
 		this._masterBaseLine.attr('y1', VIEW_BOX_BOTTOM > 0 ? 0 : VIEW_BOX_BOTTOM);
 		this._masterBaseLine.attr('y2', VIEW_BOX_TOP);
+	}
+
+	_updateScrollBar() {
+		const lastTick = this._getLastTick();
+		if(lastTick === 0) {
+			this.scrollBar.style.display = 'none';
+			return;
+		}
+
+		this.scrollBar.style.display = 'block';
+		this.scrollBar.style.width = `${this.scale.scrollBarWidth}px`;
+
+		let scrollBarHeight = 100;
+		if(scrollBarHeight > this._height){
+			scrollBarHeight = this._height;
+		}
+
+		const scrollBarTop = (this._height - scrollBarHeight) * (1 - this.tickLoc / lastTick);
+		this.scrollBar.style.top = `${scrollBarTop}px`;
+		this.scrollBar.style.height = `${scrollBarHeight}px`;
+
+		this._scrollTickPerPixel = lastTick/(this._height - scrollBarHeight);
 	}
 
 	_requestAnimationFrame(func, priority) {
