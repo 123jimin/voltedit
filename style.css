@@ -35,7 +35,7 @@ div.veditor div.chart div.chart-scrollbar {
 	transition: opacity 200ms ease-out;
 }
 
-div.veditor div.chart div.chart-scrollbar.drag {
+div.veditor div.chart div.chart-scrollbar:hover, div.veditor div.chart div.chart-scrollbar.drag {
 	opacity: 0.8;
 }
 
