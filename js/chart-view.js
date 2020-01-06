@@ -18,6 +18,7 @@ class VChartScale {
 		this.noteWidth = settings.get('editor:note:width');
 		this.btNoteHeight = 2;
 		this.fxNoteHeight = 3;
+		this.laserSlamRatio = 1;
 
 		this.marginSide = settings.get('editor:margin:side');
 		this.marginBottom = settings.get('editor:margin:bottom');
@@ -53,8 +54,8 @@ class VChartScale {
 		this.fullWidth = this.noteWidth*11 + this.marginSide*2;
 		this.elemWidth = this.fullWidth + this.scrollBarWidth;
 
-		this.laserLeft = -2.5*this.noteWidth;
-		this.laserRight = +2.5*this.noteWidth;
+		this.laserPosWidth = 5*this.noteWidth;
+		this.laserSlamHeight = this.laserSlamRatio * this.noteWidth - 2;
 
 		this.laneWidth = 4*this.noteWidth;
 		this.laneLeft = -2*this.noteWidth;
@@ -199,7 +200,7 @@ class VChartView {
 				const len = data[y];
 				this._setLastPlayTick((+y)+len);
 
-				const id = `${type}-${lane}-${y}`;
+				const id = `${type}${lane}_${y}`;
 
 				if(len <= 0) {
 					const note = this._createUse(shortTypeHref, x, RD(-this.t2p(+y)), id);
@@ -222,7 +223,72 @@ class VChartView {
 	}
 
 	_redrawLasers() {
-		// TODO: impl
+		if(!this.editor.chartData) return;
+
+		const noteData = this.editor.chartData.note;
+		if(!noteData) return;
+		
+		const laserData = noteData.laser;
+		if(!laserData) return;
+
+		this._svgGroups.lasers.clear();
+		laserData.forEach((dict, ind) => {
+			const hue = [this.color.hueLaserLeft, this.color.hueLaserRight][ind];
+			for(let y in dict){
+				const id = `laser${ind}_${y}`;
+				this._createLaserPath(id, hue, +y, dict[y]);
+			}
+		});
+	}
+
+	_createLaserPath(id, hue, init, graph) {
+		if(!('v' in graph) || !graph.v.length) return;
+
+		const WIDE = 'wide' in graph ? graph.wide : 1;
+		const LASER_POS_WIDTH = this.scale.laserPosWidth;
+		const HALF_LASER = this.scale.noteWidth/2-0.5;
+		const path = this._createElem('path');
+		path.id = id;
+		path.setAttribute('fill', `hsla(${hue},100%,60%,0.4)`);
+		path.setAttribute('stroke', `hsl(${hue},100%,70%,0.4)`);
+
+		const X = (v) => WIDE*(v-0.5)*LASER_POS_WIDTH;
+		const Y = (ry) => RD(-this.t2p(ry+init)-0.5);
+
+		const rightSide = [], leftSide = [];
+		graph.v.forEach((gp, ind) => {
+			const x = X(gp.v);
+			const y = Y(gp.ry);
+			if(ind === 0){
+				rightSide.push(`M${x+HALF_LASER} ${y}`);
+			}else{
+				rightSide.push(`L${x+HALF_LASER} ${y}`);
+			}
+			leftSide.push(`L${x-HALF_LASER} ${y}`);
+			if('vf' in gp){
+				const xx = X(gp.vf);
+				if(xx > x){
+					rightSide.push(`h${xx-x}v${-this.scale.laserSlamHeight}`);
+					leftSide.push(`L${xx-HALF_LASER} ${y-this.scale.laserSlamHeight}h${x-xx}`);
+				}else{
+					rightSide.push(`v${-this.scale.laserSlamHeight}h${xx-x}`);
+					leftSide.push(`L${xx-HALF_LASER} ${y-this.scale.laserSlamHeight}V${y}`);
+				}
+			}
+		});
+
+		const pathCommands = rightSide;
+		if('vf' in graph.v[graph.v.length-1]){
+			pathCommands.push(`l${-HALF_LASER} ${-HALF_LASER*2}`);
+		}
+		for(let i=leftSide.length; i-->0;){
+			pathCommands.push(leftSide[i]);
+		}
+		pathCommands.push('Z');
+		path.setAttribute('d', pathCommands.join(''));
+		// TODO: draw a header.
+
+		this._svgGroups.lasers.add(path);
 	}
 
 	_redrawMeasures() {
@@ -556,17 +622,21 @@ class VChartView {
 
 	/// Creates a rectangle path (for svgDef)
 	_createRectPath(x, y, w, h) {
-		const path = document.createElementNS(this.svg.node.namespaceURI, 'path');
+		const path = this._createElem('path');
 		path.setAttribute('d', `M${x} ${y}h${w}v${h}h${-w}Z`);
 		return path;
 	}
 
 	_createUse(href, x, y, id) {
-		const use = document.createElementNS(this.svg.node.namespaceURI, 'use');
+		const use = this._createElem('use');
 		use.setAttribute('href', href);
 		use.setAttribute('x', x);
 		use.setAttribute('y', y);
 		use.id = id;
 		return use;
+	}
+
+	_createElem(tag) {
+		return document.createElementNS(this.svg.node.namespaceURI, tag);
 	}
 }
