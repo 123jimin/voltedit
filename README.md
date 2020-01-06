@@ -9,14 +9,15 @@ Currently, these features are available. Note that this editor is in *very* earl
 * Importing KSH files via drag-drop
 	* Currently only notes and beat lines are visible.
 * Exporting to KSON format
-* Scrolling view via mouse wheel
-	* I know that this is quite slow. I'll add other methods for navigating.
+* Scrolling view via scrollbar / mouse wheel
 * Intuitive ribbon UI
 	* Editor settings, saved via `localStorage`
 * Support for English and Korean
 
 ## Planned Features
-These are planned features, as of 05 Jan 2020.
+These are planned features, as of 06 Jan 2020.
+
+Also see the [milestones page](https://github.com/123jimin/voltedit/milestones).
 
 ### Goal
 * KSH/KSON editor which can replace current kshoot editor
@@ -26,34 +27,33 @@ These are planned features, as of 05 Jan 2020.
 * kson-centric, but can export to ksh with some degrade
 * Multilingual (en and ko during development)
 
-### Currently in Development
-These features will be implemented by next weekend.
+### Simple KSH Viewer
+These features will be implemented by this weekend.
 * Displaying lasers
-* Scrollbar for faster navigating
-* Setting editor snap ticks (8th, 12th, 16th, ...)
+* Displaying BPM and time signatures
+* Moving the cursor
 
-### High Priority
+### Simple Chart Creator
 These features will be implemented by this month.
-* BPM and time signature display
-* Reading most of KSH files, including zoom and stop effects
-* Note addition
-
-These features will likely be implemented by Feburary.
-* Reading simple KSON files
-* Keyboard Shortcuts
-* Audio Playback
-* Note deletion, long note edit
-* Displaying most of KSH contents
-
-### Middle Priority
-These features are planned to be implemented by April.
-* Editing lasers with bezier curves
+* Editing notes and lasers
+* Keyboard shortcuts
+* Redo/undo system
+* Reading camera effects of a KSH file
 * Writing KSH file
 * Editing chart metadata
 
+### Middle Priority
+These features will likely be implemented by Feburary.
+* Reading simple KSON files
+* Audio Playback
+
+These features are planned to be implemented by April.
+* Editing lasers with bezier curves
+* Displaying most of KSH contents
+* Editing simple camera effects
+
 These features are planned to be implemented by June.
 * Simple audio effects (filters, gate)
-* Editing simple camera effects
 * Chart linter (detect illegals and semi-illegals)
 * Resolution adjustment
 * Be able to replace kshoot editor for non-effect charts
