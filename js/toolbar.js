@@ -42,59 +42,58 @@ class VToolbar {
 		this._button('toolbar-open', 'toolbar-open-desc', this.editor.showOpenFileDialog);
 		this._button('toolbar-save-kson', 'toolbar-save-kson-desc', this.editor.saveToKSON);
 		this._button('toolbar-save-ksh', 'toolbar-save-ksh-desc', this.editor.saveToKSH);
+		
+		this._bind('toolbar-note-width', 'editor:note:width', (v) => this.editor.view.scale.setNoteWidth(v));
+		this._bind('toolbar-measure-scale', 'editor:measure:scale', (v) => this.editor.view.scale.setMeasureScale(v));
+
+		this._bind('toolbar-columns', 'editor:columns', (v) => this.editor.view.scale.setColumns(v));
 	}
 
 	_setupOptions() {
 		this._bind('toolbar-language-select', 'ui:language', (v) => L10N.l(v));
-		this._bind('toolbar-note-width', 'editor:note:width', (v) => this.editor.view.scale.setNoteWidth(v));
-		this._bind('toolbar-measure-scale', 'editor:measure:scale', (v) => this.editor.view.scale.setMeasureScale(v));
 		this._bind('toolbar-margin-side', 'editor:margin:side', (v) => this.editor.view.scale.setMarginSide(v));
 		this._bind('toolbar-margin-bottom', 'editor:margin:bottom', (v) => this.editor.view.scale.setMarginBottom(v));
 	}
 
 	_button(className, title, onClick) {
-		const elem = this.elem.querySelector(`.${className}`);
-		if(!elem){
-			console.warn(`VToolbar button failed: class ${className} does not exist!`);
-			return;
+		for(let elem of this.elem.querySelectorAll(`.${className}`)){
+			if(title) elem.title = L10N.t(title);
+			elem.addEventListener('click', (event) => {
+				onClick.call(this.editor);
+			});
 		}
-		if(title) elem.title = L10N.t(title);
-		elem.addEventListener('click', (event) => {
-			onClick.call(this.editor);
-		});
 	}
 
 	_bind(className, configName, onChange, validate) {
 		const settings = this.editor.settings;
 		if(!validate) validate = () => true;
 
-		const elem = this.elem.querySelector(`.${className}`);
-		if(!elem){
-			console.warn(`VToolbar bind failed: class ${className} does not exist!`);
-			return;
-		}
+		const elems = this.elem.querySelectorAll(`.${className}`);
+		const isConfig = settings.isConfig(configName);
 
-		switch(elem.tagName.toUpperCase()){
-			case 'SELECT':
-				elem.querySelector(`option[value="${settings.get(configName)}"]`).setAttribute('selected', true);
-				elem.addEventListener('change', (event) => {
-					if(validate(elem.value)){
-						settings.set(configName, elem.value);
-						onChange(elem.value);
-					}
-				});
-				return;
-			case 'INPUT':
-				elem.value = settings.get(configName);
-				elem.title = `${L10N.t('toolbar-default')} ${settings.defaultValue(configName)}`;
-				elem.addEventListener('change', (event) => {
-					if(validate(elem.value)){
-						settings.set(configName, elem.value);
-						onChange(elem.value);
-					}
-				});
-				return;
+		for(let elem of elems.values()){
+			switch(elem.tagName.toUpperCase()){
+				case 'SELECT':
+					if(isConfig) elem.querySelector(`option[value="${settings.get(configName)}"]`).setAttribute('selected', true);
+					elem.addEventListener('change', (event) => {
+						if(validate(elem.value)){
+							if(isConfig) settings.set(configName, elem.value);
+							onChange(elem.value);
+						}
+					});
+					return;
+				case 'INPUT':
+					elem.value = settings.get(configName);
+					if(isConfig) elem.title = `${L10N.t('toolbar-default')} ${settings.defaultValue(configName)}`;
+					elem.addEventListener('change', (event) => {
+						if(validate(elem.value)){
+							if(isConfig) settings.set(configName, elem.value);
+							onChange(elem.value);
+						}
+					});
+					return;
+			}
+			console.warn(`VToolbar bind failed: tag ${elem.tagName} is not well understood.`);
 		}
-		console.warn(`VToolbar bind failed: tag ${elem.tagName} is not well understood.`);
 	}
 }

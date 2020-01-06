@@ -16,7 +16,7 @@ class VChartScale {
 	load() {
 		const settings = this.editor.settings;
 
-		this.columns = 1;
+		this.columns = settings.get('editor:columns');
 		this.noteWidth = settings.get('editor:note:width');
 		this.btNoteHeight = 2;
 		this.fxNoteHeight = 3;
@@ -47,6 +47,11 @@ class VChartScale {
 	}
 	setMeasureScale(value) {
 		this.measureScale = value;
+		this._computeRests();
+		this.view.redraw();
+	}
+	setColumns(value) {
+		this.columns = value;
 		this._computeRests();
 		this.view.redraw();
 	}
@@ -360,6 +365,7 @@ class VChartView {
 
 	_resize() {
 		this.svg.size(this.scale.fullWidth, this._updateHeight());
+		this.elem.style.width = `${this.scale.elemWidth}px`;
 
 		this._updateLocation();
 		this._updateNoteWidth();
@@ -373,7 +379,7 @@ class VChartView {
 			line.x(i*this.scale.noteWidth);
 		});
 
-		// TODO: set other things properly (e.g. measure line, note defs)
+		this._createDefs();
 	}
 	_updateColumnCopies() {
 		if(this._columnCopies.length+1 != this.scale.columns){
@@ -451,7 +457,7 @@ class VChartView {
 		// Scale the scroll bar so that...
 		// 1. it is roughly proportional to how much the chart is visible
 		// 2. it's between 0.05H and 0.9H
-		const visibleTicks = this.p2t(this._height - this.scale.marginBottom) / lastTick;
+		const visibleTicks = this.p2t(this._height*this.scale.columns - this.scale.marginBottom) / lastTick;
 		const scrollBarHeight = RD(this._height*CLIP(visibleTicks, 0.05, 0.9));
 
 		const scrollBarTop = (this._height - scrollBarHeight) * (1 - this.tickLoc / lastTick);
@@ -590,6 +596,9 @@ class VChartView {
 
 	/// Helper function for creating various shapes to be used
 	_createDefs() {
+		this.svg.defs().clear();
+		this._svgDefs = {};
+
 		this._createNoteDefs();
 		this._createLineDefs();
 	}
@@ -597,7 +606,7 @@ class VChartView {
 	/// Helper function for creating note defs
 	_createNoteDefs() {
 		const svgDefs = this.svg.defs();
-		const defs = this._svgDefs = {};
+		const defs = this._svgDefs;
 		const color = this.color;
 
 		const SHORT_BT_HEIGHT = 3;
@@ -640,6 +649,8 @@ class VChartView {
 		const cursor = defs.cursor = svgDefs.line(this.scale.laneLeft*1.5, -0.5, this.scale.laneRight*1.5, -0.5);
 		cursor.id('cursor');
 		cursor.stroke({'width': 1, 'color': color.cursor});
+
+		this._svgGroups.cursor.clear();
 		this._svgGroups.cursor.use(cursor);
 	}
 

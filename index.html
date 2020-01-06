@@ -37,6 +37,28 @@
 							<h4 class='txt-tab-panel-edit'>Edit</h4>
 							<input type='number' min='1' value='16' class='toolbar-edit-snap'/>
 						</div>
+						<div class='toolbar-section'>
+							<h4 class='txt-tab-panel-display'>Display</h4>
+							<table>
+								<tr>
+									<td><label>
+										<span class='txt-toolbar-note-width'>Note width:</span>
+										<input type='number' min='3' class='toolbar-note-width'/>px
+									</label></td>
+									<td><label>
+										<span class='txt-toolbar-columns'>Columns:</span>
+										<input type='number' min='1' max='8' class='toolbar-columns' style="width:2em;"/>
+									</label></td>
+								</tr>
+								<tr>
+									<td><label>
+										<span class='txt-toolbar-measure-scale'>Vertical scale:</span>
+										&times;<input type='number' min='1' class='toolbar-measure-scale'/>
+									</label></td>
+									<td></td>
+								</tr>
+							</table>
+						</div>
 					</div>
 					<div class='toolbar-panel'>
 					</div>
@@ -46,23 +68,15 @@
 					</div>
 					<div class='toolbar-panel'>
 						<div class='toolbar-section'>
-							<h4 class='txt-tab-panel-chart-display-scale'>Chart Display Scale</h4>
+							<h4 class='txt-tab-panel-chart-display-details'>Chart Display Details</h4>
 							<table>
-								<tr>
-									<td><label>
-										<span class='txt-toolbar-note-width'>Note width:</span>
-										<input type='number' min='3' class='toolbar-note-width'/>px
-									</label></td>
-									<td><label>
-										<span class='txt-toolbar-measure-scale'>Measure scale:</span>
-										&times;<input type='number' min='1' class='toolbar-measure-scale'/>
-									</td>
-								</tr>
 								<tr>
 									<td><label>
 										<span class='txt-toolbar-margin-side'>Side margin:</span>
 										<input type='number' min='0' class='toolbar-margin-side'/>px
 									</label></td>
+								</tr>
+								<tr>
 									<td><label>
 										<span class='txt-toolbar-margin-bottom'>Bottom margin:</span>
 										<input type='number' min='0' class='toolbar-margin-bottom'/>px

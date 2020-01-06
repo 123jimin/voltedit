@@ -22,9 +22,12 @@ tab-panel-file
 tab-panel-edit
 	en: Edit
 	ko: 편집
-tab-panel-chart-display-scale
-	en: Chart Display Scale
-	ko: 채보 표시 크기
+tab-panel-display
+	en: Display
+	ko: 표시
+tab-panel-chart-display-details
+	en: Chart Display Details
+	ko: 채보 표시 세부 사항
 tab-panel-chart-display-color
 	en: Chart Display Color
 	ko: 채보 표시 색
@@ -59,8 +62,12 @@ toolbar-note-width
 	en: Note width:
 	ko: 노트 너비:
 toolbar-measure-scale
-	en: Measure scale:
-	ko: 마디 길이:
+	en: Vertical scale:
+	ko: 세로 확대:
+toolbar-columns
+	en: Columns:
+	ko: 행 수:
+
 toolbar-margin-side
 	en: Side margin:
 	ko: 좌우 여백:

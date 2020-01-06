@@ -27,6 +27,7 @@ class VSettings {
 		this._define('editor:margin:side', 15);
 		this._define('editor:margin:bottom', 40);
 		this._define('editor:measure:scale', 20);
+		this._define('editor:columns', 1);
 	}
 
 	_define(key, defaultValue) {
@@ -62,6 +63,10 @@ class VSettings {
 
 	isSet(key) {
 		return key in this.settings;
+	}
+
+	isConfig(key) {
+		return key in this.fields;
 	}
 
 	defaultValue(key) {
