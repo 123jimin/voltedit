@@ -22,6 +22,9 @@ class VChartScale {
 	load() {
 		const settings = this.editor.settings;
 		this.noteWidth = settings.get('editor:note:width');
+		this.btNoteHeight = 2;
+		this.fxNoteHeight = 3;
+
 		this.marginSide = settings.get('editor:margin:side');
 		this.marginBottom = settings.get('editor:margin:bottom');
 		this.measureScale = settings.get('editor:measure:scale');
@@ -99,16 +102,16 @@ class VChartView {
 		this.editor = editor;
 		this.scale = new VChartScale(this);
 		this.color = new VChartColor(this);
-		
+
 		this.elem = editor.elem.querySelector(".chart");
 		this.elem.style.width = `${this.scale.fullWidth}px`;
 
 		this.svg = SVG().addTo(this.elem).size(this.scale.fullWidth, '100%');
 		this.tickUnit = 240*4; /// Ticks per *whole* note
-		
+
 		this.tickLoc = 0; /// Current display location (in ticks)
 		this.cursorLoc = 0; /// Current cursor location (in ticks)
-		
+
 		this.lastPlayTick = 0; /// Last tick of notes/laser
 
 		this._prevNoteWidth = this.scale.noteWidth;
@@ -153,7 +156,7 @@ class VChartView {
 	redraw() {
 		this._requestAnimationFrame(this._redraw, CHARTV_RENDER_PRIORITY.REDRAW);
 	}
-	
+
 	/// Clear and redraw everything.
 	_redraw() {
 		this.tickUnit = this._getTickUnitFromChart();
@@ -181,33 +184,32 @@ class VChartView {
 		const noteData = this.editor.chartData.note;
 		if(!noteData) return;
 
-		const putNotes = (type, shorts, longs, shortDef, longDef, lane, x, data) => {
+		const putNotes = (type, shorts, longs, lane, x, data) => {
+			const shortTypeHref = `#${type}Short`;
+			const longTypeHref = `#${type}Long`;
 			for(let y in data) {
 				const len = data[y];
-				let note = null;
-
 				this._setLastPlayTick((+y)+len);
 
-				if(len <= 0) {
-					note = shorts.use(shortDef).move(x, -this.t2p(+y)-2);
-				}else{
-					note = longs.use(longDef);
-					note.transform({'scaleY': this.t2p(len),
-						'translateX': x+1, 'translateY': -this.t2p(+y)-this.t2p(len)/2});
-				}
+				const id = `${type}-${lane}-${y}`;
 
-				note.id(`${type}-${lane}-${y}`);
+				if(len <= 0) {
+					const note = this._createUse(shortTypeHref, x, RD(-this.t2p(+y)), id);
+					shorts.add(note);
+				}else{
+					const note = this._createUse(longTypeHref, 0, 0, id);
+					note.setAttribute('transform', `translate(${x} ${RD(-this.t2p(+y))}) scale(1 ${this.t2p(len)})`);
+					longs.add(note);
+				}
 			}
 		};
 
 		noteData.bt.forEach((btData, lane) => {
-			putNotes('bt', btShorts, btLongs, this._svgDefs.btShort, this._svgDefs.btLong,
-				lane, (lane-2)*this.scale.noteWidth, btData);
+			putNotes('bt', btShorts, btLongs, lane, (lane-2)*this.scale.noteWidth, btData);
 		});
 
 		noteData.fx.forEach((fxData, lane) => {
-			putNotes('fx', fxShorts, fxLongs, this._svgDefs.fxShort, this._svgDefs.fxLong,
-				lane, (lane-1)*this.scale.noteWidth*2, fxData);
+			putNotes('fx', fxShorts, fxLongs, lane, (lane-1)*this.scale.noteWidth*2, fxData);
 		});
 	}
 
@@ -257,7 +259,7 @@ class VChartView {
 			for(let i=1; i<currTimeSig.v.n; ++i) {
 				measureLines.use(beatLineDef).y(RD(-this.t2p(measureTick + i*(this.tickUnit / currTimeSig.v.d))));
 			}
-			
+
 			++measureIndex;
 			measureTick += currMeasureLength;
 		}
@@ -270,7 +272,7 @@ class VChartView {
 	_redrawCursor() {
 		this._svgGroups.cursor.attr('y', RD(-this.t2p(this.cursorLoc)));
 	}
-	
+
 	/// Update the size of the SVG, but do not redraw everything.
 	resize() {
 		this._requestAnimationFrame(this._resize, CHARTV_RENDER_PRIORITY.RESIZE);
@@ -399,7 +401,7 @@ class VChartView {
 
 		return (this.editor.chartData.beat.resolution || DEFAULT_RESOLUTION) * 4;
 	}
-	
+
 	/// Helper function for creating structures for the SVG.
 	_createGroups() {
 		const baseLines = this.svg.group().addClass('baseLines').attr('buffered-rendering', 'static');
@@ -434,14 +436,14 @@ class VChartView {
 		// long notes are drawn first
 		{
 			const notes = groups.notes;
-			
+
 			groups.fxLongs = notes.group().addClass('fxLongs');
 			groups.btLongs = notes.group().addClass('btLongs');
 			groups.fxShorts = notes.group().addClass('fxShorts');
 			groups.btShorts = notes.group().addClass('btShorts');
 		}
 	}
-	
+
 	/// Helper function for creating various shapes to be used
 	_createDefs() {
 		this._createNoteDefs();
@@ -453,29 +455,25 @@ class VChartView {
 		const svgDefs = this.svg.defs();
 		const defs = this._svgDefs = {};
 		const color = this.color;
-		
+
 		const SHORT_BT_HEIGHT = 3;
 		const SHORT_FX_HEIGHT = 4;
-		
-		// btShort
-		const btShort = defs.btShort = svgDefs.rect(this.scale.noteWidth, SHORT_BT_HEIGHT-1);
-		btShort.id('btShort');
-		btShort.fill(color.btFill).stroke({'color': color.btBorder, 'width': 1});
 
-		// fxShort
-		const fxShort = defs.fxShort = svgDefs.rect(this.scale.noteWidth*2, SHORT_FX_HEIGHT-1);
-		fxShort.id('fxShort');
-		fxShort.fill(color.fxFill).stroke({'color': color.fxBorder, 'width': 1});
+		const createRectDef = (id, x, y, w, h, fill, stroke) => {
+			const rect = defs[id] = this._createRectPath(x, y, w, h);
+			rect.id = id;
+			rect.setAttribute('fill', fill);
+			if(stroke){
+				rect.setAttribute('stroke-width', 1);
+				rect.setAttribute('stroke', stroke);
+			}
+			svgDefs.add(rect);
+		};
 
-		// btLong
-		const btLong = defs.btLong = svgDefs.rect(this.scale.noteWidth-2, 1);
-		btLong.id('btLong');
-		btLong.fill(color.btLong);
-
-		// fxLong
-		const fxLong = defs.fxLong = svgDefs.rect(this.scale.noteWidth*2, 1);
-		fxLong.id('fxLong');
-		fxLong.fill(color.fxLong);
+		createRectDef('btShort', 0, -0.5, this.scale.noteWidth, -this.scale.btNoteHeight, color.btFill, color.btBorder);
+		createRectDef('fxShort', 0, -0.5, this.scale.noteWidth*2, -this.scale.fxNoteHeight, color.fxFill, color.fxBorder);
+		createRectDef('btLong', 1, 0, this.scale.noteWidth-2, -1, color.btLong);
+		createRectDef('fxLong', 0, 0, this.scale.noteWidth*2, -1, color.fxLong);
 	}
 
 	/// Helper function for creating measure lines and cursors
@@ -499,5 +497,21 @@ class VChartView {
 		cursor.id('cursor');
 		cursor.stroke({'width': 1, 'color': color.cursor});
 		this._svgGroups.cursor.use(cursor);
+	}
+
+	/// Creates a rectangle path (for svgDef)
+	_createRectPath(x, y, w, h) {
+		const path = document.createElementNS(this.svg.node.namespaceURI, 'path');
+		path.setAttribute('d', `M${x} ${y}h${w}v${h}h${-w}Z`);
+		return path;
+	}
+
+	_createUse(href, x, y, id) {
+		const use = document.createElementNS(this.svg.node.namespaceURI, 'use');
+		use.setAttribute('href', href);
+		use.setAttribute('x', x);
+		use.setAttribute('y', y);
+		use.id = id;
+		return use;
 	}
 }
