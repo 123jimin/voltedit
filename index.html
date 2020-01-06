@@ -9,7 +9,7 @@
 		<meta name='viewport' content="width=device-width"/>
 		<meta name='description' content="VOLTEdit: web-based KSON chart editor"/>
 		<title>VOLTEdit</title>
-		<link rel='stylesheet' href="//common.0xF.kr/css/reset.css"/>
+		<link rel='stylesheet' href="https://common.0xF.kr/css/reset.css"/>
 		<link rel='stylesheet' href="./style.css"/>
 		<link rel='stylesheet' href="./toolbar.css"/>
 	</head>
@@ -32,6 +32,10 @@
 							<button class='toolbar-open' style='background-image:url("./icon/add-file.png");'>Open</button>
 							<button class='toolbar-save-kson' style='background-image:url("./icon/download.png");'>KSON</button>
 							<button class='toolbar-save-ksh' style='background-image:url("./icon/download.png");'>KSH</button>
+						</div>
+						<div class='toolbar-section'>
+							<h4 class='txt-tab-panel-edit'>Edit</h4>
+							<input type='number' min='1' value='16' class='toolbar-edit-snap'/>
 						</div>
 					</div>
 					<div class='toolbar-panel'>
@@ -79,7 +83,9 @@
 					</div>
 				</div>
 			</div>
-			<div class='chart'></div>
+			<div class='chart'>
+				<div class='chart-scrollbar'></div>
+			</div>
 			<div class='drop-file-indicator'>
 				<span class='txt-drop-file-here'>Drop to Open</span>
 			</div>
@@ -87,7 +93,7 @@
 
 		<!-- External Libraries (These are not written by me) -->
 		<!-- for live preview <script src="//common.0xF.kr/js/three.min.js"></script> -->
-		<script src="//common.0xF.kr/js/svg.min.js"></script>
+		<script src="https://common.0xF.kr/js/svg.min.js"></script>
 
 		<!-- For Localization -->
 		<script src="./translations.js"></script>
