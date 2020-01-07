@@ -62,7 +62,7 @@ class VChartScale {
 		this.columnOffset = this.noteWidth*11+this.marginSide;
 		this.fullWidth = this.columnOffset*this.columns + this.marginSide;
 		this.elemWidth = this.fullWidth + this.scrollBarWidth;
-		
+
 		this.viewBoxLeft = -(this.noteWidth*5.5+this.marginSide);
 
 		this.laserPosWidth = 5*this.noteWidth;
@@ -124,7 +124,13 @@ class VChartView {
 		this.tickUnit = 240*4; /// Ticks per *whole* note
 
 		this.tickLoc = 0; /// Current display location (in ticks)
-		this.cursorLoc = 0; /// Current cursor location (in ticks)
+
+		// Two numbers are used for range selection.
+		// Usually, their values are identical.
+		this.cursorLowLoc = 0; /// Current low cursor location (in ticks)
+		this.cursorHighLoc = 0; /// Current high cursor location (in ticks)
+
+		this.cursorStep = this.tickUnit/16;
 
 		this.lastPlayTick = 0; /// Last tick of notes/laser
 
@@ -136,8 +142,8 @@ class VChartView {
 		this._masterBaseLine = null;
 		this._baseLines = [];
 		this._columnCopies = [];
-		this._createGroups();
 		this._createDefs();
+		this._createGroups();
 
 		this._currRender = [];
 		this._currRenderPriority = CHARTV_RENDER_PRIORITY.NONE;
@@ -145,6 +151,7 @@ class VChartView {
 		this._redraw();
 
 		this.elem.addEventListener('wheel', this.onWheel.bind(this), {'passive': true});
+		this.elem.addEventListener('mousedown', this.onMouseDown.bind(this));
 
 		this.scrollBar.addEventListener('mousedown', this.startScroll.bind(this));
 		document.addEventListener('mousemove', this.onMouseMove.bind(this), {'passive': true});
@@ -168,7 +175,7 @@ class VChartView {
 	}
 
 	setCursor(cursorLoc) {
-		this.cursorLoc = isFinite(cursorLoc) && cursorLoc > 0 ? cursorLoc : 0;
+		this.cursorLowLoc = this.cursorHighLoc = isFinite(cursorLoc) && cursorLoc > 0 ? cursorLoc : 0;
 		this._requestAnimationFrame(this._redrawCursor, CHARTV_RENDER_PRIORITY.MINOR);
 	}
 
@@ -238,7 +245,7 @@ class VChartView {
 
 		const noteData = this.editor.chartData.note;
 		if(!noteData) return;
-		
+
 		const laserData = noteData.laser;
 		if(!laserData) return;
 
@@ -355,7 +362,8 @@ class VChartView {
 	}
 
 	_redrawCursor() {
-		this._svgGroups.cursor.attr('y', RD(-this.t2p(this.cursorLoc)));
+		this._svgGroups.cursorLow.attr('y', RD(-this.t2p(this.cursorLowLoc)));
+		this._svgGroups.cursorHigh.attr('y', RD(-this.t2p(this.cursorHighLoc)));
 	}
 
 	/// Update the size of the SVG, but do not redraw everything.
@@ -396,7 +404,32 @@ class VChartView {
 			this._columnCopies[i-1].attr({'x': this.scale.columnOffset*i, 'y': this._height*i});
 		}
 	}
+	startScroll(event) {
+		this._scrolling = true;
+		this._scrollInitMouseY = event.pageY;
+		this._scrollInitTickLoc = this.tickLoc;
+		this.scrollBar.classList.add('drag');
+	}
 
+	onMouseDown(event) {
+		if(this.svg.node.contains(event.target)){
+			this.setCursorWithMouse(event.offsetX, event.offsetY);
+		}
+	}
+	onMouseMove(event) {
+		if(event.which === 0) return;
+		if(this._scrolling){
+			this.updateLocationFromScrollBar(event.pageY);
+			return;
+		}
+	}
+	onMouseUp(event) {
+		if(this._scrolling){
+			this._scrolling = false;
+			this.scrollBar.classList.remove('drag');
+			this.updateLocationFromScrollBar(event.pageY);
+		}
+	}
 	onWheel(event) {
 		if(!this.editor.chartData || !this.editor.chartData.beat) return;
 
@@ -407,23 +440,17 @@ class VChartView {
 			this.setLocation(this.tickLoc-deltaTick);
 		}
 	}
-	startScroll(event) {
-		this._scrolling = true;
-		this._scrollInitMouseY = event.pageY;
-		this._scrollInitTickLoc = this.tickLoc;
-		this.scrollBar.classList.add('drag');
+	setCursorWithMouse(x, y) {
+		let clickTick = this.getTick(x, y);
+		clickTick = Math.round(clickTick);
+		this.setCursor(clickTick);
 	}
-	onMouseMove(event) {
-		if(this._scrolling){
-			this.updateLocationFromScrollBar(event.pageY);
-		}
-	}
-	onMouseUp(event) {
-		if(this._scrolling){
-			this._scrolling = false;
-			this.scrollBar.classList.remove('drag');
-			this.updateLocationFromScrollBar(event.pageY);
-		}
+	getTick(x, y) {
+		let column = Math.floor(x/this.scale.columnOffset);
+		if(column >= this.scale.columns) column = this.scale.columns-1;
+
+		const effectivePos = y-column*this._height;
+		return -this.p2t(this._getViewBoxTop()+effectivePos);
 	}
 	updateLocationFromScrollBar(y) {
 		const lastTick = this._getLastTick();
@@ -439,11 +466,9 @@ class VChartView {
 		this._updateBaseLines();
 		this._updateScrollBar();
 	}
-
 	_updateBaseLines() {
 		this._masterBaseLine.attr({'y1':0, 'y2': this._getViewBoxTop()-this._height*(this.scale.columns-1)});
 	}
-
 	_updateScrollBar() {
 		const lastTick = this._getLastTick();
 		if(lastTick === 0) {
@@ -553,6 +578,7 @@ class VChartView {
 		const baseLines = column.group().addClass('baseLines').attr('buffered-rendering', 'static');
 		// Chart contents which must be moved together
 		const chartGroup = column.group().addClass('chartGroup').attr('buffered-rendering', 'static');
+		let cursors = null;
 		const groups = this._svgGroups = {
 			// Background
 			'baseLines': baseLines,
@@ -563,8 +589,10 @@ class VChartView {
 			'lasers': chartGroup.group().addClass('lasers'),
 			// Editor UI
 			'rangeSelection': column.group().addClass('rangeSelection'),
-			'cursor': column.group().addClass('cursor').attr('buffered-rendering', 'static'),
-			
+			'cursors': cursors = column.group().addClass('cursors'),
+			'cursorLow': cursors.use(this._svgDefs.cursor),
+			'cursorHigh': cursors.use(this._svgDefs.cursor),
+
 			// Columns
 			'column': column,
 			'columnCopy': this.svg.group().addClass('columnCopy').attr('buffered-rendering', 'static'),
@@ -649,9 +677,6 @@ class VChartView {
 		const cursor = defs.cursor = svgDefs.line(this.scale.laneLeft*1.5, -0.5, this.scale.laneRight*1.5, -0.5);
 		cursor.id('cursor');
 		cursor.stroke({'width': 1, 'color': color.cursor});
-
-		this._svgGroups.cursor.clear();
-		this._svgGroups.cursor.use(cursor);
 	}
 
 	/// Creates a rectangle path (for svgDef)
