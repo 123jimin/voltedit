@@ -51,7 +51,7 @@ class VToolbar {
 		this._bind('toolbar-note-width', 'editor:note:width', (v) => this.editor.view.scale.setNoteWidth(+v));
 		this._bind('toolbar-measure-scale', 'editor:measure:scale', (v) => this.editor.view.scale.setMeasureScale(+v));
 		this._bind('toolbar-columns', 'editor:columns', (v) => this.editor.view.scale.setColumns(+v),
-			(v) => isFinite(v) && v >= 1 && v <= 8 && v === Math.round(v));
+			(v) => isFinite(+v) && +v >= 1 && +v <= 8 && +v === Math.round(+v));
 	}
 
 	_setupOptions() {
