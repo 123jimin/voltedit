@@ -7,7 +7,7 @@ Used "Office S" icons of [icons8](https://icons8.com).
 Currently, these features are available. Note that this editor is in *very* early stage of active development now.
 
 * Importing KSH files via drag-drop
-	* Currently only notes and beat lines are visible.
+	* Currently only notes, lasers, and beat lines are visible.
 * Exporting to KSON format
 * Scrolling view via scrollbar / mouse wheel
 * Intuitive ribbon UI
@@ -27,25 +27,24 @@ Also see the [milestones page](https://github.com/123jimin/voltedit/milestones).
 * kson-centric, but can export to ksh with some degrade
 * Multilingual (en and ko during development)
 
-### Simple KSH Viewer
-These features will be implemented by this weekend.
-* Displaying lasers
-* Displaying BPM and time signatures
-* Moving the cursor
-
 ### Simple Chart Creator
+These features will be implemented by this weekend.
+* Displaying BPM and time signatures
+* Redo/undo system
+* Keyboard shortcuts
+* Reading simple KSON files
+* Adding notes
+
 These features will be implemented by this month.
 * Editing notes and lasers
-* Keyboard shortcuts
-* Redo/undo system
 * Reading camera effects of a KSH file
 * Writing KSH file
 * Editing chart metadata
 
 ### Middle Priority
 These features will likely be implemented by Feburary.
-* Reading simple KSON files
 * Audio Playback
+* Reading FX/laser filter/laser volume effects of a KSH file
 
 These features are planned to be implemented by April.
 * Editing lasers with bezier curves
