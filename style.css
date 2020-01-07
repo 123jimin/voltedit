@@ -25,6 +25,19 @@ div.veditor div.chart {
 	overflow: hidden;
 }
 
+div.veditor div.chart svg {
+	position: absolute;
+	left: 0; top: 0;
+}
+
+div.veditor div.chart svg.chart-baseline {
+	z-index: 99;
+}
+
+div.veditor div.chart svg.chart-main {
+	z-index: 100;
+}
+
 div.veditor div.chart div.chart-scrollbar {
 	position: absolute;
 	right: 0;

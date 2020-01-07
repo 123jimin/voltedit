@@ -120,7 +120,8 @@ class VChartView {
 		this._scrollInitTickLoc = 0;
 		this._scrollInitMouseY = 0;
 
-		this.svg = SVG().addTo(this.elem).size(this.scale.fullWidth, '100%');
+		this.svgBaseLines = SVG().addTo(this.elem).size(this.scale.fullWidth, '100%').addClass('chart-baseline');
+		this.svg = SVG().addTo(this.elem).size(this.scale.fullWidth, '100%').addClass('chart-main');
 		this.tickUnit = 240*4; /// Ticks per *whole* note
 
 		this.tickLoc = 0; /// Current display location (in ticks)
@@ -137,11 +138,17 @@ class VChartView {
 		this._height = 0;
 		this._svgGroups = null;
 		this._svgDefs = null;
-		this._masterBaseLine = null;
-		this._baseLines = [];
+		this._baseLines = {
+			'master': null, 'def': null,
+			'elem': null, 'lines': [],
+			'copies': null, 'copiesArr': [],
+			'currHeight': 100,
+			'bottomOffset': 0,
+		};
 		this._columnCopies = [];
 		this._createDefs();
 		this._createGroups();
+		this._createBaseLines();
 
 		this._currRender = [];
 		this._currRenderPriority = CHARTV_RENDER_PRIORITY.NONE;
@@ -183,7 +190,7 @@ class VChartView {
 
 	/// Clear and redraw everything.
 	_redraw() {
-		this.tickUnit = this.editor.getTicksPerWholeNote();
+		this.tickUnit = this.editor.getTicksPerWholeNote() || 240*4;
 
 		this._resize();
 
@@ -300,6 +307,7 @@ class VChartView {
 		for(let i=leftSide.length; i-->0;){
 			pathCommands.push(leftSide[i]);
 		}
+			
 		pathCommands.push('Z');
 		path.setAttribute('d', pathCommands.join(''));
 		// TODO: draw a header.
@@ -371,6 +379,8 @@ class VChartView {
 
 	_resize() {
 		this.svg.size(this.scale.fullWidth, this._updateHeight());
+		this.svgBaseLines.size(this.scale.fullWidth, this._height);
+		this.svgBaseLines.viewbox(this.scale.viewBoxLeft, 0, this.scale.fullWidth, this._height);
 		this.elem.style.width = `${this.scale.elemWidth}px`;
 
 		this._updateLocation();
@@ -381,7 +391,7 @@ class VChartView {
 		if(this._prevNoteWidth === this.scale.noteWidth) return;
 		this._prevNoteWidth = this.scale.noteWidth;
 
-		this._baseLines.forEach(([i, line]) => {
+		this._baseLines.lines.forEach(([i, line]) => {
 			line.x(i*this.scale.noteWidth);
 		});
 
@@ -390,16 +400,22 @@ class VChartView {
 	_updateColumnCopies() {
 		if(this._columnCopies.length+1 != this.scale.columns){
 			this._columnCopies = [];
+
 			const columnCopy = this._svgGroups.columnCopy.clear();
 			const column = this._svgGroups.column;
 
+			this._baseLines.copiesArr = [];
+			this._baseLines.copies.clear();
+
 			for(let i=1; i<this.scale.columns; ++i){
 				this._columnCopies.push(columnCopy.use(column));
+				this._baseLines.copiesArr.push(this._baseLines.copies.use(this._baseLines.def));
 			}
 		}
 
 		for(let i=1; i<this.scale.columns; ++i){
 			this._columnCopies[i-1].attr({'x': this.scale.columnOffset*i, 'y': this._height*i});
+			this._baseLines.copiesArr[i-1].attr({'x': this.scale.columnOffset*i});
 		}
 	}
 	startScroll(event) {
@@ -410,7 +426,7 @@ class VChartView {
 	}
 
 	onMouseDown(event) {
-		if(this.svg.node.contains(event.target)){
+		if(this.svg.node.contains(event.target) || this.svgBaseLines.node.contains(event.target)){
 			this.setCursorWithMouse(event.offsetX, event.offsetY);
 		}
 	}
@@ -465,7 +481,17 @@ class VChartView {
 		this._updateScrollBar();
 	}
 	_updateBaseLines() {
-		this._masterBaseLine.attr({'y1':0, 'y2': this._getViewBoxTop()-this._height*(this.scale.columns-1)});
+		if(this._baseLines.currHeight != this._height){
+			this._baseLines.currHeight = this._height;
+			this._baseLines.master.attr({'y2': this._height});
+		}
+
+		let bottomOffset = this.scale.marginBottom - this.t2p(this.tickLoc);
+		if(bottomOffset < 0) bottomOffset = 0;
+		if(this._baseLines.bottomOffset != bottomOffset){
+			this._baseLines.bottomOffset = bottomOffset;
+			this._baseLines.elem.attr({'y': -bottomOffset});
+		}
 	}
 	_updateScrollBar() {
 		const lastTick = this._getLastTick();
@@ -563,13 +589,11 @@ class VChartView {
 	/// Helper function for creating structures for the SVG.
 	_createGroups() {
 		const column = this.svg.group().addClass('column').id('column');
-		const baseLines = column.group().addClass('baseLines').attr('buffered-rendering', 'static');
 		// Chart contents which must be moved together
 		const chartGroup = column.group().addClass('chartGroup').attr('buffered-rendering', 'static');
 		let cursors = null;
 		const groups = this._svgGroups = {
 			// Background
-			'baseLines': baseLines,
 			'measureLines': chartGroup.group().addClass('measureLines'),
 			'measureProps': chartGroup.group().addClass('measureProps'),
 			// Notes and lasers
@@ -586,28 +610,32 @@ class VChartView {
 			'columnCopy': this.svg.group().addClass('columnCopy').attr('buffered-rendering', 'static'),
 		};
 
-		// baseLines
-		{
-			const masterBaseLine = this._masterBaseLine = groups.baseLines.line(0, this.scale.marginBottom, 0, 0 /* will be adjusted on resize */);
-			masterBaseLine.addClass('baseLine').stroke({'color': this.color.baseLines, 'width': 1});
-
-			for(let i=-2; i<=2; ++i) {
-				if(i === 0) continue;
-				const line = groups.baseLines.use(masterBaseLine).x(i*this.scale.noteWidth);
-				this._baseLines.push([i, line]);
-			}
-		}
-
 		// notes
-		// long notes are drawn first
-		{
-			const notes = groups.notes;
+		// long notes are drawn below short notes
+			
+		const notes = groups.notes;
 
-			groups.fxLongs = notes.group().addClass('fxLongs');
-			groups.btLongs = notes.group().addClass('btLongs');
-			groups.fxShorts = notes.group().addClass('fxShorts');
-			groups.btShorts = notes.group().addClass('btShorts');
+		groups.fxLongs = notes.group().addClass('fxLongs');
+		groups.btLongs = notes.group().addClass('btLongs');
+		groups.fxShorts = notes.group().addClass('fxShorts');
+		groups.btShorts = notes.group().addClass('btShorts');
+	}
+
+	/// Helper function for creating baselines
+	_createBaseLines() {
+		const baseLinesDef = this._baseLines.def = this.svgBaseLines.defs().group();
+		baseLinesDef.id('baseLines').attr('buffered-rendering', 'static');
+		const masterBaseLine = this._baseLines.master = baseLinesDef.line(0, 0, 0, 100 /* will be adjusted on resize */);;
+		masterBaseLine.addClass('baseLine').stroke({'color': this.color.baseLines, 'width': 1});
+
+		for(let i=-2; i<=2; ++i) {
+			if(i === 0) continue;
+			const line = baseLinesDef.use(masterBaseLine).x(i*this.scale.noteWidth);
+			this._baseLines.lines.push([i, line]);
 		}
+		
+		this._baseLines.elem = this.svgBaseLines.use(baseLinesDef);
+		this._baseLines.copies = this.svgBaseLines.group().id('baseLineCopies');
 	}
 
 	/// Helper function for creating various shapes to be used
