@@ -42,17 +42,21 @@ class VToolbar {
 		this._button('toolbar-open', 'toolbar-open-desc', this.editor.showOpenFileDialog);
 		this._button('toolbar-save-kson', 'toolbar-save-kson-desc', this.editor.saveToKSON);
 		this._button('toolbar-save-ksh', 'toolbar-save-ksh-desc', this.editor.saveToKSH);
-		
-		this._bind('toolbar-note-width', 'editor:note:width', (v) => this.editor.view.scale.setNoteWidth(v));
-		this._bind('toolbar-measure-scale', 'editor:measure:scale', (v) => this.editor.view.scale.setMeasureScale(v));
 
-		this._bind('toolbar-columns', 'editor:columns', (v) => this.editor.view.scale.setColumns(v));
+		this._bind('toolbar-edit-snap', null, (v) => {
+			v = +v;
+			if(v === this.editor.editSnap) return;
+			this.editor.setEditSnap(v);
+		});
+		this._bind('toolbar-note-width', 'editor:note:width', (v) => this.editor.view.scale.setNoteWidth(+v));
+		this._bind('toolbar-measure-scale', 'editor:measure:scale', (v) => this.editor.view.scale.setMeasureScale(+v));
+		this._bind('toolbar-columns', 'editor:columns', (v) => this.editor.view.scale.setColumns(+v));
 	}
 
 	_setupOptions() {
 		this._bind('toolbar-language-select', 'ui:language', (v) => L10N.l(v));
-		this._bind('toolbar-margin-side', 'editor:margin:side', (v) => this.editor.view.scale.setMarginSide(v));
-		this._bind('toolbar-margin-bottom', 'editor:margin:bottom', (v) => this.editor.view.scale.setMarginBottom(v));
+		this._bind('toolbar-margin-side', 'editor:margin:side', (v) => this.editor.view.scale.setMarginSide(+v));
+		this._bind('toolbar-margin-bottom', 'editor:margin:bottom', (v) => this.editor.view.scale.setMarginBottom(+v));
 	}
 
 	_button(className, title, onClick) {
@@ -70,6 +74,8 @@ class VToolbar {
 
 		const elems = this.elem.querySelectorAll(`.${className}`);
 		const isConfig = settings.isConfig(configName);
+		let initCalled = false;
+		const initValue = (v) => { if(!initCalled){ initCalled = true; onChange(v); } };
 
 		for(let elem of elems.values()){
 			switch(elem.tagName.toUpperCase()){
@@ -81,9 +87,10 @@ class VToolbar {
 							onChange(elem.value);
 						}
 					});
+					initValue(elem.value);
 					return;
 				case 'INPUT':
-					elem.value = settings.get(configName);
+					if(isConfig) elem.value = settings.get(configName);
 					if(isConfig) elem.title = `${L10N.t('toolbar-default')} ${settings.defaultValue(configName)}`;
 					elem.addEventListener('change', (event) => {
 						if(validate(elem.value)){
@@ -91,6 +98,7 @@ class VToolbar {
 							onChange(elem.value);
 						}
 					});
+					initValue(elem.value);
 					return;
 			}
 			console.warn(`VToolbar bind failed: tag ${elem.tagName} is not well understood.`);

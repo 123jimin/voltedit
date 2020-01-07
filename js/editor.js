@@ -13,9 +13,12 @@ class VEditor {
 	constructor(elem) {
 		this.elem = elem;
 		this.chartData = null;
-		
+
 		this.settings = new VSettings();
 		L10N.l(this.settings.get('ui:language'));
+
+		this._editSnapBeat = 16; /// unit: 4th, 8th, 12th, ... beat (not tick)
+		this._editSnapTick = 1; /// unit: tick
 
 		this.view = new VChartView(this);
 		this.toolbar = new VToolbar(this);
@@ -23,6 +26,52 @@ class VEditor {
 		this._dropFileIndicator = elem.querySelector('.drop-file-indicator');
 		this._dropFileIndicatorShown = false;
 		this._addEventListeners();
+	}
+
+	getTicksPerWholeNote() {
+		if(!this.chartData) return 0;
+		return ((this.chartData.beat && this.chartData.beat.resolution) || 240)*4;
+	}
+	setEditSnap(snap) {
+		const oldSnapBeat = this._editSnapBeat;
+		this._setEditSnap(snap);
+		const resolution = this.getTicksPerWholeNote();
+		if(resolution && resolution%this._editSnapBeat === 0)
+			this._editSnapTick = resolution/this._editSnapBeat;
+		else
+			this._editSnapTick = 1;
+
+		if(oldSnapBeat !== this._editSnapBeat || this._editSnapBeat !== snap){
+			for(let elem of this.elem.querySelectorAll(".toolbar .toolbar-edit-snap")){
+				elem.value = this._editSnapBeat;
+			}
+		}
+	}
+	_setEditSnap(snap) {
+		if(!this.chartData){
+			this._editSnapBeat = CLIP(Math.round(snap), 1, 64);
+			return;
+		}
+		if(snap>0 && isFinite(snap) && snap === 0|snap && this.chartData){
+			const resolution = this.getTicksPerWholeNote();
+			const dir = snap < this._editSnapBeat ? -1 : +1;
+			if(snap > resolution) snap = resolution;
+			if(resolution % snap === 0){
+				this._editSnapBeat = snap;
+				return;
+			}
+			for(let i=snap-dir; i!=this._editSnapBeat; i-=dir) if(resolution%i === 0){
+				this._editSnapBeat = i;
+				return;
+			}
+			for(let i=snap+dir; i>0 && i<=resolution; i+=dir) if(resolution%i === 0){
+				this._editSnapBeat = i;
+				return;
+			}
+		}
+	}
+	updateEditSnap() {
+		this.setEditSnap(this._editSnapBeat);
 	}
 
 	onResize() {
@@ -95,8 +144,9 @@ class VEditor {
 
 		const trimmedChartName = this.chartData.meta.title.trim();
 		const chartDifficulty = ['NOV','ADV','EXH','INF'][this.chartData.meta.difficulty.idx];
-		
+
 		this.setChartTitle(`${trimmedChartName} [${chartDifficulty}]`);
+		this.updateEditSnap();
 	}
 	setChartTitle(title) {
 		if(title === ""){

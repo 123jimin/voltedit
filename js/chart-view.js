@@ -130,8 +130,6 @@ class VChartView {
 		this.cursorLowLoc = 0; /// Current low cursor location (in ticks)
 		this.cursorHighLoc = 0; /// Current high cursor location (in ticks)
 
-		this.cursorStep = this.tickUnit/16;
-
 		this.lastPlayTick = 0; /// Last tick of notes/laser
 
 		this._prevNoteWidth = this.scale.noteWidth;
@@ -185,7 +183,7 @@ class VChartView {
 
 	/// Clear and redraw everything.
 	_redraw() {
-		this.tickUnit = this._getTickUnitFromChart();
+		this.tickUnit = this.editor.getTicksPerWholeNote();
 
 		this._resize();
 
@@ -442,7 +440,7 @@ class VChartView {
 	}
 	setCursorWithMouse(x, y) {
 		let clickTick = this.getTick(x, y);
-		clickTick = Math.round(clickTick);
+		clickTick = ALIGN(this.editor._editSnapTick, clickTick);
 		this.setCursor(clickTick);
 	}
 	getTick(x, y) {
@@ -560,16 +558,6 @@ class VChartView {
 
 	_getViewBoxTop() {
 		return Math.round(this.scale.marginBottom-this.t2p(this.tickLoc)-this._height);
-	}
-
-	_getTickUnitFromChart() {
-		const DEFAULT_RESOLUTION = 240;
-
-		if(!this.editor.chartData || !this.editor.chartData.beat) {
-			return DEFAULT_RESOLUTION * 4;
-		}
-
-		return (this.editor.chartData.beat.resolution || DEFAULT_RESOLUTION) * 4;
 	}
 
 	/// Helper function for creating structures for the SVG.

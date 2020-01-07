@@ -7,6 +7,11 @@ div.veditor div.toolbar button {
 	cursor: pointer;
 }
 
+div.veditor div.toolbar input[type="number"].toolbar-edit-snap {
+	font-size: 2.5em;
+	width: 2.25em;
+}
+
 div.veditor div.toolbar button[style*="background-image"] {
 	width: 3em; height: 3em;
 	padding: 3.1em 0 0;
