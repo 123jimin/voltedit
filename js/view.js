@@ -1,4 +1,26 @@
-/// The view for the chart
+class VViewColumn {
+}
+
+/// For rendering only. VView will take charge of managing the data.
+class VViewRender {
+	constructor(view) {
+		this.view = view;
+		this.elem = view.elem.querySelector(".chart-view");
+
+		this.scene = new THREE.Scene();
+		this.renderer = new THREE.WebGLRenderer({
+			'alpha': true
+		});
+		this.renderer.setClearColor(0, 0);
+		this.renderer.setSize(this.view.scale.elemWidth, 100 /* will be adjusted later */);
+		this.elem.appendChild(this.renderer.domElement);
+	}
+	resize() {
+		this.renderer.setSize(this.view.scale.fullWidth, this.view.height);
+	}
+}
+
+/// The chart view manager for the editor
 class VView {
 	constructor(editor) {
 		this.editor = editor;
@@ -24,8 +46,7 @@ class VView {
 		this.scrollBar = new VViewScrollBar(this);
 		this.baseLines = new VViewBaseLines(this);
 
-		this._scene = null;
-		this._initScene();
+		this.render = new VViewRender(this);
 		this._redraw();
 
 		this.elem.addEventListener('wheel', this.onWheel.bind(this), {'passive': true});
@@ -248,9 +269,11 @@ class VView {
 	}
 
 	_resize() {
-		this.height = this.elem.clientHeight;
-		this.baseLines.resize();
 		this.elem.style.width = `${this.scale.elemWidth}px`;
+		this.height = this.elem.clientHeight;
+
+		this.baseLines.resize();
+		this.render.resize();
 
 		this._updateLocation();
 		this._updateNoteWidth();
@@ -262,11 +285,6 @@ class VView {
 		this.baseLines.updateNoteWidth();
 
 		// this._createDefs();
-	}
-
-	/// Helper function for initializing the scene
-	_initScene() {
-
 	}
 
 	onMouseDown(event) {
