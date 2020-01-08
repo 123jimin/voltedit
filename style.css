@@ -25,7 +25,7 @@ div.veditor div.chart {
 	overflow: hidden;
 }
 
-div.veditor div.chart svg {
+div.veditor div.chart svg, div.veditor div.chart div.chart-view {
 	position: absolute;
 	left: 0; top: 0;
 }
@@ -34,7 +34,7 @@ div.veditor div.chart svg.chart-baseline {
 	z-index: 99;
 }
 
-div.veditor div.chart svg.chart-main {
+div.veditor div.chart div.chart-view {
 	z-index: 100;
 }
 

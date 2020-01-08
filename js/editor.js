@@ -20,7 +20,7 @@ class VEditor {
 		this._editSnapBeat = 16; /// unit: 4th, 8th, 12th, ... beat (not tick)
 		this._editSnapTick = 1; /// unit: tick
 
-		this.view = new VChartView(this);
+		this.view = new VView(this);
 		this.toolbar = new VToolbar(this);
 
 		this._dropFileIndicator = elem.querySelector('.drop-file-indicator');

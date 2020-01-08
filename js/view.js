@@ -1,109 +1,3 @@
-const CHARTV_RENDER_PRIORITY = Object.freeze({
-	'NONE': 0,
-	'MINOR': 1,
-	'RESIZE': 2,
-	'REDRAW': 3
-});
-
-/// Manager for chart scales
-class VChartScale {
-	constructor(view) {
-		this.view = view;
-		this.editor = view.editor;
-		this.load();
-	}
-
-	load() {
-		const settings = this.editor.settings;
-
-		this.columns = settings.get('editor:columns');
-		this.noteWidth = settings.get('editor:note:width');
-		this.btNoteHeight = 2;
-		this.fxNoteHeight = 3;
-		this.laserSlamRatio = 1;
-
-		this.marginSide = settings.get('editor:margin:side');
-		this.marginBottom = settings.get('editor:margin:bottom');
-		this.measureScale = settings.get('editor:measure:scale');
-
-		this.scrollBarWidth = 12;
-
-		this._computeRests();
-	}
-	setNoteWidth(value) {
-		this.noteWidth = value;
-		this._computeRests();
-		this.view.redraw();
-	}
-	setMarginSide(value) {
-		this.marginSide = value;
-		this._computeRests();
-		this.view.resize();
-	}
-	setMarginBottom(value) {
-		this.marginBottom = value;
-		this._computeRests();
-		this.view.resize();
-	}
-	setMeasureScale(value) {
-		this.measureScale = value;
-		this._computeRests();
-		this.view.redraw();
-	}
-	setColumns(value) {
-		this.columns = value;
-		this._computeRests();
-		this.view.redraw();
-	}
-
-	_computeRests() {
-		this.wholeNote = this.noteWidth*this.measureScale;
-
-		this.columnOffset = this.noteWidth*11+this.marginSide;
-		this.fullWidth = this.columnOffset*this.columns + this.marginSide;
-		this.elemWidth = this.fullWidth + this.scrollBarWidth;
-
-		this.viewBoxLeft = -(this.noteWidth*5.5+this.marginSide);
-
-		this.laserPosWidth = 5*this.noteWidth;
-		this.laserSlamHeight = this.laserSlamRatio * this.noteWidth - 2;
-
-		this.laneWidth = 4*this.noteWidth;
-		this.laneLeft = -2*this.noteWidth;
-		this.laneRight = +2*this.noteWidth;
-	}
-}
-
-/// Manager for chart colors
-class VChartColor {
-	constructor(view) {
-		this.view = view;
-		this.editor = view.editor;
-		this.load();
-	}
-
-	load() {
-		this.hueLaserLeft = 180;
-		this.hueLaserRight = 300;
-
-		this.btFill = '#FFF';
-		this.btBorder = '#AAA';
-		this.btLong = '#EEE';
-
-		this.fxFill = '#F90';
-		this.fxBorder = '#A40';
-		this.fxLong = '#EA0';
-
-		this.measureLine = '#FF0';
-		this.beatLine = '#444';
-		this.baseLines = '#555';
-		this.cursor = '#F00';
-
-		this.textTimeSig = '#9E4';
-		this.textBPM = '#6AF'
-	}
-}
-
 /// The view for the chart
 class VView {
 	constructor(editor) {
@@ -114,44 +8,29 @@ class VView {
 		this.elem = editor.elem.querySelector(".chart");
 		this.elem.style.width = `${this.scale.elemWidth}px`;
 
-		this.scrollBar = this.elem.querySelector(".chart-scrollbar");
-		this._scrollTickPerPixel = 0;
-		this._scrolling = false;
-		this._scrollInitTickLoc = 0;
-		this._scrollInitMouseY = 0;
-
 		this.tickUnit = 240*4; /// Ticks per *whole* note
-
 		this.tickLoc = 0; /// Current display location (in ticks)
+		this.lastPlayTick = 0; /// Last tick of notes/laser
 
 		// Two numbers are used for range selection.
-		// Usually, their values are identical.
+		// When range selection is not used, their values are identical.
 		this.cursorLowLoc = 0; /// Current low cursor location (in ticks)
 		this.cursorHighLoc = 0; /// Current high cursor location (in ticks)
 
-		this.lastPlayTick = 0; /// Last tick of notes/laser
-
 		this._prevNoteWidth = this.scale.noteWidth;
-		this._height = 0;
+		this.height = 0;
 
-		this._baseLines = {
-			'svg': this.elem.querySelector('.chart-baselines'),
-			'master': null, 'elem': null, 'lines': [],
-			'copies': null, 'copiesArr': [],
-			'currHeight': 100,
-			'bottomOffset': 0,
-		};
-		this._createBaseLines();
+		this.renderQueue = new VViewRenderQueue(this);
+		this.scrollBar = new VViewScrollBar(this);
+		this.baseLines = new VViewBaseLines(this);
 
-		this._currRender = [];
-		this._currRenderPriority = CHARTV_RENDER_PRIORITY.NONE;
-
+		this._scene = null;
+		this._initScene();
 		this._redraw();
 
 		this.elem.addEventListener('wheel', this.onWheel.bind(this), {'passive': true});
 		this.elem.addEventListener('mousedown', this.onMouseDown.bind(this));
 
-		this.scrollBar.addEventListener('mousedown', this.startScroll.bind(this));
 		document.addEventListener('mousemove', this.onMouseMove.bind(this), {'passive': true});
 		document.addEventListener('mouseup', this.onMouseUp.bind(this), {'passive': true});
 	}
@@ -161,19 +40,19 @@ class VView {
 	/// Pixel to tick
 	p2t(px) { return px*this.tickUnit/this.scale.wholeNote; }
 
-	getTopPixel() { return RD(this.scale.marginBottom-this.t2p(this.tickLoc)-this._height); }
+	getTopPixel() { return RD(this.scale.marginBottom-this.t2p(this.tickLoc)-this.height); }
 
 	/// Set the location of the region to be shown (tickLoc = bottom)
 	setLocation(tickLoc) {
 		this.tickLoc = isFinite(tickLoc) ? tickLoc : 0;
-		this._requestAnimationFrame(this._updateLocation, CHARTV_RENDER_PRIORITY.MINOR);
+		this.renderQueue.push(this._updateLocation, VVIEW_RENDER_PRIORITY.MINOR);
 	}
 	setCursor(cursorLoc) {
 		this.cursorLowLoc = this.cursorHighLoc = isFinite(cursorLoc) && cursorLoc > 0 ? cursorLoc : 0;
-		this._requestAnimationFrame(this._redrawCursor, CHARTV_RENDER_PRIORITY.MINOR);
+		this.renderQueue.push(this._redrawCursor, VVIEW_RENDER_PRIORITY.MINOR);
 	}
 	redraw() {
-		this._requestAnimationFrame(this._redraw, CHARTV_RENDER_PRIORITY.REDRAW);
+		this.renderQueue.push(this._redraw, VVIEW_RENDER_PRIORITY.REDRAW);
 	}
 
 	/// Clear and redraw everything.
@@ -219,15 +98,15 @@ class VView {
 				}
 			}
 		};
+		*/
 
 		noteData.bt.forEach((btData, lane) => {
-			putNotes('bt', btShorts, btLongs, lane, (lane-2)*this.scale.noteWidth, btData);
+			for(let y in btData) this._setLastPlayTick((+y)+btData[y]);
 		});
 
 		noteData.fx.forEach((fxData, lane) => {
-			putNotes('fx', fxShorts, fxLongs, lane, (lane-1)*this.scale.noteWidth*2, fxData);
+			for(let y in fxData) this._setLastPlayTick((+y)+fxData[y]);
 		});
-		*/
 	}
 
 	_redrawLasers() {
@@ -365,98 +244,47 @@ class VView {
 
 	/// Update the size of the SVG, but do not redraw everything.
 	resize() {
-		this._requestAnimationFrame(this._resize, CHARTV_RENDER_PRIORITY.RESIZE);
+		this.renderQueue.push(this._resize, VVIEW_RENDER_PRIORITY.RESIZE);
 	}
 
 	_resize() {
-		this._height = this.elem.clientHeight;
-		this._baseLines.svg.setAttribute('width', this.scale.fullWidth);
-		this._baseLines.svg.setAttribute('height', this._height);
-		this._baseLines.svg.setAttribute('viewBox', `${this.scale.viewBoxLeft} 0 ${this.scale.fullWidth} ${this._height}`);
+		this.height = this.elem.clientHeight;
+		this.baseLines.resize();
 		this.elem.style.width = `${this.scale.elemWidth}px`;
 
 		this._updateLocation();
 		this._updateNoteWidth();
-		this._updateColumnCopies();
 	}
 	_updateNoteWidth() {
 		if(this._prevNoteWidth === this.scale.noteWidth) return;
 		this._prevNoteWidth = this.scale.noteWidth;
 
-		this._baseLines.lines.forEach(([i, line]) => {
-			line.setAttribute('x', i*this.scale.noteWidth);
-		});
+		this.baseLines.updateNoteWidth();
 
 		// this._createDefs();
 	}
-	_updateColumnCopies() {
-		if(this._baseLines.copiesArr.length+1 != this.scale.columns){
-			this._baseLines.copiesArr.forEach((elem) => elem.remove());
-			this._baseLines.copiesArr = [];
 
-			for(let i=1; i<this.scale.columns; ++i){
-				const copy = this._createElem(this._baseLines.copies, 'use');
-				copy.setAttribute('href', "#baseLines");
-				this._baseLines.copiesArr.push(copy);
-			}
-		}
+	/// Helper function for initializing the scene
+	_initScene() {
 
-		for(let i=1; i<this.scale.columns; ++i){
-			this._baseLines.copiesArr[i-1].setAttribute('x', this.scale.columnOffset*i);
-		}
 	}
 
-	/// Helper function for creating baselines
-	_createBaseLines() {
-		const defs = this._createElem(this._baseLines.svg, 'defs');
-		const baseLinesDef = this._createElem(defs, 'g');
-		baseLinesDef.id = 'baseLines';
-		const masterBaseLine = this._baseLines.master = this._createElem(baseLinesDef, 'line');
-		masterBaseLine.id = 'masterBaseLine';
-		masterBaseLine.setAttribute('x1', 0);
-		masterBaseLine.setAttribute('y1', 0);
-		masterBaseLine.setAttribute('x2', 0);
-		masterBaseLine.setAttribute('y2', 100); // will be adjusted on resize
-		masterBaseLine.setAttribute('stroke', this.color.baseLines);
-		masterBaseLine.setAttribute('stroke-width', 1);
-
-		for(let i=-2; i<=2; ++i) {
-			if(i === 0) continue;
-			const line = this._createElem(baseLinesDef, 'use');
-			line.setAttribute('href', "#masterBaseLine");
-			line.setAttribute('x', i*this.scale.noteWidth);
-			this._baseLines.lines.push([i, line]);
-		}
-
-		this._baseLines.elem = this._createElem(this._baseLines.svg, 'use');
-		this._baseLines.elem.setAttribute('href', "#baseLines");
-		this._baseLines.copies = this._createElem(this._baseLines.svg, 'g');
-		this._baseLines.copies.id = 'baseLineCopies';
-	}
-
-	startScroll(event) {
-		this._scrolling = true;
-		this._scrollInitMouseY = event.pageY;
-		this._scrollInitTickLoc = this.tickLoc;
-		this.scrollBar.classList.add('drag');
-	}
 	onMouseDown(event) {
-		if(this.svg.node.contains(event.target) || this.svgBaseLines.node.contains(event.target)){
+		if(this.elem.contains(event.target) && !this.scrollBar.elem.contains(event.target)){
 			this.setCursorWithMouse(event.offsetX, event.offsetY);
 		}
 	}
 	onMouseMove(event) {
 		if(event.which === 0) return;
-		if(this._scrolling){
-			this.updateLocationFromScrollBar(event.pageY);
+		if(this.scrollBar.scrolling){
+			this.scrollBar.trigger(event.pageY);
 			return;
 		}
 	}
 	onMouseUp(event) {
-		if(this._scrolling){
-			this._scrolling = false;
-			this.scrollBar.classList.remove('drag');
-			this.updateLocationFromScrollBar(event.pageY);
+		if(this.scrollBar.scrolling){
+			this.scrollBar.trigger(event.pageY);
+			this.scrollBar.stopScroll();
 		}
 	}
 	onWheel(event) {
@@ -478,88 +306,22 @@ class VView {
 		let column = Math.floor(x/this.scale.columnOffset);
 		if(column >= this.scale.columns) column = this.scale.columns-1;
 
-		const effectivePos = y-column*this._height;
+		const effectivePos = y-column*this.height;
 		return -this.p2t(this.getTopPixel()+effectivePos);
 	}
-	updateLocationFromScrollBar(y) {
-		const lastTick = this._getLastTick();
-		const dy = this._scrollInitMouseY - y;
-		const dt = dy * this._scrollTickPerPixel;
-		let newTick = RD(this._scrollInitTickLoc + dt);
-		newTick = CLIP(newTick, 0, lastTick);
-		this.setLocation(newTick);
-	}
-
 	_updateLocation() {
-		// this.svg.viewbox(this.scale.viewBoxLeft, this._getViewBoxTop(), this.scale.fullWidth, this._height);
-		this._updateBaseLines();
-		this._updateScrollBar();
-	}
-	_updateBaseLines() {
-		if(this._baseLines.currHeight != this._height){
-			this._baseLines.currHeight = this._height;
-			this._baseLines.master.setAttribute('y2', this._height);
-		}
-
-		let bottomOffset = this.scale.marginBottom - this.t2p(this.tickLoc);
-		if(bottomOffset < 0) bottomOffset = 0;
-		if(this._baseLines.bottomOffset != bottomOffset){
-			this._baseLines.bottomOffset = bottomOffset;
-			this._baseLines.elem.setAttribute('y', -bottomOffset);
-		}
-	}
-	_updateScrollBar() {
-		const lastTick = this._getLastTick();
-		if(lastTick === 0) {
-			this.scrollBar.style.display = 'none';
-			return;
-		}
-
-		this.scrollBar.style.display = 'block';
-		this.scrollBar.style.width = `${this.scale.scrollBarWidth}px`;
-
-		// Scale the scroll bar so that...
-		// 1. it is roughly proportional to how much the chart is visible
-		// 2. it's between 0.05H and 0.9H
-		const visibleTicks = this.p2t(this._height*this.scale.columns - this.scale.marginBottom) / lastTick;
-		const scrollBarHeight = RD(this._height*CLIP(visibleTicks, 0.05, 0.9));
-
-		const scrollBarTop = (this._height - scrollBarHeight) * (1 - this.tickLoc / lastTick);
-		this.scrollBar.style.top = `${scrollBarTop}px`;
-		this.scrollBar.style.height = `${scrollBarHeight}px`;
-
-		this._scrollTickPerPixel = lastTick/(this._height - scrollBarHeight);
+		// this.svg.viewbox(this.scale.viewBoxLeft, this._getViewBoxTop(), this.scale.fullWidth, this.height);
+		this.baseLines.update();
+		this.scrollBar.update();
 	}
 
-	_requestAnimationFrame(func, priority) {
-		if(priority < this._currRenderPriority) return;
-
-		const triggerAnimationFrame = (this._currRender.length == 0);
-
-		if(priority == this._currRenderPriority && priority < CHARTV_RENDER_PRIORITY.RESIZE) {
-			this._currRender.push(func.bind(this));
-		}
-		else {
-			this._currRender = [func.bind(this)];
-			this._currRenderPriority = priority;
-		}
-
-		if(triggerAnimationFrame) {
-			window.requestAnimationFrame(this._onAnimationFrame.bind(this));
-		}
-	}
-	_onAnimationFrame() {
-		this._currRender.forEach((f) => f());
-		this._currRender = [];
-		this._currRenderPriority = CHARTV_RENDER_PRIORITY.NONE;
-	}
 	_setLastPlayTick(lastPlayTick) {
 		if(this.lastPlayTick < lastPlayTick)
 			this.lastPlayTick = lastPlayTick;
 	}
 
 	/// Computes the last tick of anything.
-	_getLastTick() {
+	getLastTick() {
 		// Assumes that notes and lasers have been already taken into account.
 		let lastTick = this.lastPlayTick;
 		const check = (tick) => { if(lastTick < tick) lastTick = tick; };
@@ -589,11 +351,5 @@ class VView {
 		}
 
 		return lastTick;
-	}
-	_createElem(parent, tag) {
-		const elem = document.createElementNS("http://www.w3.org/2000/svg", tag);
-		parent.appendChild(elem);
-
-		return elem;
 	}
 }
