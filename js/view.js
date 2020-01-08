@@ -1,25 +1,3 @@
-class VViewColumn {
-}
-
-/// For rendering only. VView will take charge of managing the data.
-class VViewRender {
-	constructor(view) {
-		this.view = view;
-		this.elem = view.elem.querySelector(".chart-view");
-
-		this.scene = new THREE.Scene();
-		this.renderer = new THREE.WebGLRenderer({
-			'alpha': true
-		});
-		this.renderer.setClearColor(0, 0);
-		this.renderer.setSize(this.view.scale.elemWidth, 100 /* will be adjusted later */);
-		this.elem.appendChild(this.renderer.domElement);
-	}
-	resize() {
-		this.renderer.setSize(this.view.scale.fullWidth, this.view.height);
-	}
-}
-
 /// The chart view manager for the editor
 class VView {
 	constructor(editor) {
@@ -79,10 +57,10 @@ class VView {
 	/// Clear and redraw everything.
 	_redraw() {
 		this.tickUnit = this.editor.getTicksPerWholeNote() || 240*4;
+		this.lastPlayTick = 0;
 
 		this._resize();
 
-		this.lastPlayTick = 0;
 		this._redrawNotes();
 		this._redrawLasers();
 
@@ -203,22 +181,17 @@ class VView {
 	}
 
 	_redrawMeasures() {
-		/*
-		const measureLines = this._svgGroups.measureLines.clear();
-		const measureProps = this._svgGroups.measureProps.clear();
-
-		const measureLineDef = this._svgDefs.measureLine;
-		const beatLineDef = this._svgDefs.beatLine;
+		this.render.clearMeasures();
 
 		// Let's draw the very first line.
-		measureLines.use(measureLineDef);
+		this.render.addMeasureLine(0);
 
 		if(!this.editor.chartData) return;
 
 		const beatInfo = this.editor.chartData.beat;
 		if(!beatInfo || !beatInfo.time_sig) return;
 
-		const lastTick = this._getLastTick();
+		const lastTick = this.getLastTick();
 
 		let measureTick = 0;
 		let measureIndex = 0;
@@ -237,19 +210,22 @@ class VView {
 			const currMeasureLength = currTimeSig.v.n * this.tickUnit / currTimeSig.v.d;
 
 			// Draw a measure line and beat lines.
-			// Round the y-coordinates to display lines without blurring.
 			if(measureIndex > 0) {
-				measureLines.use(measureLineDef).y(RD(-this.t2p(measureTick)));
+				this.render.addMeasureLine(this.t2p(measureTick));
 			}
 
 			for(let i=1; i<currTimeSig.v.n; ++i) {
-				measureLines.use(beatLineDef).y(RD(-this.t2p(measureTick + i*(this.tickUnit / currTimeSig.v.d))));
+				this.render.addBeatLine(this.t2p(measureTick + i*(this.tickUnit / currTimeSig.v.d)));
 			}
 
 			++measureIndex;
 			measureTick += currMeasureLength;
 		}
-		*/
+
+		// Draw the very last line.
+		if(measureTick > 0) {
+			this.render.addMeasureLine(this.t2p(measureTick));
+		}
 	}
 
 	_redrawEditorUI() {
@@ -267,7 +243,6 @@ class VView {
 	resize() {
 		this.renderQueue.push(this._resize, VVIEW_RENDER_PRIORITY.RESIZE);
 	}
-
 	_resize() {
 		this.elem.style.width = `${this.scale.elemWidth}px`;
 		this.height = this.elem.clientHeight;
@@ -283,8 +258,6 @@ class VView {
 		this._prevNoteWidth = this.scale.noteWidth;
 
 		this.baseLines.updateNoteWidth();
-
-		// this._createDefs();
 	}
 
 	onMouseDown(event) {
@@ -329,6 +302,7 @@ class VView {
 	}
 	_updateLocation() {
 		// this.svg.viewbox(this.scale.viewBoxLeft, this._getViewBoxTop(), this.scale.fullWidth, this.height);
+		this.render.updateLocation();
 		this.baseLines.update();
 		this.scrollBar.update();
 	}

@@ -58,7 +58,11 @@ class VChartScale {
 		this.fullWidth = this.columnOffset*this.columns + this.marginSide;
 		this.elemWidth = this.fullWidth + this.scrollBarWidth;
 
-		this.viewBoxLeft = -(this.noteWidth*5.5+this.marginSide);
+		this.columnLeft = -5.5*this.noteWidth;
+		this.columnRight = +5.5*this.noteWidth;
+		this.columnWidth = 11*this.noteWidth;
+
+		this.viewBoxLeft = this.columnLeft-this.marginSide;
 
 		this.laserPosWidth = 5*this.noteWidth;
 		this.laserSlamHeight = this.laserSlamRatio * this.noteWidth - 2;
@@ -273,6 +277,8 @@ class VViewRenderQueue {
 	_onAnimationFrame() {
 		this.queue.forEach((f) => f());
 		this.queue = [];
+
+		this.view.render.render();
 		this.currPriority = VVIEW_RENDER_PRIORITY.NONE;
 	}
 }
