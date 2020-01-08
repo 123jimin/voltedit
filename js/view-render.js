@@ -104,11 +104,19 @@ class VViewRender {
 	addBtNote(lane, pos, len) {
 		if(len === 0) {
 			this._addNote(this.btShorts, this.btShortTemplate, lane, pos);
+		} else {
+			const geometry = this._createPlaneGeometry(1, 0, this.view.scale.noteWidth-2, this.view.t2p(len));
+			const template = new VModelTemplate(THREE.Mesh, geometry, new THREE.MeshBasicMaterial({'color': this.view.color.btLong}));
+			this._addNote(this.btLongs, template, lane, pos);
 		}
 	}
 	addFxNote(lane, pos, len) {
 		if(len === 0) {
 			this._addNote(this.fxShorts, this.fxShortTemplate, lane*2, pos);
+		} else {
+			const geometry = this._createPlaneGeometry(0, 0, this.view.scale.noteWidth*2, this.view.t2p(len));
+			const template = new VModelTemplate(THREE.Mesh, geometry, new THREE.MeshBasicMaterial({'color': this.view.color.fxLong}));
+			this._addNote(this.fxLongs, template, lane*2, pos);
 		}
 	}
 	_addNote(noteCollection, noteTemplate, lane, pos) {
@@ -180,11 +188,11 @@ class VViewRender {
 		this.btShorts = this._createGroup(3);
 
 		this.btShortTemplate = new VModelTemplate(THREE.Mesh,
-			this._createPlaneGeometry(scale.noteWidth, scale.btNoteHeight),
+			this._createPlaneGeometry(0, 0, scale.noteWidth, scale.btNoteHeight),
 			new THREE.MeshBasicMaterial({'color': color.btFill})
 		);
 		this.fxShortTemplate = new VModelTemplate(THREE.Mesh,
-			this._createPlaneGeometry(scale.noteWidth*2, scale.fxNoteHeight),
+			this._createPlaneGeometry(0, 0, scale.noteWidth*2, scale.fxNoteHeight),
 			new THREE.MeshBasicMaterial({'color': color.fxFill})
 		);
 	}
@@ -204,11 +212,11 @@ class VViewRender {
 
 		return geometry;
 	}
-	_createPlaneGeometry(w, h) {
+	_createPlaneGeometry(x, y, w, h) {
 		const geometry = new THREE.BufferGeometry();
 		geometry.setAttribute('position', new THREE.Float32BufferAttribute([
-			0, 0, 0, w, 0, 0, w, h, 0,
-			0, 0, 0, w, h, 0, 0, h, 0,
+			x, y, 0, x+w, y, 0, x+w, y+h, 0,
+			x, y, 0, x+w, y+h, 0, x, y+h, 0,
 		], 3));
 		geometry.computeBoundingSphere();
 
