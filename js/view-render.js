@@ -47,6 +47,17 @@ class VViewColumn {
 	}
 }
 
+class VModelTemplate {
+	constructor(type, geometry, material) {
+		this.type = type;
+		this.geometry = geometry;
+		this.material = material;
+	}
+	create() {
+		return new this.type(this.geometry, this.material);
+	}
+}
+
 /// VView will take charge of managing the data, and VViewRender will receive things to draw/move/delete.
 class VViewRender {
 	constructor(view) {
@@ -72,16 +83,39 @@ class VViewRender {
 		this._clear(this.measureProps);
 	}
 	addMeasureLine(pos) {
-		const measureLine = new THREE.Line(this.measureLineGeometry, this.measureLineMaterial);
-		measureLine.position.set(0, pos, 0);
+		const measureLine = this.measureLineTemplate.create();
+		measureLine.position.set(0, this.view.t2p(pos), 0);
 
 		this.measureLines.add(measureLine);
 	}
 	addBeatLine(pos) {
-		const beatLine = new THREE.Line(this.beatLineGeometry, this.beatLineMaterial);
-		beatLine.position.set(0, pos, 0);
+		const beatLine = this.beatLineTemplate.create();
+		beatLine.position.set(0, this.view.t2p(pos), 0);
 
 		this.measureLines.add(beatLine);
+	}
+
+	clearNotes() {
+		this._clear(this.fxLongs);
+		this._clear(this.btLongs);
+		this._clear(this.fxShorts);
+		this._clear(this.btShorts);
+	}
+	addBtNote(lane, pos, len) {
+		if(len === 0) {
+			this._addNote(this.btShorts, this.btShortTemplate, lane, pos);
+		}
+	}
+	addFxNote(lane, pos, len) {
+		if(len === 0) {
+			this._addNote(this.fxShorts, this.fxShortTemplate, lane*2, pos);
+		}
+	}
+	_addNote(noteCollection, noteTemplate, lane, pos) {
+		const scale = this.view.scale;
+		const note = noteTemplate.create();
+		note.position.set((lane-2)*scale.noteWidth, this.view.t2p(pos), 0);
+		noteCollection.add(note);
 	}
 
 	resize() {
@@ -117,30 +151,42 @@ class VViewRender {
 	}
 	_initMeasureDrawData() {
 		const scale = this.view.scale;
+		const color = this.view.color;
+
 		this.measureLines = this._createGroup(-10);
 		this.measureProps = this._createGroup(-9);
 
-		this.measureLineMaterial = new THREE.LineBasicMaterial({
-			'color': this.view.color.measureLine,
-		});
-		this.measureLineGeometry = this._createLineGeometry(
+		this.laneCrossingLineGeometry = this._createLineGeometry(
 			new THREE.Vector3(scale.laneLeft, 0, 0),
 			new THREE.Vector3(scale.laneRight, 0, 0),
 		);
 
-		this.beatLineMaterial = new THREE.LineBasicMaterial({
-			'color': this.view.color.beatLine,
-		});
-		this.beatLineGeometry = this._createLineGeometry(
-			new THREE.Vector3(scale.laneLeft, 0, 0),
-			new THREE.Vector3(scale.laneRight, 0, 0),
+		this.measureLineTemplate = new VModelTemplate(THREE.Line,
+			this.laneCrossingLineGeometry,
+			new THREE.LineBasicMaterial({'color': color.measureLine})
+		);
+		this.beatLineTemplate = new VModelTemplate(THREE.Line,
+			this.laneCrossingLineGeometry,
+			new THREE.LineBasicMaterial({'color': color.beatLine})
 		);
 	}
 	_initNoteDrawData() {
+		const scale = this.view.scale;
+		const color = this.view.color;
+
 		this.fxLongs = this._createGroup(0);
 		this.btLongs = this._createGroup(1);
 		this.fxShorts = this._createGroup(2);
 		this.btShorts = this._createGroup(3);
+
+		this.btShortTemplate = new VModelTemplate(THREE.Mesh,
+			this._createPlaneGeometry(scale.noteWidth, scale.btNoteHeight),
+			new THREE.MeshBasicMaterial({'color': color.btFill})
+		);
+		this.fxShortTemplate = new VModelTemplate(THREE.Mesh,
+			this._createPlaneGeometry(scale.noteWidth*2, scale.fxNoteHeight),
+			new THREE.MeshBasicMaterial({'color': color.fxFill})
+		);
 	}
 	_createGroup(z) {
 		const group = new THREE.Group();
@@ -153,6 +199,16 @@ class VViewRender {
 		const geometry = new THREE.BufferGeometry();
 		geometry.setAttribute('position', new THREE.Float32BufferAttribute([
 			a.x, a.y, a.z, b.x, b.y, b.z
+		], 3));
+		geometry.computeBoundingSphere();
+
+		return geometry;
+	}
+	_createPlaneGeometry(w, h) {
+		const geometry = new THREE.BufferGeometry();
+		geometry.setAttribute('position', new THREE.Float32BufferAttribute([
+			0, 0, 0, w, 0, 0, w, h, 0,
+			0, 0, 0, w, h, 0, 0, h, 0,
 		], 3));
 		geometry.computeBoundingSphere();
 

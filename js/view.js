@@ -77,34 +77,20 @@ class VView {
 		const noteData = this.editor.chartData.note;
 		if(!noteData) return;
 
-		/*
-		const putNotes = (type, shorts, longs, lane, x, data) => {
-			const shortTypeHref = `#${type}Short`;
-			const longTypeHref = `#${type}Long`;
-			for(let y in data) {
-				const len = data[y];
-				this._setLastPlayTick((+y)+len);
-
-				const id = `${type}${lane}_${y}`;
-
-				if(len <= 0) {
-					const note = this._createUse(shortTypeHref, x, RD(-this.t2p(+y)), id);
-					shorts.add(note);
-				}else{
-					const note = this._createUse(longTypeHref, 0, 0, id);
-					note.setAttribute('transform', `translate(${x} ${RD(-this.t2p(+y))}) scale(1 ${this.t2p(len)})`);
-					longs.add(note);
-				}
-			}
-		};
-		*/
+		this.render.clearNotes();
 
 		noteData.bt.forEach((btData, lane) => {
-			for(let y in btData) this._setLastPlayTick((+y)+btData[y]);
+			for(let y in btData) {
+				this.render.addBtNote(lane, +y, btData[y])
+				this._setLastPlayTick((+y)+btData[y]);
+			}
 		});
 
 		noteData.fx.forEach((fxData, lane) => {
-			for(let y in fxData) this._setLastPlayTick((+y)+fxData[y]);
+			for(let y in fxData) {
+				this.render.addFxNote(lane, +y, fxData[y])
+				this._setLastPlayTick((+y)+fxData[y]);
+			}
 		});
 	}
 
@@ -211,11 +197,11 @@ class VView {
 
 			// Draw a measure line and beat lines.
 			if(measureIndex > 0) {
-				this.render.addMeasureLine(this.t2p(measureTick));
+				this.render.addMeasureLine(measureTick);
 			}
 
 			for(let i=1; i<currTimeSig.v.n; ++i) {
-				this.render.addBeatLine(this.t2p(measureTick + i*(this.tickUnit / currTimeSig.v.d)));
+				this.render.addBeatLine(measureTick + i*(this.tickUnit / currTimeSig.v.d));
 			}
 
 			++measureIndex;
