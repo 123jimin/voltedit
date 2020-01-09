@@ -47,6 +47,7 @@ class VViewColumn {
 	}
 }
 
+/// Managing a geometry, a material, and an object type together
 class VModelTemplate {
 	constructor(type, geometry, material) {
 		this.type = type;
@@ -58,6 +59,20 @@ class VModelTemplate {
 	}
 }
 
+/// Managing a collection of templates together
+class VModelTemplateCollection {
+	constructor(templates) {
+		this.templates = templates;
+	}
+	create() {
+		const obj = new THREE.Object3D();
+		this.templates.forEach((template) => {
+			obj.add(template.create());
+		});
+		return obj;
+	}
+}
+
 /// VView will take charge of managing the data, and VViewRender will receive things to draw/move/delete.
 class VViewRender {
 	constructor(view) {
@@ -66,8 +81,10 @@ class VViewRender {
 
 		this.scene = new THREE.Scene();
 		this.renderer = new THREE.WebGLRenderer({
-			'alpha': true
+			'alpha': true, 'antialias': false,
+			'precision': 'mediump', 'powerPreference': 'low-power',
 		});
+		this.renderer.sortObjects = false;
 		this.renderer.setClearColor(0, 0);
 		this.renderer.setSize(this.view.scale.elemWidth, 100 /* will be adjusted later */);
 		this.elem.appendChild(this.renderer.domElement);
@@ -105,25 +122,45 @@ class VViewRender {
 		if(len === 0) {
 			this._addNote(this.btShorts, this.btShortTemplate, lane, pos);
 		} else {
-			const geometry = this._createPlaneGeometry(1, 0, this.view.scale.noteWidth-2, this.view.t2p(len));
-			const template = new VModelTemplate(THREE.Mesh, geometry, new THREE.MeshBasicMaterial({'color': this.view.color.btLong}));
-			this._addNote(this.btLongs, template, lane, pos);
+			this._addNote(this.btLongs, this._createLongNoteTemplate(this.view.scale.noteWidth, 1, this.view.color.btLong, len), lane, pos);
 		}
 	}
 	addFxNote(lane, pos, len) {
 		if(len === 0) {
 			this._addNote(this.fxShorts, this.fxShortTemplate, lane*2, pos);
 		} else {
-			const geometry = this._createPlaneGeometry(0, 0, this.view.scale.noteWidth*2, this.view.t2p(len));
-			const template = new VModelTemplate(THREE.Mesh, geometry, new THREE.MeshBasicMaterial({'color': this.view.color.fxLong}));
-			this._addNote(this.fxLongs, template, lane*2, pos);
+			this._addNote(this.btLongs, this._createLongNoteTemplate(this.view.scale.noteWidth*2, 0, this.view.color.fxLong, len), lane*2, pos);
 		}
 	}
 	_addNote(noteCollection, noteTemplate, lane, pos) {
 		const scale = this.view.scale;
 		const note = noteTemplate.create();
-		note.position.set((lane-2)*scale.noteWidth, this.view.t2p(pos), 0);
+		note.position.set((lane-2)*scale.noteWidth, RD(this.view.t2p(pos)), 0);
 		noteCollection.add(note);
+	}
+
+	clearLasers() {
+		this._clear(this.lasers);
+	}
+	addLaser(index, y, graph) {
+		if(!graph || !('v' in graph) || !graph.v.length) return;
+
+		const scale = this.view.scale;
+		const WIDE = 'wide' in graph ? graph.wide : 1;
+		const HALF_LASER = scale.noteWidth/2-0.5;
+
+		const X = (v) => WIDE*(v-0.5)*scale.laserPosWidth;
+		const Y = (ry) => this.view.t2p(ry+y);
+
+		const rightSide = [], leftSide = [];
+		graph.v.forEach((gp, ind) => {
+			const x = X(gp.v), y = Y(gp.ry);
+			if(ind === 0){
+				rightSide.push();
+			}else{
+				rightSide.push();
+			}
+		});
 	}
 
 	resize() {
@@ -154,8 +191,7 @@ class VViewRender {
 		this._initMeasureDrawData();
 		this._initNoteDrawData();
 
-		this.laserLeft = this._createGroup(10);
-		this.laserRight = this._createGroup(11);
+		this.lasers = this._createGroup(10);
 	}
 	_initMeasureDrawData() {
 		const scale = this.view.scale;
@@ -187,14 +223,11 @@ class VViewRender {
 		this.fxShorts = this._createGroup(2);
 		this.btShorts = this._createGroup(3);
 
-		this.btShortTemplate = new VModelTemplate(THREE.Mesh,
-			this._createPlaneGeometry(0, 0, scale.noteWidth, scale.btNoteHeight),
-			new THREE.MeshBasicMaterial({'color': color.btFill})
-		);
-		this.fxShortTemplate = new VModelTemplate(THREE.Mesh,
-			this._createPlaneGeometry(0, 0, scale.noteWidth*2, scale.fxNoteHeight),
-			new THREE.MeshBasicMaterial({'color': color.fxFill})
-		);
+		this.btShortTemplate = this._createRectangleTemplate(0, 0, scale.noteWidth, scale.btNoteHeight, color.btFill, color.btBorder);
+		this.fxShortTemplate = this._createRectangleTemplate(0, 0, scale.noteWidth*2, scale.fxNoteHeight, color.fxFill, color.fxBorder);
+	}
+	_createLongNoteTemplate(width, padding, color, len) {
+		return this._createRectangleTemplate(padding, 0, width-padding*2, this.view.t2p(len), color);
 	}
 	_createGroup(z) {
 		const group = new THREE.Group();
@@ -221,6 +254,18 @@ class VViewRender {
 		geometry.computeBoundingSphere();
 
 		return geometry;
+	}
+	_createRectangleTemplate(x, y, w, h, fill, stroke) {
+		const templates = [];
+		const planeGeometry = this._createPlaneGeometry(x+0.5, y+0.5, w-1, h-1);
+		templates.push(new VModelTemplate(THREE.Mesh, planeGeometry, new THREE.MeshBasicMaterial({'color': fill})));
+
+		if(stroke) {
+			const edges = new THREE.EdgesGeometry(this._createPlaneGeometry(x, y, w, h));
+			templates.push(new VModelTemplate(THREE.Line, edges, new THREE.LineBasicMaterial({'color': stroke})));
+		}
+
+		return new VModelTemplateCollection(templates);
 	}
 	_clear(elem) {
 		for(let i=elem.children.length; i-->0;) {

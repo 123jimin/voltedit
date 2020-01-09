@@ -78,14 +78,12 @@ class VView {
 		if(!noteData) return;
 
 		this.render.clearNotes();
-
 		noteData.bt.forEach((btData, lane) => {
 			btData.traverse((node) => {
 				this.render.addBtNote(lane, node.y, node.l);
 				this._setLastPlayTick(node.y + node.l);
 			})
 		});
-
 		noteData.fx.forEach((fxData, lane) => {
 			fxData.traverse((node) => {
 				this.render.addFxNote(lane, node.y, node.l);
@@ -103,10 +101,10 @@ class VView {
 		const laserData = noteData.laser;
 		if(!laserData) return;
 
-		// this._svgGroups.lasers.clear();
+		this.render.clearLasers();
 		laserData.forEach((tree, ind) => {
 			tree.traverse((node) => {
-				const graph = node.data;
+				this.render.addLaser(ind, node.y, node.data);
 			});
 		});
 	}
