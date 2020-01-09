@@ -81,7 +81,7 @@ class VViewRender {
 
 		this.scene = new THREE.Scene();
 		this.renderer = new THREE.WebGLRenderer({
-			'alpha': true, 'antialias': false,
+			'alpha': true, 'antialias': true,
 			'precision': 'mediump', 'powerPreference': 'low-power',
 		});
 		this.renderer.sortObjects = false;

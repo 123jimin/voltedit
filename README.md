@@ -1,7 +1,7 @@
 # VOLTEdit
 VOLTEdit is a web-based SDVX chart editor, planned to support KSH and KSON chart formats.
 
-Used "Office S" icons of [icons8](https://icons8.com).
+Uses "Office S" icons of [icons8](https://icons8.com).
 
 ## Features
 Currently, these features are available. Note that this editor is in *very* early stage of active development now.
@@ -22,7 +22,7 @@ Also see the [milestones page](https://github.com/123jimin/voltedit/milestones).
 ### Goal
 * KSH/KSON editor which can replace current kshoot editor
 * Web-based editor supporting modern web browsers (IE excluded)
-* Single column, scrollable chart view like stepmania
+* Multi column, scrollable chart view using WebGL
 * Live view of the chart as it's being edited (ambitious!)
 * kson-centric, but can export to ksh with some degrade
 * Multilingual (en and ko during development)
@@ -70,5 +70,4 @@ These features are planned to be implemented in this year.
 I hope to be able to implement these features in this year, but not sure whether it will be feasible.
 * Playing all audio effects supported by KSON
 * Editing/previewing KSON chart layers
-* Add multi-column views, like kshoot editor
 * Advanced chart linter (measures ballpark difficulty)
