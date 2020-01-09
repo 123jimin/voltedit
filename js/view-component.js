@@ -65,7 +65,7 @@ class VChartScale {
 		this.viewBoxLeft = this.columnLeft-this.marginSide;
 
 		this.laserPosWidth = 5*this.noteWidth;
-		this.laserSlamHeight = this.laserSlamRatio * this.noteWidth - 2;
+		this.laserSlamHeight = CLIP(this.laserSlamRatio*this.noteWidth-2, 0, this.noteWidth);
 
 		this.laneWidth = 4*this.noteWidth;
 		this.laneLeft = -2*this.noteWidth;

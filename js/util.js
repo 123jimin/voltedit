@@ -12,6 +12,11 @@ const CLIP = (x, a, b) => x<a ? a : x>b ? b : !isFinite(x) ? a : x;
 /// Align to the value
 const ALIGN = (a, x) => x%a === 0 ? x : RD(x/a)*a;
 
+/// Create a quad from 2D coordinates
+const QUAD = (points, [ax, ay], [bx, by], [cx, cy], [dx, dy]) => points.push(
+	ax, ay, 0, bx, by, 0, cx, cy, 0, ax, ay, 0, cx, cy, 0, dx, dy, 0
+);
+
 /// AA tree for managing non-overlapping intervals
 class AATree {
 	constructor() {
