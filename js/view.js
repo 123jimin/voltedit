@@ -43,7 +43,7 @@ class VView {
 
 	/// Set the location of the region to be shown (tickLoc = bottom)
 	setLocation(tickLoc) {
-		this.tickLoc = isFinite(tickLoc) ? tickLoc : 0;
+		this.tickLoc = isFinite(tickLoc) && tickLoc >= 0 ? tickLoc : 0;
 		this.renderQueue.push(this._updateLocation, VVIEW_RENDER_PRIORITY.MINOR);
 	}
 	setCursor(cursorLoc) {
@@ -107,58 +107,6 @@ class VView {
 				this.render.addLaser(ind, node.y, node.data);
 			});
 		});
-	}
-	_createLaserPath(id, hue, init, graph) {
-		if(!('v' in graph) || !graph.v.length) return;
-
-		/*
-		const WIDE = 'wide' in graph ? graph.wide : 1;
-		const LASER_POS_WIDTH = this.scale.laserPosWidth;
-		const HALF_LASER = this.scale.noteWidth/2-0.5;
-		const path = this._createElem('path');
-		path.id = id;
-		path.setAttribute('fill', `hsla(${hue},100%,60%,0.4)`);
-		path.setAttribute('stroke', `hsl(${hue},100%,70%,0.4)`);
-
-		const X = (v) => WIDE*(v-0.5)*LASER_POS_WIDTH;
-		const Y = (ry) => RD(-this.t2p(ry+init)-0.5);
-
-		const rightSide = [], leftSide = [];
-		graph.v.forEach((gp, ind) => {
-			const x = X(gp.v);
-			const y = Y(gp.ry);
-			if(ind === 0){
-				rightSide.push(`M${x+HALF_LASER} ${y}`);
-			}else{
-				rightSide.push(`L${x+HALF_LASER} ${y}`);
-			}
-			leftSide.push(`L${x-HALF_LASER} ${y}`);
-			if('vf' in gp){
-				const xx = X(gp.vf);
-				if(xx > x){
-					rightSide.push(`h${xx-x}v${-this.scale.laserSlamHeight}`);
-					leftSide.push(`L${xx-HALF_LASER} ${y-this.scale.laserSlamHeight}h${x-xx}`);
-				}else{
-					rightSide.push(`v${-this.scale.laserSlamHeight}h${xx-x}`);
-					leftSide.push(`L${xx-HALF_LASER} ${y-this.scale.laserSlamHeight}V${y}`);
-				}
-			}
-		});
-
-		const pathCommands = rightSide;
-		if('vf' in graph.v[graph.v.length-1]){
-			pathCommands.push(`l${-HALF_LASER} ${-HALF_LASER*2}`);
-		}
-		for(let i=leftSide.length; i-->0;){
-			pathCommands.push(leftSide[i]);
-		}
-
-		pathCommands.push('Z');
-		path.setAttribute('d', pathCommands.join(''));
-		// TODO: draw a header.
-
-		this._svgGroups.lasers.add(path);
-		*/
 	}
 
 	_redrawMeasures() {
