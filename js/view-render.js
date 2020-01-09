@@ -1,5 +1,6 @@
 /// Contains rendering-related stuff
 const VVIEW_CAMERA_Z = 128;
+const VVIEW_EDITOR_UI_Z = 10;
 
 /// Contains rendering-related classes for a single column of VView.
 class VViewColumn {
@@ -27,7 +28,7 @@ class VViewColumn {
 	updateLocation() {
 		const view = this.parent.view;
 		const base = view.t2p(view.tickLoc);
-		const offset = view.t2p(view.height);
+		const offset = view.height;
 		this.camera.position.y = base + this.index*offset;
 	}
 	render() {
@@ -95,6 +96,12 @@ class VViewRender {
 		this._addColumn();
 	}
 
+	setCursor(start, end) {
+		this.cursorStart.position.y = this.view.t2p(start);
+		this.cursorEnd.position.y = this.view.t2p(end);
+	}
+
+	/** Drawing measure data **/
 	clearMeasures() {
 		this._clear(this.measureLines);
 		this._clear(this.measureProps);
@@ -112,6 +119,7 @@ class VViewRender {
 		this.measureLines.add(beatLine);
 	}
 
+	/** Drawing note data **/
 	clearNotes() {
 		this._clear(this.fxLongs);
 		this._clear(this.btLongs);
@@ -139,6 +147,7 @@ class VViewRender {
 		noteCollection.add(note);
 	}
 
+	/** Drawing laser data **/
 	clearLasers() {
 		this._clear(this.lasers);
 	}
@@ -204,6 +213,7 @@ class VViewRender {
 		this.lasers.add(laserObject);
 	}
 
+	/** Resizing **/
 	resize() {
 		this.renderer.setSize(this.view.scale.fullWidth, this.view.height);
 
@@ -228,12 +238,16 @@ class VViewRender {
 	render() {
 		this.columns.forEach((column) => column.render());
 	}
+	
+	/** Initialization of drawing data **/
 	_initDrawData() {
 		// Note that the groups are created in a specific order.
 		this._initMeasureDrawData();
 		this._initNoteDrawData();
 		this._initLaserDrawData();
+		this._initEditorUIDrawData();
 	}
+
 	_initMeasureDrawData() {
 		const scale = this.view.scale;
 		const color = this.view.color;
@@ -255,6 +269,7 @@ class VViewRender {
 			new THREE.LineBasicMaterial({'color': color.beatLine})
 		);
 	}
+	
 	_initNoteDrawData() {
 		const scale = this.view.scale;
 		const color = this.view.color;
@@ -270,8 +285,9 @@ class VViewRender {
 	_createLongNoteTemplate(width, padding, color, len) {
 		return this._createRectangleTemplate(padding, 0, width-padding*2, this.view.t2p(len), color);
 	}
+	
 	_initLaserDrawData() {
-		this.lasers = this._createGroup(10);
+		this.lasers = this._createGroup(CLIP(this.view.scale.laserFloat, 1, VVIEW_EDITOR_UI_Z));
 		
 		this.leftLaserBodyMaterial = this._createLaserBodyMaterial(0);
 		this.rightLaserBodyMaterial = this._createLaserBodyMaterial(1);
@@ -289,6 +305,28 @@ class VViewRender {
 		color.setHSL(hue/360, 1.0, 0.6);
 		return color;
 	}
+
+	_initEditorUIDrawData() {
+		const scale = this.view.scale;
+		const color = this.view.color;
+
+		this.cursors = this._createGroup(VVIEW_EDITOR_UI_Z);
+
+		const cursorTemplate = new VModelTemplate(THREE.Line,
+			this._createLineGeometry(
+				new THREE.Vector3(scale.laneLeft*1.5, 0, 0),
+				new THREE.Vector3(scale.laneRight*1.5, 0, 0),
+			),
+			new THREE.LineBasicMaterial({'color': color.cursor})
+		);
+
+		this.cursorStart = cursorTemplate.create();
+		this.cursorEnd = cursorTemplate.create();
+
+		this.cursors.add(this.cursorStart);
+		this.cursors.add(this.cursorEnd);
+	}
+
 	_createGroup(z) {
 		const group = new THREE.Group();
 		this.scene.add(group);

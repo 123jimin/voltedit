@@ -15,7 +15,9 @@ class VChartScale {
 		this.noteWidth = settings.get('editor:note:width');
 		this.btNoteHeight = 2;
 		this.fxNoteHeight = 3;
+
 		this.laserSlamRatio = 1;
+		this.laserFloat = 5;
 
 		this.marginSide = settings.get('editor:margin:side');
 		this.marginBottom = settings.get('editor:margin:bottom');

@@ -14,8 +14,8 @@ class VView {
 
 		// Two numbers are used for range selection.
 		// When range selection is not used, their values are identical.
-		this.cursorLowLoc = 0; /// Current low cursor location (in ticks)
-		this.cursorHighLoc = 0; /// Current high cursor location (in ticks)
+		this.cursorStartLoc = 0; /// Current low cursor location (in ticks)
+		this.cursorEndLoc = 0; /// Current high cursor location (in ticks)
 
 		this._prevNoteWidth = this.scale.noteWidth;
 		this.height = 0;
@@ -47,7 +47,7 @@ class VView {
 		this.renderQueue.push(this._updateLocation, VVIEW_RENDER_PRIORITY.MINOR);
 	}
 	setCursor(cursorLoc) {
-		this.cursorLowLoc = this.cursorHighLoc = isFinite(cursorLoc) && cursorLoc > 0 ? cursorLoc : 0;
+		this.cursorStartLoc = this.cursorEndLoc = isFinite(cursorLoc) && cursorLoc > 0 ? cursorLoc : 0;
 		this.renderQueue.push(this._redrawCursor, VVIEW_RENDER_PRIORITY.MINOR);
 	}
 	redraw() {
@@ -70,7 +70,6 @@ class VView {
 		this._redrawMeasures();
 		this._redrawEditorUI();
 	}
-
 	_redrawNotes() {
 		if(!this.editor.chartData) return;
 
@@ -91,7 +90,6 @@ class VView {
 			})
 		});
 	}
-
 	_redrawLasers() {
 		if(!this.editor.chartData) return;
 
@@ -108,7 +106,6 @@ class VView {
 			});
 		});
 	}
-
 	_redrawMeasures() {
 		this.render.clearMeasures();
 
@@ -156,16 +153,11 @@ class VView {
 			this.render.addMeasureLine(this.t2p(measureTick));
 		}
 	}
-
 	_redrawEditorUI() {
 		this._redrawCursor();
 	}
-
 	_redrawCursor() {
-		/*
-		this._svgGroups.cursorLow.attr('y', RD(-this.t2p(this.cursorLowLoc)));
-		this._svgGroups.cursorHigh.attr('y', RD(-this.t2p(this.cursorHighLoc)));
-		*/
+		this.render.setCursor(this.cursorStartLoc, this.cursorEndLoc);
 	}
 
 	/// Update the size of the SVG, but do not redraw everything.
