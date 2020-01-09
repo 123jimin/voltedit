@@ -19,7 +19,7 @@ class AATree {
 		this.root = null;
 	}
 	add(y, l, data) {
-		const node = new AATreeNode(y, l, data);
+		const node = new AATreeNode(+y, +l, data);
 		if(this.root) {
 			const prev = this.root._insert(node);
 			if(prev) {
@@ -36,6 +36,15 @@ class AATree {
 	}
 	get(y) {
 		return this.root ? this.root._get(y) : null;
+	}
+	first() {
+		return this.root ? this.root.first() : null;
+	}
+	last() {
+		return this.root ? this.root.last() : null;
+	}
+	traverse(visitor) {
+		this.root.traverse(visitor);
 	}
 	_setChild(node) {
 		this.root = node;
@@ -70,17 +79,22 @@ class AATreeNode {
 		this._notifyRemove();
 		this._remove(null);
 	}
+	first() {
+		return this._left ? this._left.first() : this;
+	}
+	last() {
+		return this._right ? this._right.last() : this;
+	}
 	next() {
-		if(!this._right) return null;
-		let n = this._right;
-		while(n._left) n = n._left;
-		return n;
+		return this._right ? this._right.first() : null;
 	}
 	prev() {
-		if(!this._left) return null;
-		let p = this._left;
-		while(p._right) p = p._right;
-		return p;
+		return this._left ? this._left.last() : null;
+	}
+	traverse(visitor) {
+		this._left && this._left.traverse(visitor);
+		visitor(this);
+		this._right && this._right.traverse(visitor);
 	}
 	_remove(from) {
 		if(this._isLeaf()){

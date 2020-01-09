@@ -12,11 +12,8 @@ class VChartData {
 			'resolution': 240,
 		};
 		this.gauge = {};
-		
-		// XXX: Unlike KSON, NoteInfo.bt and NoteInfo.fx are each an array of dictionaries,
-		// where each dictoinary's key is `Interval.y` and value is `Interval.l`.
-		// Similarly, NoteInfo.laser is an array of two dictionaries,
-		// each dictionary's key is `LaserSection.y` and value is the rest.
+
+		// XXX: Unlike KSON, bt, fx, laser are each an array of AATrees.
 		this.note = {};
 
 		this.audio = {};
@@ -42,26 +39,23 @@ class VChartData {
 	}
 
 	_getKSONNote() {
-		const note2arr = (dict) => {
+		const note2arr = (tree) => {
 			const arr = [];
-			for(let y in dict) {
-				const obj = {'y': +y};
-				if(dict[y]) obj.l = +dict[y];
+			tree.traverse((node) => {
+				const obj = {'y': node.y};
+				if(node.l) obj.l = node.l;
 				arr.push(obj);
-			}
-
-			arr.sort((a, b) => a.y-b.y);
+			});
 			return arr;
 		};
-		const laser2arr = (dict) => {
+		const laser2arr = (tree) => {
 			const arr = [];
-			for(let y in dict) {
-				const obj = {'y': +y};
-				for(let k in dict[y]) obj[k] = dict[y][k];
+			tree.traverse((node) => {
+				const obj = {'y': node.y};
+				for(let k in node.data)
+					obj[k] = node.data[k];
 				arr.push(obj);
-			};
-
-			arr.sort((a, b) => a.y-b.y);
+			});
 			return arr;
 		};
 		return {

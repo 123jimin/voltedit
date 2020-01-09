@@ -91,7 +91,7 @@ class KSHParser {
 	constructor(ksh) {
 		this.ksh = ksh;
 		this.currLineType = KSH_LINE_TYPE.HEADER;
-		
+
 		// Lines of measures, being read
 		this.queue = [];
 		// Lines of modifiers, which will be applied to the following line.
@@ -131,7 +131,7 @@ class KSHParser {
 			this._onReadMeasure();
 			return;
 		}
-		
+
 		// TODO: handle these later, if possible (custom FX effects)
 		if(line[0] === '#') return;
 
@@ -275,7 +275,7 @@ class KSHData extends VChartData {
 
 		this._ksmMeasures.forEach((measure, measure_idx) => {
 			if(measure.length === 0) throw new Error("Malformed ksh measure!");
-			
+
 			// Check the timing signature of this measure.
 			measure[0].mods.forEach(([key, value]) => {
 				switch(key) {
@@ -322,15 +322,24 @@ class KSHData extends VChartData {
 	}
 	/// Processes notes and lasers
 	_setKSONNoteInfo() {
-		const noteInfo = this.note = {'bt': [{}, {}, {}, {}], 'fx': [{}, {}], 'laser': [{}, {}]};
+		const noteInfo = this.note = {'bt': [
+			new AATree(), new AATree(), new AATree(), new AATree(),
+		], 'fx': [
+			new AATree(), new AATree(),
+		], 'laser': [
+			new AATree(), new AATree(),
+		]};
 
 		// Stores [start, len] long note infos
 		// Index 0-3: BT, 4-5: FX
 		let longInfo = [null, null, null, null, null, null];
-		const getNoteInfoDict = (lane) => lane < 4 ? noteInfo.bt[lane] : noteInfo.fx[lane-4];
+		const getNoteInfoTree = (lane) => lane < 4 ? noteInfo.bt[lane] : noteInfo.fx[lane-4];
 		const cutLongNote = (lane) => {
 			if(longInfo[lane] === null) return;
-			getNoteInfoDict(lane)[longInfo[lane][0]] = longInfo[lane][1];
+			const result = getNoteInfoTree(lane).add(longInfo[lane][0], longInfo[lane][1], null);
+			if(!result[0]){
+				throw new Error(`Invalid ksh long notes! (${result[1].y} and ${longInfo[lane][0]} at ${lane} collides)`);
+			}
 			longInfo[lane] = null;
 		};
 		const addLongInfo = (lane, y, l) => {
@@ -340,7 +349,7 @@ class KSHData extends VChartData {
 			}
 			longInfo[lane][1] += l;
 		};
-		
+
 		// Stores current laser segments and how wide should they be
 		let laserSegments = [null, null];
 		let laserRange = [1, 1];
@@ -348,7 +357,8 @@ class KSHData extends VChartData {
 			if(laserSegments[lane] === null) return;
 			let laser = {'v': laserSegments[lane].toKSON()};
 			if(laserSegments[lane].range !== 1) laser.wide = laserSegments[lane].range;
-			noteInfo.laser[lane][laserSegments[lane].iy] = laser;
+			// TODO: check whether lasers collide, by setting the `l` value
+			noteInfo.laser[lane].add(laserSegments[lane].iy, 0, laser);
 			laserSegments[lane] = null;
 		};
 		const addLaserSegment = (lane, y, v) => {
@@ -376,7 +386,7 @@ class KSHData extends VChartData {
 					if(c === '0') continue;
 					if(c === '1') {
 						// Single short note
-						getNoteInfoDict(i)[kshLine.tick] = 0;
+						getNoteInfoTree(i).add(kshLine.tick, 0, null);
 						continue;
 					}
 					addLongInfo(i, kshLine.tick, kshLine.len);
@@ -388,7 +398,7 @@ class KSHData extends VChartData {
 					if(c === '0') continue;
 					if(c === '2') {
 						// Single short note
-						getNoteInfoDict(4+i)[kshLine.tick] = 0;
+						getNoteInfoTree(4+i).add(kshLine.tick, 0, null);
 						continue;
 					}
 					addLongInfo(4+i, kshLine.tick, kshLine.len);

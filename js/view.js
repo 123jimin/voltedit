@@ -80,17 +80,17 @@ class VView {
 		this.render.clearNotes();
 
 		noteData.bt.forEach((btData, lane) => {
-			for(let y in btData) {
-				this.render.addBtNote(lane, +y, btData[y])
-				this._setLastPlayTick((+y)+btData[y]);
-			}
+			btData.traverse((node) => {
+				this.render.addBtNote(lane, node.y, node.l);
+				this._setLastPlayTick(node.y + node.l);
+			})
 		});
 
 		noteData.fx.forEach((fxData, lane) => {
-			for(let y in fxData) {
-				this.render.addFxNote(lane, +y, fxData[y])
-				this._setLastPlayTick((+y)+fxData[y]);
-			}
+			fxData.traverse((node) => {
+				this.render.addFxNote(lane, node.y, node.l);
+				this._setLastPlayTick(node.y + node.l);
+			})
 		});
 	}
 
@@ -104,15 +104,12 @@ class VView {
 		if(!laserData) return;
 
 		// this._svgGroups.lasers.clear();
-		laserData.forEach((dict, ind) => {
-			const hue = [this.color.hueLaserLeft, this.color.hueLaserRight][ind];
-			for(let y in dict){
-				const id = `laser${ind}_${y}`;
-				this._createLaserPath(id, hue, +y, dict[y]);
-			}
+		laserData.forEach((tree, ind) => {
+			tree.traverse((node) => {
+				const graph = node.data;
+			});
 		});
 	}
-
 	_createLaserPath(id, hue, init, graph) {
 		if(!('v' in graph) || !graph.v.length) return;
 
