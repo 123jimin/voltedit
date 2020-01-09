@@ -9,7 +9,8 @@ Currently, these features are available. Note that this editor is in *very* earl
 * Importing KSH files via drag-drop
 	* Currently only notes, lasers, and beat lines are visible.
 * Exporting to KSON format
-* Scrolling view via scrollbar / mouse wheel
+* Multi-column view using WebGL
+	* Scrolling view via scrollbar / mouse wheel
 * Intuitive ribbon UI
 	* Editor settings, saved via `localStorage`
 * Support for English and Korean
@@ -21,7 +22,7 @@ Also see the [milestones page](https://github.com/123jimin/voltedit/milestones).
 
 ### Goal
 * KSH/KSON editor which can replace current kshoot editor
-* Web-based editor supporting modern web browsers (IE excluded)
+* Web-based editor supporting modern web browsers (mobile support, but _no IE_)
 * Multi column, scrollable chart view using WebGL
 * Live view of the chart as it's being edited (ambitious!)
 * kson-centric, but can export to ksh with some degrade
