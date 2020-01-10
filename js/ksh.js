@@ -72,6 +72,9 @@ class KSHGraph {
 			this.vfs.push(v);
 		}
 	}
+	getLength() {
+		return this.ys.length ? this.ys[this.ys.length-1] : 0;
+	}
 	toKSON() {
 		let segments = [];
 		// TODO: simplify using curves
@@ -357,8 +360,7 @@ class KSHData extends VChartData {
 			if(laserSegments[lane] === null) return;
 			let laser = {'v': laserSegments[lane].toKSON()};
 			if(laserSegments[lane].range !== 1) laser.wide = laserSegments[lane].range;
-			// TODO: check whether lasers collide, by setting the `l` value
-			noteInfo.laser[lane].add(laserSegments[lane].iy, 0, laser);
+			noteInfo.laser[lane].add(laserSegments[lane].iy, laserSegments[lane].getLength(), laser);
 			laserSegments[lane] = null;
 		};
 		const addLaserSegment = (lane, y, v) => {

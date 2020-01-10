@@ -22,6 +22,44 @@ class VChartData {
 		this.impl = {};
 	}
 
+	// Computes the last tick of anything.
+	getLastTick() {
+		let lastTick = 0;
+		const check = (tick) => { if(lastTick < tick) lastTick = tick; }
+		const checkArr = (arr) => { if(arr && arr.length) check(arr[arr.length-1].y); };
+		const checkTree = (tree) => { const last = tree.last(); if(last) check(last.y+last.l); };
+
+		if(this.note){
+			if(this.note.bt) this.note.bt.map(checkTree);
+			if(this.note.fx) this.note.fx.map(checkTree);
+			if(this.note.laser) this.note.laser.map(checkTree);
+		}
+
+		if(this.beat) {
+			checkArr(this.beat.bpm);
+
+			if(this.beat.time_sig && this.beat.time_sig.length > 0) {
+				let measureTick = 0;
+				let prevMeasureInd = 0;
+				let prevMeasureLen = 0;
+
+				this.beat.time_sig.forEach((sig) => {
+					measureTick += (sig.idx - prevMeasureInd) * prevMeasureLen;
+					prevMeasureInd = sig.idx;
+					prevMeasureLen = sig.v.d * (this.beat.resolution*4) / sig.v.n;
+				});
+
+				check(measureTick);
+			}
+
+			if(this.beat.scroll_speed && this.beat.scroll_speed.length > 0) {
+				// TODO: check scroll speed
+			}
+		}
+
+		return lastTick;
+	}
+
 	toKSON() {
 		const kson = {
 			'version': this.version,
@@ -37,7 +75,6 @@ class VChartData {
 
 		return JSON.stringify(kson);
 	}
-
 	_getKSONNote() {
 		const note2arr = (tree) => {
 			const arr = [];

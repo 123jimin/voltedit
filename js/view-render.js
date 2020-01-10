@@ -118,6 +118,9 @@ class VViewRender {
 
 		this.measureLines.add(beatLine);
 	}
+	addBPMChanges(pos, bpm) {
+		console.log(pos, bpm);
+	}
 
 	/** Drawing note data **/
 	clearNotes() {
@@ -180,7 +183,7 @@ class VViewRender {
 				const yf = y+scale.laserSlamHeight;
 				let [xmin, xmax] = [x, xf];
 				if(x > xf) [xmin, xmax] = [xf, x];
-				
+
 				QUAD(points,
 					[xmin-HALF_LASER, y], [xmax+HALF_LASER, y],
 					[xmax+HALF_LASER, yf], [xmin-HALF_LASER, yf]
@@ -195,7 +198,7 @@ class VViewRender {
 		if(points.length === 0){
 			return;
 		}
-		
+
 		// Draw end for last slam
 		const last = graph.v[graph.v.length-1];
 		if('vf' in last){
@@ -208,7 +211,7 @@ class VViewRender {
 
 		const material = index === 0 ? this.leftLaserBodyMaterial : this.rightLaserBodyMaterial;
 		const laserBody = new THREE.Mesh(geometry, material);
-		
+
 		laserObject.add(laserBody);
 		this.lasers.add(laserObject);
 	}
@@ -238,27 +241,31 @@ class VViewRender {
 	render() {
 		this.columns.forEach((column) => column.render());
 	}
-	
+
 	/** Initialization of drawing data **/
 	_initDrawData() {
-		// Note that the groups are created in a specific order.
-		this._initMeasureDrawData();
-		this._initNoteDrawData();
-		this._initLaserDrawData();
-		this._initEditorUIDrawData();
-	}
-
-	_initMeasureDrawData() {
 		const scale = this.view.scale;
-		const color = this.view.color;
-
-		this.measureLines = this._createGroup(0);
-		this.measureProps = this._createGroup(0);
-
 		this.laneCrossingLineGeometry = this._createLineGeometry(
 			new THREE.Vector3(scale.laneLeft, 0, 0),
 			new THREE.Vector3(scale.laneRight, 0, 0),
 		);
+		this.cursorLineGeometry = this._createLineGeometry(
+			new THREE.Vector3(scale.cursorLeft, 0, 0),
+			new THREE.Vector3(scale.cursorRight, 0, 0),
+		);
+		// Note that the groups are created in a specific order.
+		this._initMeasureDrawData();
+		this._initNoteDrawData();
+		this._initLaserDrawData();
+		this._initTickPropData();
+		this._initEditorUIDrawData();
+	}
+
+	_initMeasureDrawData() {
+		const color = this.view.color;
+
+		this.measureLines = this._createGroup(0);
+		this.measureProps = this._createGroup(0);
 
 		this.measureLineTemplate = new VModelTemplate(THREE.Line,
 			this.laneCrossingLineGeometry,
@@ -269,7 +276,7 @@ class VViewRender {
 			new THREE.LineBasicMaterial({'color': color.beatLine})
 		);
 	}
-	
+
 	_initNoteDrawData() {
 		const scale = this.view.scale;
 		const color = this.view.color;
@@ -285,10 +292,10 @@ class VViewRender {
 	_createLongNoteTemplate(width, padding, color, len) {
 		return this._createRectangleTemplate(padding, 0, width-padding*2, this.view.t2p(len), color);
 	}
-	
+
 	_initLaserDrawData() {
 		this.lasers = this._createGroup(CLIP(this.view.scale.laserFloat, 1, VVIEW_EDITOR_UI_Z));
-		
+
 		this.leftLaserBodyMaterial = this._createLaserBodyMaterial(0);
 		this.rightLaserBodyMaterial = this._createLaserBodyMaterial(1);
 	}
@@ -306,6 +313,15 @@ class VViewRender {
 		return color;
 	}
 
+	_initTickPropData() {
+		const color = this.view.color;
+
+		this.bpmLineTemplate = new VModelTemplate(THREE.Line,
+			this.cursorLineGeometry,
+			new THREE.LineBasicMaterial({'color': color.textBPM})
+		);
+	}
+
 	_initEditorUIDrawData() {
 		const scale = this.view.scale;
 		const color = this.view.color;
@@ -313,10 +329,7 @@ class VViewRender {
 		this.cursors = this._createGroup(VVIEW_EDITOR_UI_Z);
 
 		const cursorTemplate = new VModelTemplate(THREE.Line,
-			this._createLineGeometry(
-				new THREE.Vector3(scale.laneLeft*1.5, 0, 0),
-				new THREE.Vector3(scale.laneRight*1.5, 0, 0),
-			),
+			this.cursorLineGeometry,
 			new THREE.LineBasicMaterial({'color': color.cursor})
 		);
 

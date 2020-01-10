@@ -10,7 +10,7 @@ class VView {
 
 		this.tickUnit = 240*4; /// Ticks per *whole* note
 		this.tickLoc = 0; /// Current display location (in ticks)
-		this.lastPlayTick = 0; /// Last tick of notes/laser
+		this.lastTick = 0; /// Last tick of any elements
 
 		// Two numbers are used for range selection.
 		// When range selection is not used, their values are identical.
@@ -57,17 +57,17 @@ class VView {
 	/// Clear and redraw everything.
 	_redraw() {
 		this.tickUnit = this.editor.getTicksPerWholeNote() || 240*4;
-		this.lastPlayTick = 0;
+		this.lastTick = this.editor.chartData ? this.editor.chartData.getLastTick() : 0;
 
 		this._resize();
 
 		this._redrawNotes();
 		this._redrawLasers();
 
-		// Call after notes and lasers are drawn, to use updated lastPlayTick.
 		this._updateLocation();
 
 		this._redrawMeasures();
+		this._redrawTickProps();
 		this._redrawEditorUI();
 	}
 	_redrawNotes() {
@@ -80,13 +80,11 @@ class VView {
 		noteData.bt.forEach((btData, lane) => {
 			btData.traverse((node) => {
 				this.render.addBtNote(lane, node.y, node.l);
-				this._setLastPlayTick(node.y + node.l);
 			})
 		});
 		noteData.fx.forEach((fxData, lane) => {
 			fxData.traverse((node) => {
 				this.render.addFxNote(lane, node.y, node.l);
-				this._setLastPlayTick(node.y + node.l);
 			})
 		});
 	}
@@ -117,15 +115,13 @@ class VView {
 		const beatInfo = this.editor.chartData.beat;
 		if(!beatInfo || !beatInfo.time_sig) return;
 
-		const lastTick = this.getLastTick();
-
 		let measureTick = 0;
 		let measureIndex = 0;
 
 		// Will be changed to 0 in the first loop
 		let currTimeSigInd = -1;
 
-		while(currTimeSigInd+1 < beatInfo.time_sig.length || measureTick <= lastTick) {
+		while(currTimeSigInd+1 < beatInfo.time_sig.length || measureTick <= this.lastTick) {
 			if(currTimeSigInd+1 < beatInfo.time_sig.length) {
 				const nextTimeSig = beatInfo.time_sig[currTimeSigInd+1];
 				if(nextTimeSig.idx <= measureIndex) {
@@ -152,6 +148,9 @@ class VView {
 		if(measureTick > 0) {
 			this.render.addMeasureLine(this.t2p(measureTick));
 		}
+	}
+	_redrawTickProps() {
+
 	}
 	_redrawEditorUI() {
 		this._redrawCursor();
@@ -226,43 +225,5 @@ class VView {
 		this.render.updateLocation();
 		this.baseLines.update();
 		this.scrollBar.update();
-	}
-
-	_setLastPlayTick(lastPlayTick) {
-		if(this.lastPlayTick < lastPlayTick)
-			this.lastPlayTick = lastPlayTick;
-	}
-
-	/// Computes the last tick of anything.
-	getLastTick() {
-		// Assumes that notes and lasers have been already taken into account.
-		let lastTick = this.lastPlayTick;
-		const check = (tick) => { if(lastTick < tick) lastTick = tick; };
-		const checkArr = (arr) => { if(arr && arr.length) check(arr[arr.length-1].y); };
-
-		const beatInfo = this.editor.chartData ? this.editor.chartData.beat : null;
-		if(beatInfo) {
-			checkArr(beatInfo.bpm);
-
-			if(beatInfo.time_sig && beatInfo.time_sig.length > 0) {
-				let measureTick = 0;
-				let prevMeasureInd = 0;
-				let prevMeasureLen = 0;
-
-				beatInfo.time_sig.forEach((sig) => {
-					measureTick += (sig.idx - prevMeasureInd) * prevMeasureLen;
-					prevMeasureInd = sig.idx;
-					prevMeasureLen = sig.v.d * (beatInfo.resolution*4) / sig.v.n;
-				});
-
-				check(measureTick);
-			}
-
-			if(beatInfo.scroll_speed && beatInfo.scroll_speed.length > 0) {
-				// TODO: check scroll speed
-			}
-		}
-
-		return lastTick;
 	}
 }

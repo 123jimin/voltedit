@@ -19,6 +19,8 @@ class VChartScale {
 		this.laserSlamRatio = 1;
 		this.laserFloat = 5;
 
+		this.cursorWidthRatio = 1.5;
+
 		this.marginSide = settings.get('editor:margin:side');
 		this.marginBottom = settings.get('editor:margin:bottom');
 		this.measureScale = settings.get('editor:measure:scale');
@@ -72,6 +74,9 @@ class VChartScale {
 		this.laneWidth = 4*this.noteWidth;
 		this.laneLeft = -2*this.noteWidth;
 		this.laneRight = +2*this.noteWidth;
+
+		this.cursorLeft = this.laneLeft*this.cursorWidthRatio;
+		this.cursorRight = this.laneRight*this.cursorWidthRatio;
 	}
 }
 
@@ -128,7 +133,7 @@ class VViewScrollBar {
 		this.elem.classList.remove('drag');
 	}
 	trigger(y) {
-		const lastTick = this.view.getLastTick();
+		const lastTick = this.view.lastTick;
 		const dy = this.initMouseY - y;
 		const dt = dy * this.tickPerPixel;
 		let newTick = RD(this.initTickLoc + dt);
@@ -136,7 +141,7 @@ class VViewScrollBar {
 		this.view.setLocation(newTick);
 	}
 	update() {
-		const lastTick = this.view.getLastTick();
+		const lastTick = this.view.lastTick;
 		if(lastTick === 0) {
 			this.elem.style.display = 'none';
 			return;
