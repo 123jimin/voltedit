@@ -50,10 +50,12 @@ class VViewColumn {
 
 /// Managing data shown on a tick
 class VTickProp {
-	constructor() {
-		// An array of [text, color]s
-		this.left = [];
-		this.right = [];
+	constructor(render, tick) {
+		this.render = render;
+		this.tick = tick;
+
+		this.bpm = null;
+		this.beat = null;
 	}
 }
 
