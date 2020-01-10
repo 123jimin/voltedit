@@ -146,7 +146,7 @@ class VView {
 
 		// Draw the very last line.
 		if(measureTick > 0) {
-			this.render.addMeasureLine(this.t2p(measureTick));
+			this.render.addMeasureLine(measureTick);
 		}
 	}
 	_redrawTickProps() {
