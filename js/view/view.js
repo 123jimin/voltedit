@@ -160,12 +160,11 @@ class VView {
 		const beatInfo = this.editor.chartData.beat;
 		if(!beatInfo) return;
 
-		const bpmData = beatInfo.bpm;
-		if(!bpmData || bpmData.size === 0) return;
-
-		bpmData.traverse((node) => {
-			this.render.addBPMChanges(node.y, node.data);
-		});
+		if(beatInfo.bpm){
+			beatInfo.bpm.traverse((node) => {
+				this.render.addBPMChanges(node.y, node.data);
+			});
+		}
 
 		// While this is a little bit inefficient (already done in _redrawMeasures),
 		// iterating measures at here one more time is more robust.

@@ -267,7 +267,7 @@ class KSHData extends VChartData {
 			'resolution': KSH_DEFAULT_MEASURE_TICK / 4
 		};
 		const ksmMeta = this._ksmMeta;
-		
+
 		if('beat' in ksmMeta) {
 			beatInfo.time_sig.push({'idx': 0, 'v': (new KSHTimeSig(ksmMeta.beat)).toKSON()});
 		}
@@ -308,6 +308,7 @@ class KSHData extends VChartData {
 							if(line_idx > 0) throw new Error("Invalid ksh time signature! [invalid location]");
 							break;
 						case 't':
+							if(tick > 0) this._tryAddBPMFromMeta();
 							if(floatValue <= 0 || !isFinite(floatValue)) throw new Error("Invalid ksh BPM value!");
 							beatInfo.bpm.add(tick, 0, floatValue);
 							break;
@@ -321,6 +322,16 @@ class KSHData extends VChartData {
 
 			measure_tick += measure_len;
 		});
+
+		this._tryAddBPMFromMeta();
+	}
+	_tryAddBPMFromMeta() {
+		if(this.beat.bpm.size === 0 && 't' in this._ksmMeta){
+			const initBPM = this._ksmMeta.t;
+			if(initBPM.match(/^[\d.]+$/)) {
+				this.beat.bpm.add(0, 0, parseFloat(initBPM));
+			}
+		}
 	}
 	/// Processes notes and lasers
 	_setKSONNoteInfo() {

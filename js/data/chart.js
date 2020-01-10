@@ -69,14 +69,15 @@ class VChartData {
 			checkTree(this.beat.bpm);
 
 			if(this.beat.time_sig && this.beat.time_sig.length > 0) {
+				const tickPerWhole = (this.beat.resolution || 240) * 4
 				let measureTick = 0;
 				let prevMeasureInd = 0;
-				let prevMeasureLen = 0;
+				let prevMeasureLen = tickPerWhole
 
 				this.beat.time_sig.forEach((sig) => {
 					measureTick += (sig.idx - prevMeasureInd) * prevMeasureLen;
 					prevMeasureInd = sig.idx;
-					prevMeasureLen = sig.v.d * (this.beat.resolution*4) / sig.v.n;
+					prevMeasureLen = sig.v.n * tickPerWhole / sig.v.d;
 				});
 
 				check(measureTick);
