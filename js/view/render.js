@@ -48,7 +48,7 @@ class VViewColumn {
 	}
 }
 
-class VTextPanel {
+class VTickPropText {
 	constructor(parent, isRight) {
 		const scale = parent.render.view.scale;
 		
@@ -62,6 +62,9 @@ class VTextPanel {
 		this.height = ctx.canvas.height = fontSize*3;
 
 		ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+		ctx.font = `${fontSize}px monospace`;
+		ctx.textBaseline = 'top';
+		ctx.textAlign = this.isRight ? 'right' : 'left';
 
 		const texture = this.texture = new THREE.CanvasTexture(ctx.canvas);
 		texture.minFilter = THREE.LinearFilter;
@@ -71,7 +74,7 @@ class VTextPanel {
 			new THREE.MeshBasicMaterial({'map': texture, 'transparent': true})
 		);
 
-		panel.position.x = isRight ? scale.laneRight+this.width/2 : scale.laneLeft-this.width/2;
+		panel.position.x = isRight ? scale.columnRight-this.width/2 : scale.columnLeft+this.width/2;
 		panel.position.y = ctx.canvas.height/2 + 2;
 
 		parent._object.add(panel);
@@ -84,12 +87,9 @@ class VTextPanel {
 		let firstColor = null;
 		
 		ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-		ctx.font = `${fontSize}px monospace`;
-		ctx.textBaseline = 'top';
 		
-		const currX = this.rightSide ? this.width : 0;
+		const currX = this.isRight ? this.width : 0;
 		let currY = this.height;
-		ctx.textAlign = this.rightSide ? 'right' : 'left';
 
 		fields.forEach(([field, color]) => {
 			if(!(field in this.parent._texts)) return;
@@ -139,8 +139,8 @@ class VTickProp {
 		];
 	}
 	_initTextArea() {
-		this._leftPanel = new VTextPanel(this, false);
-		this._rightPanel = new VTextPanel(this, true);
+		this._leftPanel = new VTickPropText(this, false);
+		this._rightPanel = new VTickPropText(this, true);
 		
 		this._redrawFlag = false;
 	}
