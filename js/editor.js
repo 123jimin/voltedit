@@ -23,6 +23,7 @@ class VEditor {
 		this.view = new VView(this);
 		this.toolbar = new VToolbar(this);
 		this.taskManager = new VTaskManager(this);
+		this.keyManager = new VKeyManager(this);
 
 		this._dropFileIndicator = elem.querySelector('.drop-file-indicator');
 		this._dropFileIndicatorShown = false;

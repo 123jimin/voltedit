@@ -122,7 +122,7 @@ class VViewScrollBar {
 		this.initMouseY = 0;
 
 		this.elem.addEventListener('mousedown', this.startScroll.bind(this));
-		this.elem.addEventListener('touchstart', TOUCH(this.startScroll.bind(this)));
+		this.elem.addEventListener('touchstart', TOUCH(this.startScroll.bind(this)), {'passive': true});
 	}
 	startScroll(event) {
 		this.scrolling = true;
