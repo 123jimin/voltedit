@@ -45,6 +45,9 @@ class AATree {
 	get(y) {
 		return this.root ? this.root._get(y) : null;
 	}
+	intersects(y, l) {
+		return this.root ? this.root._intersects(y, l) : false;
+	}
 	first() {
 		return this.root ? this.root.first() : null;
 	}
@@ -150,6 +153,15 @@ class AATreeNode {
 			return this._right ? this._right._get(y) : null;
 		}
 		return this;
+	}
+	_intersects(y, l) {
+		if(y+l < this.y) {
+			return this._left ? this._left._intersects(y, l) : false;
+		}
+		if(this.y+this.l < y) {
+			return this._right ? this._right._intersects(y, l) : false;
+		}
+		return true;
 	}
 	_replaceChild(node, repl) {
 		if(node.y < this.y) this._left = repl;

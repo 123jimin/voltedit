@@ -25,6 +25,12 @@ class VChartData {
 		this.impl = {};
 	}
 
+	getNoteData(lane) {
+		if(!this.note) return null;
+		if(lane < 4) return this.note.bt ? this.note.bt[lane] : null;
+		else return this.note.fx ? this.note.fx[lane-4] : null;
+	}
+
 	// Computes the last tick of anything.
 	getLastTick() {
 		let lastTick = 0;
