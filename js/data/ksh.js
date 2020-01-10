@@ -267,13 +267,7 @@ class KSHData extends VChartData {
 			'resolution': KSH_DEFAULT_MEASURE_TICK / 4
 		};
 		const ksmMeta = this._ksmMeta;
-
-		if('t' in ksmMeta) {
-			const initBPM = parseFloat(ksmMeta.t);
-			if(initBPM <= 0 || !isFinite(initBPM)) throw new Error("Invalid ksh init BPM!");
-			beatInfo.bpm.add(0, 0, initBPM);
-		}
-
+		
 		if('beat' in ksmMeta) {
 			beatInfo.time_sig.push({'idx': 0, 'v': (new KSHTimeSig(ksmMeta.beat)).toKSON()});
 		}
