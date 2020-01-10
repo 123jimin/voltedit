@@ -1,4 +1,4 @@
-class VNoteAddTask extends VBaseTask {
+class VNoteAddTask extends VTask {
 	constructor(editor, lane, tick, len) {
 		super(editor);
 		this.lane = lane;
@@ -10,12 +10,20 @@ class VNoteAddTask extends VBaseTask {
 		if(!noteData) return true; // Since there were no note;
 		return !noteData.intersects(this.tick, this.len);
 	}
+	_commit() {
+		const result = this.chartData.addNote(this.lane, this.tick, this.len);
+		if(!result || result[0] === false) return false;
+
+		// TODO: do this more smartly
+		this.editor.view.redraw();
+		return true;
+	}
 	_makeInverse() {
 		return new VNoteDelTask(this.editor, this.lane, this.tick);
 	}
 }
 
-class VNoteDelTask extends VBaseTask {
+class VNoteDelTask extends VTask {
 	constructor(editor, lane, tick) {
 		super(editor);
 		this.lane = lane;
@@ -27,6 +35,13 @@ class VNoteDelTask extends VBaseTask {
 		const node = noteData.get(this.tick);
 		if(!node) return false;
 		return node.y === this.tick;
+	}
+	_commit() {
+		if(!this.chartData.delNote(this.lane, this.tick)) return false;
+
+		// TODO: do this more smartly
+		this.editor.view.redraw();
+		return true;
 	}
 	_makeInverse() {
 		const noteData = this.chartData.getNoteData(this.lane);

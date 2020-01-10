@@ -18,8 +18,9 @@ class VTask {
 		if(this._commonValidate() && this._validate()){
 			// Creates an inverse job and commit it.
 			this.inverse();
-			this._commit();
-			return true;
+			if(this._commit()) return true;
+			console.error("Commit failed", this);
+			return false;
 		}
 		return false;
 	}

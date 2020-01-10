@@ -330,21 +330,15 @@ class KSHData extends VChartData {
 	}
 	/// Processes notes and lasers
 	_setKSONNoteInfo() {
-		const noteInfo = this.note = {'bt': [
-			new AATree(), new AATree(), new AATree(), new AATree(),
-		], 'fx': [
-			new AATree(), new AATree(),
-		], 'laser': [
-			new AATree(), new AATree(),
-		]};
+		const noteInfo = this.note = {'bt': [], 'fx': [], 'laser': []};
+		this._initTreeArr(this.note.laser, 2);
 
 		// Stores [start, len] long note infos
 		// Index 0-3: BT, 4-5: FX
 		let longInfo = [null, null, null, null, null, null];
-		const getNoteInfoTree = (lane) => lane < 4 ? noteInfo.bt[lane] : noteInfo.fx[lane-4];
 		const cutLongNote = (lane) => {
 			if(longInfo[lane] === null) return;
-			const result = getNoteInfoTree(lane).add(longInfo[lane][0], longInfo[lane][1], null);
+			const result = this.addNote(lane, longInfo[lane][0], longInfo[lane][1]);
 			if(!result[0]){
 				throw new Error(`Invalid ksh long notes! (${result[1].y} and ${longInfo[lane][0]} at ${lane} collides)`);
 			}
@@ -393,7 +387,7 @@ class KSHData extends VChartData {
 					if(c === '0') continue;
 					if(c === '1') {
 						// Single short note
-						getNoteInfoTree(i).add(kshLine.tick, 0, null);
+						this.addNote(i, kshLine.tick, 0);
 						continue;
 					}
 					addLongInfo(i, kshLine.tick, kshLine.len);
@@ -405,7 +399,7 @@ class KSHData extends VChartData {
 					if(c === '0') continue;
 					if(c === '2') {
 						// Single short note
-						getNoteInfoTree(4+i).add(kshLine.tick, 0, null);
+						this.addNote(4+i, kshLine.tick, 0)
 						continue;
 					}
 					addLongInfo(4+i, kshLine.tick, kshLine.len);

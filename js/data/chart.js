@@ -26,12 +26,38 @@ class VChartData {
 	}
 
 	getNoteData(lane) {
+		if(lane < 0 || lane >= 6) return null;
 		if(!this.note) return null;
 		if(lane < 4) return this.note.bt ? this.note.bt[lane] : null;
 		else return this.note.fx ? this.note.fx[lane-4] : null;
 	}
 
-	// Computes the last tick of anything.
+	/// Returns: null if param is invalid, [success, node] otherwise
+	addNote(lane, tick, len) {
+		if(lane < 0 || lane >= 6) return null;
+		if(!this.note) this.note = {};
+		if(!this.note.bt) this.note.bt = [];
+		if(!this.note.fx) this.note.fx = [];
+
+		this._initTreeArr(this.note.bt, 4);
+		this._initTreeArr(this.note.fx, 2);
+
+		return this.getNoteData(lane).add(tick, len, null);
+	}
+
+	/// Returns: whether the deletion is successful
+	delNote(lane, tick) {
+		const noteData = this.getNoteData(lane);
+		if(!noteData) return false;
+
+		const node = noteData.get(tick);
+		if(!node || node.y !== tick) return false;
+
+		node.remove();
+		return true;
+	}
+
+	/// Computes the last tick of anything.
 	getLastTick() {
 		let lastTick = 0;
 		const check = (tick) => { if(lastTick < tick) lastTick = tick; }
@@ -109,6 +135,10 @@ class VChartData {
 			'fx': this.note.fx.map(note2arr),
 			'laser': this.note.laser.map(laser2arr)
 		};
+	}
+
+	_initTreeArr(arr, size) {
+		while(arr.length < size) arr.push(new AATree());
 	}
 }
 

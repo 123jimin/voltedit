@@ -231,7 +231,6 @@ class VViewRender {
 		bpmLine.position.set(0, this.view.t2p(pos), 0);
 
 		this.tickProps.add(bpmLine);
-		console.log(pos, bpm);
 	}
 
 	/** Resizing **/
