@@ -73,7 +73,7 @@ class KSHGraph {
 		}
 	}
 	getLength() {
-		return this.ys.length ? this.ys[this.ys.length-1] : 0;
+		return this.ys.length ? this.ys[this.ys.length-1]-this.iy : 0;
 	}
 	toKSON() {
 		let segments = [];
