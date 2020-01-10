@@ -164,7 +164,7 @@ class VView {
 		if(!bpmData || bpmData.size === 0) return;
 
 		bpmData.traverse((node) => {
-			this.render.addBPMChanges(node.y, 0, node.data);
+			this.render.addBPMChanges(node.y, node.data);
 		});
 
 		// While this is a little bit inefficient (already done in _redrawMeasures),

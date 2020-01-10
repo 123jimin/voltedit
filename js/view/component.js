@@ -20,6 +20,7 @@ class VChartScale {
 		this.laserFloat = 5;
 
 		this.cursorWidthRatio = 1.5;
+		this.tickPropFontSize = 12;
 
 		this.marginSide = settings.get('editor:margin:side');
 		this.marginBottom = settings.get('editor:margin:bottom');
