@@ -122,7 +122,6 @@ class VView {
 		let measureTick = 0;
 		let measureIndex = 0;
 
-		// Will be changed to 0 in the first loop
 		let currTimeSigInd = -1;
 
 		while(currTimeSigInd+1 < beatInfo.time_sig.length || measureTick <= this.lastTick) {
@@ -132,7 +131,7 @@ class VView {
 					++currTimeSigInd;
 				}
 			}
-			const currTimeSig = beatInfo.time_sig[currTimeSigInd];
+			const currTimeSig = currTimeSigInd >= 0 ? beatInfo.time_sig[currTimeSigInd] : {'v': {'n': 4, 'd': 4}};
 			const currMeasureLength = currTimeSig.v.n * this.tickUnit / currTimeSig.v.d;
 
 			// Draw a measure line and beat lines.
@@ -157,14 +156,32 @@ class VView {
 		this.render.clearTickProps();
 
 		if(!this.editor.chartData) return;
-		if(!this.editor.chartData.beat) return;
+		
+		const beatInfo = this.editor.chartData.beat;
+		if(!beatInfo) return;
 
-		const bpmData = this.editor.chartData.beat.bpm;
+		const bpmData = beatInfo.bpm;
 		if(!bpmData || bpmData.size === 0) return;
 
 		bpmData.traverse((node) => {
 			this.render.addBPMChanges(node.y, 0, node.data);
 		});
+
+		// While this is a little bit inefficient (already done in _redrawMeasures),
+		// iterating measures at here one more time is more robust.
+		if(beatInfo.time_sig) {
+			let measureTick = 0;
+			let prevMeasureInd = 0;
+			let currMeasureLength = this.tickUnit;
+			beatInfo.time_sig.forEach((sig) => {
+				measureTick += (sig.idx-prevMeasureInd) * currMeasureLength;
+				prevMeasureInd = sig.idx;
+				currMeasureLength = sig.v.n * this.tickUnit / sig.v.d;
+				
+				this.render.addTimeSig(measureTick, sig.v.n, sig.v.d);
+			});
+		}
+		
 	}
 	_redrawEditorUI() {
 		this._redrawCursor();

@@ -54,8 +54,18 @@ class VTickProp {
 		this.render = render;
 		this.tick = tick;
 
-		this.bpm = null;
-		this.beat = null;
+		this.bpm = "";
+		this.timeSig = "";
+
+		this._object = new THREE.Object3D();
+		this._object.position.y = this.render.view.t2p(tick);
+		this.render.tickProps.add(this._object);
+	}
+	setBPM(bpm) {
+		this.bpm = `${bpm}`;
+	}
+	setTimeSig(n, d) {
+		this.timeSig = `${n}/${d}`;
 	}
 }
 
@@ -136,26 +146,35 @@ class VViewRender {
 		this._clear(this.btLongs);
 		this._clear(this.fxShorts);
 		this._clear(this.btShorts);
+
+		this.fxNotesByY = {};
+		this.btNotesByY = {};
 	}
 	addBtNote(lane, pos, len) {
+		let note = null;
 		if(len === 0) {
-			this._addNote(this.btShorts, this.btShortTemplate, lane, pos);
+			note = this._addNote(this.btShorts, this.btShortTemplate, lane, pos);
 		} else {
-			this._addNote(this.btLongs, this._createLongNoteTemplate(this.view.scale.noteWidth, 1, this.view.color.btLong, len), lane, pos);
+			note = this._addNote(this.btLongs, this._createLongNoteTemplate(this.view.scale.noteWidth, 1, this.view.color.btLong, len), lane, pos);
 		}
+		this.btNotesByY[pos] = note;
 	}
 	addFxNote(lane, pos, len) {
+		let note = null;
 		if(len === 0) {
-			this._addNote(this.fxShorts, this.fxShortTemplate, lane*2, pos);
+			note = this._addNote(this.fxShorts, this.fxShortTemplate, lane*2, pos);
 		} else {
-			this._addNote(this.btLongs, this._createLongNoteTemplate(this.view.scale.noteWidth*2, 0, this.view.color.fxLong, len), lane*2, pos);
+			note = this._addNote(this.btLongs, this._createLongNoteTemplate(this.view.scale.noteWidth*2, 0, this.view.color.fxLong, len), lane*2, pos);
 		}
+		this.fxNotesByY[pos] = note;
 	}
 	_addNote(noteCollection, noteTemplate, lane, pos) {
 		const scale = this.view.scale;
 		const note = noteTemplate.create();
 		note.position.set((lane-2)*scale.noteWidth, RD(this.view.t2p(pos)), 0);
 		noteCollection.add(note);
+
+		return note;
 	}
 
 	/** Drawing laser data **/
@@ -227,12 +246,17 @@ class VViewRender {
 	/** Drawing tick props **/
 	clearTickProps() {
 		this._clear(this.tickProps);
+		this.tickPropsByY = {};
 	}
 	addBPMChanges(pos, bpm) {
-		const bpmLine = this.bpmLineTemplate.create();
-		bpmLine.position.set(0, this.view.t2p(pos), 0);
-
-		this.tickProps.add(bpmLine);
+		this._getTickProp(pos).setBPM(bpm);
+	}
+	addTimeSig(pos, n, d) {
+		this._getTickProp(pos).setTimeSig(n, d);
+	}
+	_getTickProp(pos) {
+		if(pos in this.tickPropsByY) return this.tickPropsByY[pos];
+		return this.tickPropsByY[pos] = new VTickProp(this, pos);
 	}
 
 	/** Resizing **/
@@ -305,6 +329,9 @@ class VViewRender {
 		this.fxShorts = this._createGroup(0);
 		this.btShorts = this._createGroup(0);
 
+		this.fxNotesByY = {};
+		this.btNotesByY = {};
+
 		this.btShortTemplate = this._createRectangleTemplate(0, 0, scale.noteWidth, scale.btNoteHeight, color.btFill, color.btBorder);
 		this.fxShortTemplate = this._createRectangleTemplate(0, 0, scale.noteWidth*2, scale.fxNoteHeight, color.fxFill, color.fxBorder);
 	}
@@ -336,6 +363,7 @@ class VViewRender {
 		const color = this.view.color;
 
 		this.tickProps = this._createGroup(VVIEW_EDITOR_UI_Z);
+		this.tickPropsByY = {};
 
 		this.bpmLineTemplate = new VModelTemplate(THREE.Line,
 			this.cursorLineGeometry,
