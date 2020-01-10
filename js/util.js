@@ -58,12 +58,6 @@ class AATree {
 	_removeChild(node) {
 		this.root = null;
 	}
-	_check() {
-		return this.root ? this.root._check() : null;
-	}
-	_dump() {
-		return this.root ? this.root._dump('') : "";
-	}
 	_adjustAfterRemove() {}
 	_notifyRemove() {
 		--this.size;
@@ -231,46 +225,5 @@ class AATreeNode {
 				this._right._level = shouldBe;
 			}
 		}
-	}
-	_check() {
-		if(this._isLeaf()){
-			return this._level === 1 ? null : [this, "leaf level"];
-		}
-		if(this._left){
-			const ch = this._left._check();
-			if(ch) return ch;
-			if(this._left.y + this._left.l >= this.y){
-				return [this, "left value"];
-			}
-			if(this._left._level !== this._level-1){
-				return [this, "left level"];
-			}
-		}else if(this._level !== 1){
-			return [this, "null left level"];
-		}
-		if(this._right){
-			const ch = this._right._check();
-			if(ch) return ch;
-			if(this.y + this.l >= this._right.y){
-				return [this, "right value"];
-			}
-			if(this._right._level > this._level || this._right._level < this._level-1){
-				return [this, "right level"];
-			}
-			if(this._right._right && this._right._right._level >= this._level){
-				return [this, "right right level"];
-			}
-		}
-		return null;
-	}
-	_dump(indent) {
-		const oneIndent = '    ';
-		let str = `${indent}: ${this._level} ${this.y} ${this.l}\n`;
-		if(this._isLeaf()) return str;
-		if(this._left) str += this._left._dump(indent+oneIndent);
-		else str += `${indent}${oneIndent}: left null\n`
-		if(this._right) str += this._right._dump(indent+oneIndent);
-		else str += `${indent}${oneIndent}: right null\n`
-		return str;
 	}
 }
