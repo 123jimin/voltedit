@@ -49,7 +49,7 @@ class AATree {
 		return this.root ? this.root.last() : null;
 	}
 	traverse(visitor) {
-		this.root.traverse(visitor);
+		if(this.root) this.root.traverse(visitor);
 	}
 	_setChild(node) {
 		this.root = node;
