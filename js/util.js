@@ -19,9 +19,12 @@ const QUAD = (points, [ax, ay], [bx, by], [cx, cy], [dx, dy]) => points.push(
 
 /// AA tree for managing non-overlapping intervals
 class AATree {
-	constructor() {
+	constructor(initData) {
 		this.size = 0;
 		this.root = null;
+		if(initData) initData.forEach((data) => {
+			this.add(data.y, data.l || 0, data.data);
+		});
 	}
 	add(y, l, data) {
 		const node = new AATreeNode(+y, +l, data);

@@ -260,13 +260,18 @@ class KSHData extends VChartData {
 	}
 	/// Processes timing of the chart, and computes `tick` and `len` of each line
 	_setKSONBeatInfo() {
-		const beatInfo = this.beat = {'bpm': [], 'time_sig': [], 'scroll_speed': [], 'resolution': KSH_DEFAULT_MEASURE_TICK / 4};
+		const beatInfo = this.beat = {
+			'bpm': new AATree(),
+			'time_sig': [],
+			'scroll_speed': new AATree(),
+			'resolution': KSH_DEFAULT_MEASURE_TICK / 4
+		};
 		const ksmMeta = this._ksmMeta;
 
 		if('t' in ksmMeta) {
 			const initBPM = parseFloat(ksmMeta.t);
 			if(initBPM <= 0 || !isFinite(initBPM)) throw new Error("Invalid ksh init BPM!");
-			beatInfo.bpm.push({'y': 0, 'v': initBPM});
+			beatInfo.bpm.add(0, 0, initBPM);
 		}
 
 		if('beat' in ksmMeta) {
@@ -310,7 +315,7 @@ class KSHData extends VChartData {
 							break;
 						case 't':
 							if(floatValue <= 0 || !isFinite(floatValue)) throw new Error("Invalid ksh BPM value!");
-							beatInfo.bpm.push({'y': tick, 'v': floatValue});
+							beatInfo.bpm.add(tick, 0, floatValue);
 							break;
 						case 'stop':
 							if(intValue <= 0 || !isFinite(intValue)) throw new Error("Invalid ksh stop length!");

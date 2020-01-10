@@ -1,19 +1,22 @@
+/// KSON-based chart data structure with some modifications.
+/// Most noticeably, many arrays with {'y': ..., 'v': ...} are replaced by AATrees.
 class VChartData {
 	constructor() {
-		// KSON-based structure with some modifications
 		this.version = "Unknown VOLTEdit chart data";
 		this.meta = {
 			'title': "", 'artist': "", 'chart_author': "",
 			'difficulty': {'idx': 0},
 			'level': 1,
 		};
+
+		// XXX: bpm is an AATree
 		this.beat = {
-			'bpm': [{'y': 0, 'v': 120}],
+			'bpm': new AATree([{'y': 0, 'data': 120}]),
 			'resolution': 240,
 		};
 		this.gauge = {};
 
-		// XXX: Unlike KSON, bt, fx, laser are each an array of AATrees.
+		// XXX: bt, fx, laser are each an array of AATrees
 		this.note = {};
 
 		this.audio = {};
@@ -36,7 +39,7 @@ class VChartData {
 		}
 
 		if(this.beat) {
-			checkArr(this.beat.bpm);
+			checkTree(this.beat.bpm);
 
 			if(this.beat.time_sig && this.beat.time_sig.length > 0) {
 				let measureTick = 0;
