@@ -25,29 +25,24 @@ class VChartData {
 		this.impl = {};
 	}
 
-	getNoteData(lane) {
-		if(lane < 0 || lane >= 6) return null;
+	getNoteData(type, lane) {
 		if(!this.note) return null;
-		if(lane < 4) return this.note.bt ? this.note.bt[lane] : null;
-		else return this.note.fx ? this.note.fx[lane-4] : null;
+		if(!(type in this.note)) return null;
+		return this.note[type][lane];
 	}
 
 	/// Returns: null if param is invalid, [success, node] otherwise
-	addNote(lane, tick, len) {
-		if(lane < 0 || lane >= 6) return null;
+	addNote(type, lane, tick, len) {
 		if(!this.note) this.note = {};
-		if(!this.note.bt) this.note.bt = [];
-		if(!this.note.fx) this.note.fx = [];
+		if(!this.note[type]) this.note[type] = [];
+		this._initTreeArr(this.note[type], lane+1);
 
-		this._initTreeArr(this.note.bt, 4);
-		this._initTreeArr(this.note.fx, 2);
-
-		return this.getNoteData(lane).add(tick, len, null);
+		return this.getNoteData(type, lane).add(tick, len, null);
 	}
 
 	/// Returns: whether the deletion is successful
-	delNote(lane, tick) {
-		const noteData = this.getNoteData(lane);
+	delNote(type, lane, tick) {
+		const noteData = this.getNoteData(type, lane);
 		if(!noteData) return false;
 
 		const node = noteData.get(tick);

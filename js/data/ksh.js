@@ -334,22 +334,23 @@ class KSHData extends VChartData {
 		this._initTreeArr(this.note.laser, 2);
 
 		// Stores [start, len] long note infos
-		// Index 0-3: BT, 4-5: FX
-		let longInfo = [null, null, null, null, null, null];
-		const cutLongNote = (lane) => {
-			if(longInfo[lane] === null) return;
-			const result = this.addNote(lane, longInfo[lane][0], longInfo[lane][1]);
+		let longInfo = {'bt': [null, null, null, null], 'fx': [null, null]};
+		const cutLongNote = (type, lane) => {
+			const lit = longInfo[type];
+			if(lit[lane] === null) return;
+			const result = this.addNote(type, lane, lit[lane][0], lit[lane][1]);
 			if(!result[0]){
-				throw new Error(`Invalid ksh long notes! (${result[1].y} and ${longInfo[lane][0]} at ${lane} collides)`);
+				throw new Error(`Invalid ksh long notes! (${result[1].y} and ${lit[lane][0]} at ${lane} collides)`);
 			}
-			longInfo[lane] = null;
+			lit[lane] = null;
 		};
-		const addLongInfo = (lane, y, l) => {
-			if(longInfo[lane] === null) longInfo[lane] = [y, 0];
-			if(longInfo[lane][0] + longInfo[lane][1] != y) {
+		const addLongInfo = (type, lane, y, l) => {
+			const lit = longInfo[type];
+			if(lit[lane] === null) lit[lane] = [y, 0];
+			if(lit[lane][0] + lit[lane][1] != y) {
 				throw new Error("Invalid ksh long notes!");
 			}
-			longInfo[lane][1] += l;
+			lit[lane][1] += l;
 		};
 
 		// Stores current laser segments and how wide should they be
@@ -383,26 +384,26 @@ class KSHData extends VChartData {
 				// BT
 				for(let i=0; i<4; i++) {
 					const c = kshLine.bt[i];
-					if(c === '0' || c === '1') cutLongNote(i);
+					if(c === '0' || c === '1') cutLongNote('bt', i);
 					if(c === '0') continue;
 					if(c === '1') {
 						// Single short note
-						this.addNote(i, kshLine.tick, 0);
+						this.addNote('bt', i, kshLine.tick, 0);
 						continue;
 					}
-					addLongInfo(i, kshLine.tick, kshLine.len);
+					addLongInfo('bt', i, kshLine.tick, kshLine.len);
 				}
 				// FX
 				for(let i=0; i<2; i++) {
 					const c = kshLine.fx[i];
-					if(c === '0' || c === '2') cutLongNote(4+i);
+					if(c === '0' || c === '2') cutLongNote('fx', i);
 					if(c === '0') continue;
 					if(c === '2') {
 						// Single short note
-						this.addNote(4+i, kshLine.tick, 0)
+						this.addNote('fx', i, kshLine.tick, 0)
 						continue;
 					}
-					addLongInfo(4+i, kshLine.tick, kshLine.len);
+					addLongInfo('fx', i, kshLine.tick, kshLine.len);
 				}
 				// Laser
 				for(let i=0; i<2; i++) {
@@ -421,7 +422,8 @@ class KSHData extends VChartData {
 			});
 		});
 
-		for(let i=0; i<6; ++i) cutLongNote(i);
+		for(let i=0; i<4; ++i) cutLongNote('bt', i);
+		for(let i=0; i<2; ++i) cutLongNote('fx', i);
 		for(let i=0; i<2; ++i) cutLaserSegment(i);
 	}
 }
