@@ -32,6 +32,10 @@ class VView {
 
 		document.addEventListener('mousemove', this.onMouseMove.bind(this), {'passive': true});
 		document.addEventListener('mouseup', this.onMouseUp.bind(this), {'passive': true});
+
+		document.addEventListener('touchmove', TOUCH(this.onMouseMove.bind(this)), {'passive': true});
+		document.addEventListener('touchcancel', TOUCH(this.onMouseUp.bind(this)), {'passive': true});
+		document.addEventListener('touchend', TOUCH(this.onMouseUp.bind(this)), {'passive': true});
 	}
 
 	/// Tick to pixel

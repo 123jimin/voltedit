@@ -17,6 +17,12 @@ const QUAD = (points, [ax, ay], [bx, by], [cx, cy], [dx, dy]) => points.push(
 	ax, ay, 0, bx, by, 0, cx, cy, 0, ax, ay, 0, cx, cy, 0, dx, dy, 0
 );
 
+const TOUCH = (func) => (event) => {
+	const changedTouches = event.changedTouches;
+	if(!changedTouches || changedTouches.length < 1) return;
+	func(changedTouches[0]);
+};
+
 /// AA tree for managing non-overlapping intervals
 class AATree {
 	constructor(initData) {
