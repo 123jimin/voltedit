@@ -30,8 +30,6 @@ Also see the [milestones page](https://github.com/123jimin/voltedit/milestones).
 
 ### Simple Chart Creator
 These features will be implemented by this weekend.
-* Displaying BPM and time signatures
-* Redo/undo system
 * Keyboard shortcuts
 * Reading simple KSON files
 * Adding notes
