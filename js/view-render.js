@@ -48,6 +48,15 @@ class VViewColumn {
 	}
 }
 
+/// Managing data shown on a tick
+class VTickProp {
+	constructor() {
+		// An array of [text, color]s
+		this.left = [];
+		this.right = [];
+	}
+}
+
 /// Managing a geometry, a material, and an object type together
 class VModelTemplate {
 	constructor(type, geometry, material) {
@@ -117,9 +126,6 @@ class VViewRender {
 		beatLine.position.set(0, this.view.t2p(pos), 0);
 
 		this.measureLines.add(beatLine);
-	}
-	addBPMChanges(pos, bpm) {
-		console.log(pos, bpm);
 	}
 
 	/** Drawing note data **/
@@ -214,6 +220,18 @@ class VViewRender {
 
 		laserObject.add(laserBody);
 		this.lasers.add(laserObject);
+	}
+
+	/** Drawing tick props **/
+	clearTickProps() {
+		this._clear(this.tickProps);
+	}
+	addBPMChanges(pos, bpm) {
+		const bpmLine = this.bpmLineTemplate.create();
+		bpmLine.position.set(0, this.view.t2p(pos), 0);
+
+		this.tickProps.add(bpmLine);
+		console.log(pos, bpm);
 	}
 
 	/** Resizing **/
@@ -315,6 +333,8 @@ class VViewRender {
 
 	_initTickPropData() {
 		const color = this.view.color;
+
+		this.tickProps = this._createGroup(VVIEW_EDITOR_UI_Z);
 
 		this.bpmLineTemplate = new VModelTemplate(THREE.Line,
 			this.cursorLineGeometry,

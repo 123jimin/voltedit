@@ -150,7 +150,17 @@ class VView {
 		}
 	}
 	_redrawTickProps() {
+		this.render.clearTickProps();
 
+		if(!this.editor.chartData) return;
+		if(!this.editor.chartData.beat) return;
+
+		const bpmData = this.editor.chartData.beat.bpm;
+		if(!bpmData || bpmData.size === 0) return;
+
+		bpmData.traverse((node) => {
+			this.render.addBPMChanges(node.y, 0, node.data);
+		});
 	}
 	_redrawEditorUI() {
 		this._redrawCursor();
