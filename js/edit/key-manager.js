@@ -21,7 +21,7 @@ class VKeyManager {
 
 	_isMatch(template) {
 		template = template.split(' ');
-		if(template.length < this.queue.length) return false;
+		if(template.length > this.queue.length) return false;
 		for(let i=0; i<template.length; ++i){
 			const t = template[i];
 			if(t === '*') continue;

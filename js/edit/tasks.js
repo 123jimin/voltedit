@@ -15,9 +15,8 @@ class VNoteAddTask extends VTask {
 		const result = this.chartData.addNote(this.type, this.lane, this.tick, this.len);
 		if(!result || result[0] === false) return false;
 
-		// TODO: do this more smartly
 		this.editor.view.setCursor(this.tick);
-		this.editor.view.redraw();
+		this.editor.view.addNote(this.type, this.lane, this.tick, this.len);
 		return true;
 	}
 	_makeInverse() {
@@ -42,9 +41,8 @@ class VNoteDelTask extends VTask {
 	_commit() {
 		if(!this.chartData.delNote(this.type, this.lane, this.tick)) return false;
 
-		// TODO: do this more smartly
 		this.editor.view.setCursor(this.tick);
-		this.editor.view.redraw();
+		this.editor.view.delNote(this.type, this.lane, this.tick);
 		return true;
 	}
 	_makeInverse() {

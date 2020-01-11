@@ -50,8 +50,8 @@ class VViewRender {
 		this._clear(this.fxShorts);
 		this._clear(this.btShorts);
 
-		this.fxNotesByY = {};
-		this.btNotesByY = {};
+		this.fxNotesByY = [{}, {}];
+		this.btNotesByY = [{}, {}, {}, {}];
 	}
 	addBtNote(lane, pos, len) {
 		let note = null;
@@ -60,7 +60,7 @@ class VViewRender {
 		} else {
 			note = this._addNote(this.btLongs, this._createLongNoteTemplate(this.view.scale.noteWidth, 1, this.view.color.btLong, len), lane, pos);
 		}
-		this.btNotesByY[pos] = note;
+		this.btNotesByY[lane][pos] = note;
 	}
 	addFxNote(lane, pos, len) {
 		let note = null;
@@ -69,7 +69,7 @@ class VViewRender {
 		} else {
 			note = this._addNote(this.btLongs, this._createLongNoteTemplate(this.view.scale.noteWidth*2, 0, this.view.color.fxLong, len), lane*2, pos);
 		}
-		this.fxNotesByY[pos] = note;
+		this.fxNotesByY[lane][pos] = note;
 	}
 	_addNote(noteCollection, noteTemplate, lane, pos) {
 		const scale = this.view.scale;
@@ -78,6 +78,18 @@ class VViewRender {
 		noteCollection.add(note);
 
 		return note;
+	}
+	delBtNote(lane, pos) {
+		this._delNote(this.btNotesByY, lane, pos);
+	}
+	delFxNote(lane, pos) {
+		this._delNote(this.fxNotesByY, lane, pos);
+	}
+	_delNote(notesByY, lane, pos){
+		const note = notesByY[lane][pos];
+		note.parent.remove(note);
+
+		delete notesByY[lane][pos];
 	}
 
 	/** Drawing laser data **/
@@ -234,8 +246,8 @@ class VViewRender {
 		this.fxShorts = this._createGroup(0);
 		this.btShorts = this._createGroup(0);
 
-		this.fxNotesByY = {};
-		this.btNotesByY = {};
+		this.fxNotesByY = [{}, {}];
+		this.btNotesByY = [{}, {}, {}, {}];
 
 		this.btShortTemplate = this._createRectangleTemplate(0, 0, scale.noteWidth, scale.btNoteHeight, color.btFill, color.btBorder);
 		this.fxShortTemplate = this._createRectangleTemplate(0, 0, scale.noteWidth*2, scale.fxNoteHeight, color.fxFill, color.fxBorder);

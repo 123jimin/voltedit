@@ -58,6 +58,33 @@ class VView {
 	redraw() {
 		this.renderQueue.push(this._redraw, VVIEW_RENDER_PRIORITY.REDRAW);
 	}
+	refresh() {
+		this.renderQueue.push(NOP, VVIEW_RENDER_PRIORITY.NONE);
+	}
+
+	/// Edit tasks
+	addNote(type, lane, tick, len) {
+		switch(type){
+			case 'bt':
+				this.render.addBtNote(lane, tick, len);
+				break;
+			case 'fx':
+				this.render.addFxNote(lane, tick, len);
+				break;
+		}
+		this.refresh();
+	}
+	delNote(type, lane, tick) {
+		switch(type){
+			case 'bt':
+				this.render.delBtNote(lane, tick);
+				break;
+			case 'fx':
+				this.render.delFxNote(lane, tick);
+				break;
+		}
+		this.refresh();
+	}
 
 	/// Clear and redraw everything.
 	_redraw() {

@@ -1,6 +1,8 @@
 /// JS file containing misc util functions
 
-const SIGN = (x) => { x < 0 ? -1 : x > 0 ? 1 : 0; }
+const NOP = () => {};
+
+const SIGN = (x) => { x < 0 ? -1 : x > 0 ? 1 : 0; };
 
 /// Shorthand for Math.round()
 const RD = Math.round;
