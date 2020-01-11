@@ -16,6 +16,7 @@ class VNoteAddTask extends VTask {
 		if(!result || result[0] === false) return false;
 
 		// TODO: do this more smartly
+		this.editor.view.setCursor(this.tick);
 		this.editor.view.redraw();
 		return true;
 	}
@@ -42,6 +43,7 @@ class VNoteDelTask extends VTask {
 		if(!this.chartData.delNote(this.type, this.lane, this.tick)) return false;
 
 		// TODO: do this more smartly
+		this.editor.view.setCursor(this.tick);
 		this.editor.view.redraw();
 		return true;
 	}
