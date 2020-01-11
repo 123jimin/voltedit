@@ -137,7 +137,6 @@ const SIMPLECODE = (event) => {
 	if(event.altKey && !code.startsWith('Alt')) code = `Alt+${code}`;
 	if(event.ctrlKey && !code.startsWith('Ctrl')) code = `Ctrl+${code}`;
 
-	console.log(code);
 	return code;
 };
 

@@ -5,15 +5,20 @@ class VKeyManager {
 		this.ops = {};
 		this.bindMap = {};
 		this.queue = [];
+
+		this._initOps();
+		this.makeBindMap();
 		
 		document.body.addEventListener('keydown', this._onKeyPress.bind(this));
 	}
-	regOp(op, func) {
-		this.ops[op] = func;
+
+	clearAllBinds() {
+		this.bindMap = {};
 	}
 	bind(key, op) {
 		this.bindMap[key] = op;
 	}
+
 	_isMatch(template) {
 		template = template.split(' ');
 		if(template.length < this.queue.length) return false;
@@ -21,8 +26,9 @@ class VKeyManager {
 			const t = template[i];
 			if(t === '*') continue;
 			
-			const q = this.queue[i+(queue.length-template.length)];
+			const q = this.queue[i+(this.queue.length-template.length)];
 			if(t === q) continue;
+
 			if(t.includes('/')){
 				if(t.split('/').includes(q)) continue;
 			}
@@ -62,7 +68,19 @@ class VKeyManager {
 			}
 		}
 
-		if(this.queue.length > 16) this.queue.shift();
-		console.log(this.queue);
+		if(this.queue.length >= 16) this.queue.shift();
+	}
+	
+	_initOps() {
+		this._registerOp('max-440', () => { document.location.href = "https://youtu.be/5tCEzv_bu9Q"; });
+	}
+	_registerOp(op, func) {
+		this.ops[op] = func;
+	}
+
+	makeBindMap() {
+		this.bindMap = {};
+
+		this.bind("Up Up Down Down Left Right Left Right B A Enter", 'max-440');
 	}
 }
