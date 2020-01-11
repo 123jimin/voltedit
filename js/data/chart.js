@@ -56,7 +56,6 @@ class VChartData {
 	getLastTick() {
 		let lastTick = 0;
 		const check = (tick) => { if(lastTick < tick) lastTick = tick; }
-		const checkArr = (arr) => { if(arr && arr.length) check(arr[arr.length-1].y); };
 		const checkTree = (tree) => { const last = tree.last(); if(last) check(last.y+last.l); };
 
 		if(this.note){
