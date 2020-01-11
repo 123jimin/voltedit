@@ -1,0 +1,64 @@
+@KEY_COLOR: hsl(165, 80%, 55%);
+
+@import "toolbar.less";
+@import "chart.less";
+@import "splash.less";
+
+body {
+	background-color: black;
+	font-size: 15px;
+	font-family: sans-serif;
+}
+
+button {
+	color: inherit;
+}
+
+div.veditor {
+	position: absolute;
+	left: 0; right: 0; top: 0; bottom: 0;
+
+	display: flex;
+	flex-flow: column;
+
+	div.drop-file-indicator {
+		position: absolute; z-index: 1000;
+		left: 0; right: 0; top: 0;
+
+		transition: opacity 0.2s ease-out;
+		background-color: hsla(180, 50%, 50%, 0.5);
+		opacity: 0; height: 0; overflow: hidden;
+		user-select: none;
+
+		color: white;
+		display: flex;
+		align-items: center;
+		justify-items: center;
+
+		&.active {
+			opacity: 1; bottom: 0; height: auto;
+		}
+
+		&>span {
+			width: 100%;
+			font-size: 4em;
+			font-family: sans-serif;
+			font-weight: bold;
+			text-align: center;
+		}
+	}
+}
+
+div#version-info {
+	position: fixed;
+	pointer-events: none;
+	user-select: none;
+	right: 0; bottom: 0;
+	z-index: -1000;
+
+	color: #444;
+	font-size: .9em;
+	font-family: monospace;
+
+	padding: .2em .4em;
+}

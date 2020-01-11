@@ -1,0 +1,40 @@
+body.loading {
+	div#splash {
+		opacity: 1;
+	}
+
+	div.veditor {
+		display: none;
+	}
+}
+
+div#splash {
+	position: fixed;
+	left: 0; right: 0; top: 0; bottom: 0;
+	transition: opacity 100ms ease-out;
+	opacity: 0;
+	z-index: 999999;
+	
+	pointer-events: none;
+	user-select: none;
+
+	background-color: black;
+	color: #FAFAFA;
+	font-family: sans-serif;
+
+	h1, h2 {
+		text-align: center;
+	}
+
+	h1 {
+		font-size: 5em;
+		line-height: 2em;
+		text-shadow: 3px 3px 6px #666;
+	}
+
+	h2 {
+		font-size: 2em;
+		color: #AAA;
+	}
+}
+

@@ -1,0 +1,123 @@
+@TOOLBAR_BG: lighten(desaturate(@KEY_COLOR, 30%), 75%, relative);
+@TOOLBAR_TOP: darken(@KEY_COLOR, 30%, relative);
+
+div.veditor div.toolbar {
+	flex: 0 1 auto;
+	background-color: @TOOLBAR_TOP;
+	box-shadow: 0 3px 4px black;
+	
+	input[type="number"] {
+		width: 3em;
+
+		&.toolbar-edit-snap {
+			font-size: 2.5em;
+			width: 2.25em;
+		}
+	}
+	
+	button {
+		font-size: .9em;
+		cursor: pointer;
+		background-color: @TOOLBAR_BG;
+
+		&:focus {
+			outline: 0;
+		}
+
+		&[style*="background-image"] {
+			width: 3em; height: 3em;
+			padding: 3.1em 0 0;
+			background-size: 2.7em;
+			background-position: .15em .15em;
+			background-repeat: no-repeat;
+			border: none;
+			overflow: visible;
+
+			transition: background-color 100ms ease-out;
+
+			&:hover {
+				background-color: lighten(@TOOLBAR_BG, 30%, relative);
+				font-weight: bold;
+			}
+		}
+	}
+
+	div.toolbar-tab {
+		user-select: none;
+
+		&>ul li {
+			display: inline-block;
+			padding: .2em .4em .3em;
+			margin-left: .2em;
+
+			color: white;
+			cursor: pointer;
+
+			&:hover {
+				background-color: lighten(desaturate(@KEY_COLOR, 30%), 20%, relative);
+			}
+			&.active {
+				background-color: @TOOLBAR_BG;
+				color: black;
+			}
+		}
+	}
+
+	div.toolbar-panels {
+		height: 5em; position: relative;
+		background-color: @TOOLBAR_BG;
+		overflow-x: auto;
+		overflow-x: overlay;
+	}
+
+	div.toolbar-panel {
+		color: darken(@KEY_COLOR, 80%, relative);
+		display: none;
+		overflow-y: hidden;
+		&.active {
+			display: flex;
+			flex-flow: row;
+			min-width: max-content;
+			position: absolute; left: 0; top: 0; bottom: 0;
+
+			background-color: @TOOLBAR_BG;
+		}
+	}
+
+	div.toolbar-section {
+		font-size: .8em;
+		min-width: 6em;
+		position: relative;
+		padding: .2em .3em;
+		text-align: center;
+
+		&.short {
+			line-height: 4em;
+		}
+
+		&:after {
+			content: ""; position: absolute;
+			right: 0; width: 1px; top: .2em; bottom: .2em;
+			background-color: darken(desaturate(@TOOLBAR_BG, 30%), 5%);
+		}
+
+		&>h4 {
+			position: absolute;
+			left: 0; right: 0; bottom: .6em;
+			user-select: none;
+			font-size: .9em;
+			line-height: 1.2em;
+			text-align: center;
+			color: desaturate(@KEY_COLOR, 50%, relative);
+		}
+
+		&>table {
+			margin-top: .1em;
+			border-collapse: collapse;
+
+			td {
+				padding: .1em .4em;
+			}
+		}
+	}
+}

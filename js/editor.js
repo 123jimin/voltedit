@@ -28,6 +28,8 @@ class VEditor {
 		this._dropFileIndicator = elem.querySelector('.drop-file-indicator');
 		this._dropFileIndicatorShown = false;
 		this._addEventListeners();
+
+		this._onReady();
 	}
 
 	getTicksPerWholeNote() {
@@ -197,6 +199,10 @@ class VEditor {
 		this.openFileList(files);
 	}
 
+	/* Misc */
+	_onReady() {
+		document.body.classList.remove('loading');
+	}
 	_addEventListeners() {
 		window.addEventListener('resize', this.onResize.bind(this));
 

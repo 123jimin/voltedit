@@ -1,4 +1,7 @@
 test/* linguist-vendored
 *.min.js linguist-generated
 *.min.js.map linguist-generated
+*.css linguist-generated
+*.css.map linguist-generated
+*.version.js linguist-generated
 *.kson linguist-language=JSON

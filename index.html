@@ -10,10 +10,14 @@
 		<meta name='description' content="VOLTEdit: web-based KSON chart editor"/>
 		<title>VOLTEdit</title>
 		<link rel='stylesheet' href="https://common.0xF.kr/css/reset.css"/>
-		<link rel='stylesheet' href="./style.css"/>
-		<link rel='stylesheet' href="./toolbar.css"/>
+		<link rel='stylesheet' href="./css/main.css"/>
+		<script type='text/javascript' src="./js/voltedit.version.js"></script>
 	</head>
-	<body>
+	<body class='loading'>
+		<div id='splash'>
+			<h1>VOLTEdit</h1>
+			<h2>Web-Based KSON Chart Editor</h2>
+		</div>
 		<div id='editor' class='veditor'>
 			<div class='toolbar'>
 				<div class='toolbar-tab'>
@@ -114,6 +118,9 @@
 				<span class='txt-drop-file-here'>Drop to Open</span>
 			</div>
 		</div>
+
+		<div id='version-info'></div>
+		<script type='text/javascript'>document.getElementById('version-info').innerText="VOLTEdit VER "+VOLTEDIT_VERSION.str;</script>
 
 		<!-- External Libraries -->
 		<script src="https://common.0xF.kr/js/three.min.js"></script>
