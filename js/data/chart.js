@@ -9,7 +9,7 @@ class VChartData {
 			'level': 1,
 		};
 
-		// XXX: bpm is an AATree
+		// XXX: bpm, scroll_speed are each an AATree, but time_sig is NOT.
 		this.beat = {
 			'bpm': new AATree([{'y': 0, 'data': 120}]),
 			'resolution': 240,
@@ -50,6 +50,10 @@ class VChartData {
 
 		node.remove();
 		return true;
+	}
+
+	addBPM(tick, value) {
+		return this.beat.bpm.add(tick, 0, value);
 	}
 
 	/// Computes the last tick of anything.
@@ -94,7 +98,7 @@ class VChartData {
 		const kson = {
 			'version': this.version,
 			'meta': this.meta,
-			'beat': this.beat,
+			'beat': this._getBeatNode(),
 			'gauge': this.gauge,
 			'note': this._getKSONNote(),
 			'audio': this.audio,
@@ -104,6 +108,27 @@ class VChartData {
 		};
 
 		return JSON.stringify(kson);
+	}
+	_getBeatNode() {
+		const beatNode = {
+			'bpm': []
+		};
+
+		this.beat.bpm.traverse((node) => {
+			beatNode.bpm.push({'y': node.y, 'v': node.data});
+		});
+
+		if(this.beat.time_sig && this.beat.time_sig.length > 0){
+			beatNode.time_sig = this.beat.time_sig;
+		}
+
+		// TODO: What should I do with scroll_speed?
+
+		if(this.beat.resolution && this.beat.resolution !== 240){
+			beatNode.resolution = this.beat.resolution;
+		}
+
+		return beatNode;
 	}
 	_getKSONNote() {
 		const note2arr = (tree) => {
@@ -119,8 +144,9 @@ class VChartData {
 			const arr = [];
 			tree.traverse((node) => {
 				const obj = {'y': node.y};
-				for(let k in node.data)
-					obj[k] = node.data[k];
+				const data = node.data;
+				if('v' in data) obj.v = data.v;
+				if('wide' in data && data.wide !== 1) obj.wide = data.wide;
 				arr.push(obj);
 			});
 			return arr;

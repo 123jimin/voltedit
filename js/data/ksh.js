@@ -162,16 +162,19 @@ class KSHData extends VChartData {
 	constructor(str) {
 		super();
 
-		this.parser = new KSHParser(this);
+		const parser = new KSHParser(this);
 		this._ksmMeta = {
 			'version': "ksh",
 		};
 		this._ksmMeasures = [];
 
-		str.split('\n').map((line) => this.parser.readLine(line.replace(/^[\r\n\uFEFF]+|[\r\n]+$/g, '')));
-		this.parser.end();
+		str.split('\n').map((line) => parser.readLine(line.replace(/^[\r\n\uFEFF]+|[\r\n]+$/g, '')));
+		parser.end();
 
 		this._setKSONData();
+		
+		delete this._ksmMeta;
+		delete this._ksmMeasures;
 	}
 
 	setKSHMeta(key, value) {
@@ -226,7 +229,7 @@ class KSHData extends VChartData {
 		if('t' in ksmMeta) meta.disp_bpm = ksmMeta.t;
 		if('to' in ksmMeta) {
 			meta.std_bpm = parseFloat(ksmMeta.to);
-			if(!isFinite(meta.std_bpm) || meta.std_bpm < 0)
+			if(!isFinite(meta.std_bpm) || meta.std_bpm <= 0)
 				throw new Error("Invalid ksh `to` value!");
 		}
 		if('jacket' in ksmMeta) meta.jacket_filename = ksmMeta.jacket;
