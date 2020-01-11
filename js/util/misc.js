@@ -1,5 +1,6 @@
 /// JS file containing misc util functions
 
+const SIGN = (x) => { x < 0 ? -1 : x > 0 ? 1 : 0; }
 
 /// Shorthand for Math.round()
 const RD = Math.round;
@@ -12,6 +13,9 @@ const CLIP = (x, a, b) => x<a ? a : x>b ? b : !isFinite(x) ? a : x;
 
 /// Align to the value
 const ALIGN = (a, x) => x%a === 0 ? x : RD(x/a)*a;
+
+/// Change the value, based on desired direction
+const ALIGN_STEP = (a, orig, dir) => ALIGN(a, orig+dir*a);
 
 /// Create a quad from 2D coordinates
 const QUAD = (points, [ax, ay], [bx, by], [cx, cy], [dx, dy]) => points.push(

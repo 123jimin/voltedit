@@ -77,16 +77,21 @@ class VKeyManager {
 	}
 	
 	_initOps() {
-		this._registerOp('undo', this.editor.undo);
-		this._registerOp('redo', this.editor.redo);
-		
-		this._registerOp('add-bt-a', this.editor.addBt.bind(this.editor, 0));
-		this._registerOp('add-bt-b', this.editor.addBt.bind(this.editor, 1));
-		this._registerOp('add-bt-c', this.editor.addBt.bind(this.editor, 2));
-		this._registerOp('add-bt-d', this.editor.addBt.bind(this.editor, 3));
+		const editor = this.editor;
 
-		this._registerOp('add-fx-l', this.editor.addFx.bind(this.editor, 0));
-		this._registerOp('add-fx-r', this.editor.addFx.bind(this.editor, 1));
+		this._registerOp('undo', editor.undo);
+		this._registerOp('redo', editor.redo);
+
+		this._registerOp('cursor-forward', editor.moveCursor.bind(editor, +1));
+		this._registerOp('cursor-backward', editor.moveCursor.bind(editor, -1));
+		
+		this._registerOp('add-bt-a', editor.addBt.bind(editor, 0));
+		this._registerOp('add-bt-b', editor.addBt.bind(editor, 1));
+		this._registerOp('add-bt-c', editor.addBt.bind(editor, 2));
+		this._registerOp('add-bt-d', editor.addBt.bind(editor, 3));
+
+		this._registerOp('add-fx-l', editor.addFx.bind(editor, 0));
+		this._registerOp('add-fx-r', editor.addFx.bind(editor, 1));
 		
 		this._registerOp('max-440', function(){ document.location.href = "https://youtu.be/5tCEzv_bu9Q"; });
 	}
@@ -99,6 +104,9 @@ class VKeyManager {
 
 		this.bind("Ctrl+Z", 'undo');
 		this.bind("Ctrl+Y", 'redo');
+
+		this.bind("Up", 'cursor-forward');
+		this.bind("Down", 'cursor-backward');
 
 		this.bind("1", 'add-bt-a');
 		this.bind("2", 'add-bt-b');

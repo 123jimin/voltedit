@@ -36,6 +36,7 @@ class VEditor {
 		if(!this.chartData) return 0;
 		return ((this.chartData.beat && this.chartData.beat.resolution) || 240)*4;
 	}
+
 	setEditSnap(snap) {
 		const oldSnapBeat = this._editSnapBeat;
 		this._setEditSnap(snap);
@@ -77,9 +78,8 @@ class VEditor {
 	updateEditSnap() {
 		this.setEditSnap(this._editSnapBeat);
 	}
-
-	onResize() {
-		this.view.resize();
+	moveCursor(dir) {
+		this.view.setCursor(ALIGN_STEP(this._editSnapTick, this.view.cursorStartLoc, dir));
 	}
 
 	/* Editing File */
@@ -200,6 +200,9 @@ class VEditor {
 	}
 
 	/* Misc */
+	onResize() {
+		this.view.resize();
+	}
 	_onReady() {
 		document.body.classList.remove('loading');
 	}
