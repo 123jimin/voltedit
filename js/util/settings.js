@@ -27,7 +27,7 @@ class VSettings {
 		this._define('editor:margin:side', 15);
 		this._define('editor:margin:bottom', 40);
 		this._define('editor:measure:scale', 20);
-		this._define('editor:columns', 1);
+		this._define('editor:columns', 4);
 	}
 
 	_define(key, defaultValue) {
