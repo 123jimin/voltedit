@@ -30,24 +30,24 @@ Also see the [milestones page](https://github.com/123jimin/voltedit/milestones).
 
 ### Simple Chart Creator
 These features will be implemented by this weekend.
-* Keyboard shortcuts
 * Reading simple KSON files
-* Adding notes
+* Writing simple KSH file
 
 These features will be implemented by this month.
+* Selecting
 * Editing notes and lasers
-* Reading camera effects of a KSH file
-* Writing KSH file
 * Editing chart metadata
 
 ### Middle Priority
 These features will likely be implemented by Feburary.
+* Editing lasers with bezier curves
 * Audio Playback
 * Reading FX/laser filter/laser volume effects of a KSH file
 
 These features are planned to be implemented by April.
-* Editing lasers with bezier curves
+* Live chart viewer (!)
 * Displaying most of KSH contents
+* Reading camera effects of a KSH file
 * Editing simple camera effects
 
 These features are planned to be implemented by June.
@@ -61,7 +61,6 @@ These features are planned to be implemented in this year.
 * Displaying all informations presentable in a KSON file, except layers
 * JA and CN support, if others kindly provide translations
 * Editing all camera effects
-* Live chart viewer
 * Editing event-triggered effects
 * Auto-sync w/ beat analysis
 
