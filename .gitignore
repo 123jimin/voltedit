@@ -1,0 +1,5 @@
+*.min.js
+*.min.js.map
+*.css
+*.css.map
+*.version.js
