@@ -80,32 +80,20 @@ class VEditor {
 		this.view.resize();
 	}
 
-	/* Drag Events */
-	onDragEnter(event) {
-		event.preventDefault();
-
-		if(event.dataTransfer.types.includes("Files")) {
-			this._showDropFileIndicator();
-		}
+	/* Editing File */
+	undo() {
+		this.taskManager.undo();
 	}
-	onDragOver(event) {
-		event.preventDefault();
+	redo() {
+		this.taskManager.redo();
 	}
-	onDragLeave(event) {
-		event.preventDefault();
-
-		if(event.fromElement === null) {
-			this._hideDropFileIndicator();
-		}
+	addBt(index) {
+		if(!this.chartData) return;
+		this.taskManager.do(new VNoteAddTask(this, 'bt', index, this.view.cursorStartLoc, 0));
 	}
-	onDrop(event) {
-		event.preventDefault();
-		this._hideDropFileIndicator();
-
-		const files = event.dataTransfer.files;
-		if(files.length == 0) return;
-
-		this.openFileList(files);
+	addFx(index) {
+		if(!this.chartData) return;
+		this.taskManager.do(new VNoteAddTask(this, 'fx', index, this.view.cursorStartLoc, 0));
 	}
 
 	/* Opening Files */
@@ -179,6 +167,34 @@ class VEditor {
 		document.body.removeChild(elem);
 
 		window.URL.revokeObjectURL(blob);
+	}
+
+	/* Drag Events */
+	onDragEnter(event) {
+		event.preventDefault();
+
+		if(event.dataTransfer.types.includes("Files")) {
+			this._showDropFileIndicator();
+		}
+	}
+	onDragOver(event) {
+		event.preventDefault();
+	}
+	onDragLeave(event) {
+		event.preventDefault();
+
+		if(event.fromElement === null) {
+			this._hideDropFileIndicator();
+		}
+	}
+	onDrop(event) {
+		event.preventDefault();
+		this._hideDropFileIndicator();
+
+		const files = event.dataTransfer.files;
+		if(files.length == 0) return;
+
+		this.openFileList(files);
 	}
 
 	_addEventListeners() {

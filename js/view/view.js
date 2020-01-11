@@ -51,6 +51,7 @@ class VView {
 		this.renderQueue.push(this._updateLocation, VVIEW_RENDER_PRIORITY.MINOR);
 	}
 	setCursor(cursorLoc) {
+		if(cursorLoc == null) cursorLoc = this.cursorStartLoc;
 		this.cursorStartLoc = this.cursorEndLoc = isFinite(cursorLoc) && cursorLoc > 0 ? cursorLoc : 0;
 		this.renderQueue.push(this._redrawCursor, VVIEW_RENDER_PRIORITY.MINOR);
 	}

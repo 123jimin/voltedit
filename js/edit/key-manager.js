@@ -48,15 +48,20 @@ class VKeyManager {
 		}
 		const code = SIMPLECODE(event);
 		if(!code) return;
-		
-		if(code.startsWith('Shift')) return;
-		if(code.startsWith('Ctrl')) return;
-		if(code.startsWith('Alt')) return;
+
+		switch(code){
+			case 'Shift': case 'ShiftRight':
+			case 'Ctrl': case 'CtrlRight':
+			case 'Alt': case 'AltRight':
+				return;
+		}
 		
 		this.queue.push(code);
 
 		for(let key in this.bindMap){
 			if(this._isMatch(key)){
+				event.preventDefault();
+
 				const op = this.bindMap[key];
 				if(op in this.ops){
 					this.ops[op].call(this.editor);
@@ -72,14 +77,35 @@ class VKeyManager {
 	}
 	
 	_initOps() {
-		this._registerOp('max-440', () => { document.location.href = "https://youtu.be/5tCEzv_bu9Q"; });
+		this._registerOp('undo', this.editor.undo);
+		this._registerOp('redo', this.editor.redo);
+		
+		this._registerOp('add-bt-a', this.editor.addBt.bind(this.editor, 0));
+		this._registerOp('add-bt-b', this.editor.addBt.bind(this.editor, 1));
+		this._registerOp('add-bt-c', this.editor.addBt.bind(this.editor, 2));
+		this._registerOp('add-bt-d', this.editor.addBt.bind(this.editor, 3));
+
+		this._registerOp('add-fx-l', this.editor.addFx.bind(this.editor, 0));
+		this._registerOp('add-fx-r', this.editor.addFx.bind(this.editor, 1));
+		
+		this._registerOp('max-440', function(){ document.location.href = "https://youtu.be/5tCEzv_bu9Q"; });
 	}
 	_registerOp(op, func) {
 		this.ops[op] = func;
 	}
 
 	makeBindMap() {
-		this.bindMap = {};
+		this.clearAllBinds();
+
+		this.bind("Ctrl+Z", 'undo');
+		this.bind("Ctrl+Y", 'redo');
+
+		this.bind("1", 'add-bt-a');
+		this.bind("2", 'add-bt-b');
+		this.bind("3", 'add-bt-c');
+		this.bind("4", 'add-bt-d');
+		this.bind("5", 'add-fx-l');
+		this.bind("6", 'add-fx-r');
 
 		this.bind("Up Up Down Down Left Right Left Right B A Enter", 'max-440');
 	}
