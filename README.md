@@ -6,7 +6,7 @@ Uses "Office S" icons of [icons8](https://icons8.com).
 ## Features
 Currently, these features are available. Note that this editor is in *very* early stage of active development now.
 
-* Importing KSH files via drag-drop
+* Importing KSH and KSON files via drag-drop
 	* Currently only notes, lasers, and beat lines are visible.
 * Exporting to KSON format
 * Multi-column view using WebGL
@@ -16,7 +16,7 @@ Currently, these features are available. Note that this editor is in *very* earl
 * Support for English and Korean
 
 ## Planned Features
-These are planned features, as of 06 Jan 2020.
+These are planned features, as of 12 Jan 2020.
 
 Also see the [milestones page](https://github.com/123jimin/voltedit/milestones).
 
@@ -30,12 +30,12 @@ Also see the [milestones page](https://github.com/123jimin/voltedit/milestones).
 
 ### Simple Chart Creator
 These features will be implemented by this weekend.
-* Reading simple KSON files
 * Writing simple KSH file
 
 These features will be implemented by this month.
 * Selecting
-* Editing notes and lasers
+* Editing notes
+* Adding lasers
 * Editing chart metadata
 
 ### Middle Priority
