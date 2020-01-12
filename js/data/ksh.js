@@ -40,55 +40,6 @@ class KSHLine {
 	}
 }
 
-/// A class representing a laser segment
-class KSHGraph {
-	/// isRelative: whether the graph is relative (true for lasers, false for zooms)
-	constructor(isRelative, options) {
-		this.isRelative = isRelative;
-		if(isRelative) {
-			this.collapseTick = options.collapseTick || 0;
-			this.range = options.range || 1;
-			this.iy = options.y || 0;
-		} else {
-			this.collapseTick = 0;
-			this.range = 1;
-			this.iy = 0;
-		}
-		// Array of relative y values
-		this.ys = [];
-		// Array of values
-		this.vs = [];
-		// Arrays of final values
-		this.vfs = [];
-	}
-	push(y, v) {
-		let lastInd = this.ys.length - 1;
-		if(y < this.ys[lastInd]) throw new Error("Invalid insertion order in KSHGraph!");
-		if(y <= this.ys[lastInd] + this.collapseTick) {
-			this.vfs[lastInd] = v;
-		} else {
-			this.ys.push(y);
-			this.vs.push(v);
-			this.vfs.push(v);
-		}
-	}
-	getLength() {
-		return this.ys.length ? this.ys[this.ys.length-1]-this.iy : 0;
-	}
-	toKSON() {
-		let segments = [];
-		// TODO: simplify using curves
-		for(let i=0; i<this.ys.length; i++) {
-			let segment = {'v': this.vs[i]};
-			segment[this.isRelative ? 'ry' : 'y'] = this.ys[i] - this.iy;
-			if(this.vfs[i] != this.vs[i]) segment.vf = this.vfs[i];
-
-			segments.push(segment);
-		}
-		return segments;
-	}
-}
-
 /// Helper class which parses KSH charts and stores parsed data in the KSHData class
 class KSHParser {
 	constructor(ksh) {
@@ -338,8 +289,7 @@ class KSHData extends VChartData {
 	}
 	/// Processes notes and lasers
 	_setKSONNoteInfo() {
-		const noteInfo = this.note = {'bt': [], 'fx': [], 'laser': []};
-		this._initTreeArr(this.note.laser, 2);
+		this.note = {};
 
 		// Stores [start, len] long note infos
 		let longInfo = {'bt': [null, null, null, null], 'fx': [null, null]};
@@ -363,18 +313,17 @@ class KSHData extends VChartData {
 
 		// Stores current laser segments and how wide should they be
 		let laserSegments = [null, null];
-		let laserRange = [1, 1];
+		let laserWide = [1, 1];
 		const cutLaserSegment = (lane) => {
 			if(laserSegments[lane] === null) return;
-			let laser = {'v': laserSegments[lane].toKSON()};
-			if(laserSegments[lane].range !== 1) laser.wide = laserSegments[lane].range;
-			noteInfo.laser[lane].add(laserSegments[lane].iy, laserSegments[lane].getLength(), laser);
+
+			this.addLaser(laserSegments[lane]);
 			laserSegments[lane] = null;
 		};
 		const addLaserSegment = (lane, y, v) => {
 			if(laserSegments[lane] === null)
-				laserSegments[lane] = new KSHGraph(true, {'y': y, 'range': laserRange[lane], 'collapseTick': KSH_LASER_SLAM_TICK});
-			laserSegments[lane].push(y, v);
+				laserSegments[lane] = new KSHGraph(true, {'y': y, 'wide': laserWide[lane], 'collapseTick': KSH_LASER_SLAM_TICK});
+			laserSegments[lane].pushKSH(y, v);
 		};
 
 		this._ksmMeasures.forEach((measure) => {
@@ -382,10 +331,10 @@ class KSHData extends VChartData {
 				kshLine.mods.forEach(([key, value]) => {
 					switch(key) {
 						case 'laserrange_l':
-							laserRange[0] = value === "2x" ? 2 : 1;
+							laserWide[0] = value === "2x" ? 2 : 1;
 							break;
 						case 'laserrange_r':
-							laserRange[1] = value === "2x" ? 2 : 1;
+							laserWide[1] = value === "2x" ? 2 : 1;
 							break;
 					}
 				});

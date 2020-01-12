@@ -39,7 +39,6 @@ class VChartData {
 
 		return this.getNoteData(type, lane).add(tick, len, null);
 	}
-
 	/// Returns: whether the deletion is successful
 	delNote(type, lane, tick) {
 		const noteData = this.getNoteData(type, lane);
@@ -50,6 +49,13 @@ class VChartData {
 
 		node.remove();
 		return true;
+	}
+	addLaser(lane, graph) {
+		if(!this.note) this.note = {};
+		if(!this.note.laser) this.note.laser = [];
+		this._initTreeArr(this.note.laser, lane+1);
+
+		return this.note.laser[lane].add(graph.iy, graph.getLength(), graph);
 	}
 
 	addBPM(tick, value) {
@@ -143,11 +149,7 @@ class VChartData {
 		const laser2arr = (tree) => {
 			const arr = [];
 			tree.traverse((node) => {
-				const obj = {'y': node.y};
-				const data = node.data;
-				if('v' in data) obj.v = data.v;
-				if('wide' in data && data.wide !== 1) obj.wide = data.wide;
-				arr.push(obj);
+				arr.push(node.data.toKSON());
 			});
 			return arr;
 		};

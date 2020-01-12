@@ -60,6 +60,8 @@ class AATreeNode {
 		this._left = null;
 		this._right = null;
 		this._parent = null;
+
+		if(l < 0) throw new Error("l must be non-negative for an AATreeNode!");
 	}
 	remove() {
 		this._notifyRemove();
