@@ -131,9 +131,7 @@ class VView {
 
 		this.render.clearLasers();
 		laserData.forEach((tree, ind) => {
-			tree.traverse((node) => {
-				this.render.addLaser(ind, node.y, node.data);
-			});
+			tree.traverse((node) => this.render.addLaser(ind, node.data));
 		});
 	}
 	_redrawMeasures() {

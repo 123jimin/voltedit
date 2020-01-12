@@ -6,6 +6,9 @@ class VGraphPoint {
 		this.a = a || 0;
 		this.b = b || 0;
 	}
+	isSlam() {
+		return this.vf !== this.v;
+	}
 	toKSON(graph, y) {
 		const obj = {'v': this.v};
 		obj[graph.isRelative ? 'ry': 'y'] = y;
@@ -53,22 +56,24 @@ class VGraph {
 	}
 	/// Push points read from the KSH, in an increasing y order.
 	pushKSH(y, v) {
+		// For ksh charts, lasers' ticks are given in absolute values.
+		y -= this.iy;
 		if(this.points.size > 0){
 			const lastPoint = this.points.last();
 			if(y < lastPoint.y)
 				throw new Error("Invalid insertion order in VGraph.pushKSH!");
 			if(y <= lastPoint.y + this.collapseTick){
-				lastPoint.vf = v;
+				lastPoint.data.vf = v;
 				return;
 			}
 		}
 
 		const point = new VGraphPoint(v);
-		this.points.add(y, point);
+		this.points.add(y, 0, point);
 	}
 	/// Push points read from the KSON
 	pushKSON(data) {
 		const point = new VGraphPoint(data.v, data.vf, data.a, data.b);
-		this.points.add(this.isRelative ? data.ry : data.y, point);
+		this.points.add(this.isRelative ? data.ry : data.y, 0, point);
 	}
 }

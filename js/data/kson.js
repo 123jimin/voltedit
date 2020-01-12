@@ -75,7 +75,7 @@ class KSONData extends VChartData {
 		}));
 
 		if(obj.note.laser) obj.note.laser.forEach((lasers, lane) => lasers.forEach((data) => {
-			const graph = new VGraph(true, {'wide': data.wide || 1, 'iy': data.y});
+			const graph = new VGraph(true, {'wide': data.wide || 1, 'y': data.y});
 			data.v.forEach((point) => graph.pushKSON(point));
 			this.addLaser(lane, graph);
 		}));

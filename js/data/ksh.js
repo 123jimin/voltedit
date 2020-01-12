@@ -317,12 +317,12 @@ class KSHData extends VChartData {
 		const cutLaserSegment = (lane) => {
 			if(laserSegments[lane] === null) return;
 
-			this.addLaser(laserSegments[lane]);
+			this.addLaser(lane, laserSegments[lane]);
 			laserSegments[lane] = null;
 		};
 		const addLaserSegment = (lane, y, v) => {
 			if(laserSegments[lane] === null)
-				laserSegments[lane] = new KSHGraph(true, {'y': y, 'wide': laserWide[lane], 'collapseTick': KSH_LASER_SLAM_TICK});
+				laserSegments[lane] = new VGraph(true, {'y': y, 'wide': laserWide[lane], 'collapseTick': KSH_LASER_SLAM_TICK});
 			laserSegments[lane].pushKSH(y, v);
 		};
 

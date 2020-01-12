@@ -96,65 +96,68 @@ class VViewRender {
 	clearLasers() {
 		this._clear(this.lasers);
 	}
-	addLaser(index, y, graph) {
-		if(!graph || !('v' in graph) || !graph.v.length) return;
-
+	addLaser(index, graph) {
 		const laserObject = new THREE.Object3D();
 		const scale = this.view.scale;
-		const WIDE = 'wide' in graph ? graph.wide : 1;
+		const WIDE = graph.wide;
 		const HALF_LASER = scale.noteWidth/2-0.5;
 
 		const X = (v) => WIDE*(v-0.5)*scale.laserPosWidth;
 		const Y = (ry) => this.view.t2p(ry);
 
-		laserObject.position.y = Y(y);
+		laserObject.position.y = Y(graph.iy);
 
-		const points = [];
-		let prevX = 0, prevY = 0;
-		graph.v.forEach((gp, ind) => {
-			const x = X(gp.v), y = Y(gp.ry);
-			if(ind === 0){
-			}else{
-				QUAD(points,
-					[prevX-HALF_LASER, prevY], [prevX+HALF_LASER, prevY],
-					[x+HALF_LASER, y], [x-HALF_LASER, y]
-				);
+		if(graph.points.size > 0){
+			const points = [];
+			let prevX = 0, prevY = 0;
+			let isFirstNode = true;
+
+			graph.points.traverse((node) => {
+				const gp = node.data;
+				const x = X(gp.v), y = Y(node.y);
+				if(isFirstNode){
+					isFirstNode = false;
+				}else{
+					QUAD(points,
+						[prevX-HALF_LASER, prevY], [prevX+HALF_LASER, prevY],
+						[x+HALF_LASER, y], [x-HALF_LASER, y]
+					);
+				}
+				if(gp.isSlam()){
+					const xf = X(gp.vf);
+					const yf = y+scale.laserSlamHeight;
+					let [xmin, xmax] = [x, xf];
+					if(x > xf) [xmin, xmax] = [xf, x];
+
+					QUAD(points,
+						[xmin-HALF_LASER, y], [xmax+HALF_LASER, y],
+						[xmax+HALF_LASER, yf], [xmin-HALF_LASER, yf]
+					);
+
+					[prevX, prevY] = [xf, yf];
+				}else{
+					[prevX, prevY] = [x, y];
+				}
+			});
+
+			if(points.length === 0){
+				return;
 			}
-			if('vf' in gp){
-				const xf = X(gp.vf);
-				const yf = y+scale.laserSlamHeight;
-				let [xmin, xmax] = [x, xf];
-				if(x > xf) [xmin, xmax] = [xf, x];
 
-				QUAD(points,
-					[xmin-HALF_LASER, y], [xmax+HALF_LASER, y],
-					[xmax+HALF_LASER, yf], [xmin-HALF_LASER, yf]
-				);
-
-				[prevX, prevY] = [xf, yf];
-			}else{
-				[prevX, prevY] = [x, y];
+			// Draw end for last slam
+			if(graph.points.last().data.isSlam()){
+				points.push(prevX-HALF_LASER, prevY, 0, prevX+HALF_LASER, prevY, 0, prevX, prevY+HALF_LASER*2, 0);
 			}
-		});
 
-		if(points.length === 0){
-			return;
+			const geometry = new THREE.BufferGeometry();
+			geometry.setAttribute('position', new THREE.Float32BufferAttribute(points, 3));
+			geometry.computeBoundingSphere();
+
+			const material = index === 0 ? this.leftLaserBodyMaterial : this.rightLaserBodyMaterial;
+			const laserBody = new THREE.Mesh(geometry, material);
+
+			laserObject.add(laserBody);
 		}
-
-		// Draw end for last slam
-		const last = graph.v[graph.v.length-1];
-		if('vf' in last){
-			points.push(prevX-HALF_LASER, prevY, 0, prevX+HALF_LASER, prevY, 0, prevX, prevY+HALF_LASER*2, 0);
-		}
-
-		const geometry = new THREE.BufferGeometry();
-		geometry.setAttribute('position', new THREE.Float32BufferAttribute(points, 3));
-		geometry.computeBoundingSphere();
-
-		const material = index === 0 ? this.leftLaserBodyMaterial : this.rightLaserBodyMaterial;
-		const laserBody = new THREE.Mesh(geometry, material);
-
-		laserObject.add(laserBody);
 		this.lasers.add(laserObject);
 	}
 
