@@ -1,10 +1,14 @@
 # VOLTEdit
 VOLTEdit is a web-based SDVX chart editor, planned to support KSH and KSON chart formats.
 
-Uses "Office S" icons of [icons8](https://icons8.com).
+You can use VOLTEdit on [here](https://0xF.kr/tools/voltedit).
+However, note that this editor is in *very* early stage of active development now, so everything can break unexpectedly.
+Moreover I'm developing it on live, so possibility of things breaking is pretty high.
+
+VOLTEdit uses "Office S" icons of [icons8](https://icons8.com).
 
 ## Features
-Currently, these features are available. Note that this editor is in *very* early stage of active development now.
+Currently, these features are available.
 
 * Importing KSH and KSON files via drag-drop
 	* Currently only notes, lasers, and beat lines are visible.
@@ -14,6 +18,21 @@ Currently, these features are available. Note that this editor is in *very* earl
 * Intuitive ribbon UI
 	* Editor settings, saved via `localStorage`
 * Support for English and Korean
+
+Also see the "Planned Features" section.
+
+## How to use
+* Drag a KSH or KSON file to the editor to open it.
+* Use scrollbar to scroll the view.
+* Use number keys 1 to 6 to add notes.
+
+## Building
+Following npm packages need to be installed globally.
+```
+npm install -g uglify-es less less-plugin-clean-css
+```
+
+Then use `make` to build the JS and CSS files.
 
 ## Planned Features
 These are planned features, as of 12 Jan 2020.
