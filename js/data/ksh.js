@@ -151,6 +151,7 @@ class KSHData extends VChartData {
 		this._setKSONVersion();
 		this._setKSONMeta();
 		this._setKSONBgmInfo();
+		this._setKSONBgInfo();
 
 		if('total' in this._ksmMeta) {
 			let total = parseInt(this._ksmMeta.total);
@@ -210,6 +211,19 @@ class KSHData extends VChartData {
 		if('plength' in ksmMeta) {
 			const preview_duration = parseInt(ksmMeta.plength);
 			if(isFinite(preview_duration) && preview_duration > 0) bgmInfo.preview_duration = preview_duration;
+		}
+	}
+	_setKSONBgInfo() {
+		const legacyInfo = {};
+		this.bg = {'legacy': legacyInfo};
+
+		// TODO: how to handle bg and layer presets?
+
+		if('v' in ksmMeta || 'vo' in ksmMeta) {
+			const movieInfo = {};
+			if('v' in ksmMeta) movieInfo.filename = ksmMeta.v;
+			if('vo' in ksmMeta) movieInfo.offset = parseInt(ksmMeta.vo);
+			legacyInfo.movie = movieInfo;
 		}
 	}
 	/// Processes timing of the chart, and computes `tick` and `len` of each line
@@ -422,24 +436,48 @@ KSHData.create = function KSHData$create(file) {
 		const p = (k, v) => v != null && headerLines.push(`${k}=${v}`);
 
 		p('title', chart.meta.title || "");
-		// TODO: title_img
 		p('artist', chart.meta.artist);
-		// TODO: artist_img
+		// TODO: title_img, artist_img
 		p('effect', chart.meta.chart_author);
-		// TODO: jacket
-		// TODO: illustrator
+		p('jacket', chart.meta.jacket_filename);
+		p('illustrator', chart.meta.jacket_author);
 		p('difficulty', ['light','challenge','extended','infinite'][chart.meta.difficulty.idx||0]);
 		p('level', chart.meta.level);
 		p('t', getBPM(chart.beat.bpm));
-		// TODO: to
-		// TODO: m, mvol, o
-		// TODO: bg, layer
-		// TODO: po, plength
+		p('to', chart.meta.std_bpm);
+
+		const bgmInfo = chart.audio && chart.audio.bgm || null;
+		if(bgmInfo){
+			p('m', bgmInfo.filename);
+			p('mvol', bgmInfo.vol);
+			p('o', bgmInfo.offset);
+			p('po', bgmInfo.preview_offset);
+			p('plength', bgmInfo.preview_duration);
+
+			if(bgmInfo.preview_filename != null){
+				console.warn("The chart contains preview_filename, which can't be represented in KSH.");
+			}
+		}
+
+		const legacyBGInfo = chart.bg && chart.bg.legacy || null;
+		if(legacyBGInfo) {
+			if(legacyBGInfo.bg) p('bg', legacyBGInfo.bg.map((bg) => bg.filename).join(';'));
+			if(legacyBGInfo.layer) p('layer', legacyBGInfo.layer.map((layer) => {
+				const rotation = layer.rotation ?
+					(layer.rotation.tilt ? 1 : 0) + (layer.rotation.spin ? 2 : 0) : 0;
+				return `${layer.filename};${layer.duration};${rotation}`;
+			})[0]); // ... according to the KSH spec
+
+			if(legacyBGInfo.movie) {
+				p('v', legacyBGInfo.movie.filename);
+				p('vo', legacyBGInfo.movie.offset);
+			}
+		}
+
 		p('total', chart.gauge && chart.gauge.total);
-		// TODO: chokkakuautovol
-		// TODO: pfilterdelay, v, vo
+		// TODO: chokkakuautovol, pfilterdelay
 		p('ver', getVersion(chart.version));
-		// TODO: information
+		p('information', chart.meta.information);
 
 		return '\uFEFF'+headerLines.join('\r\n')+"\r\n--\r\n";
 	};
