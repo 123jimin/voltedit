@@ -215,6 +215,8 @@ class KSHData extends VChartData {
 	}
 	_setKSONBgInfo() {
 		const legacyInfo = {};
+		const ksmMeta = this._ksmMeta;
+		
 		this.bg = {'legacy': legacyInfo};
 
 		// TODO: how to handle bg and layer presets?
