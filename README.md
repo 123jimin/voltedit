@@ -49,11 +49,12 @@ Also see the [milestones page](https://github.com/123jimin/voltedit/milestones).
 
 ### Simple Chart Creator
 These features will be implemented by this weekend.
-* Writing simple KSH file
-
-These features will be implemented by this month.
 * Selecting
 * Editing notes
+* Writing simple KSH file
+* Utilizing native FS if possible
+
+These features will be implemented by this month.
 * Adding lasers
 * Editing chart metadata
 

@@ -9,13 +9,15 @@ SRC_DATA := graph.js chart.js ksh.js ksh-exporter.js kson.js
 SRC_VIEW := settings.js render-components.js render.js view-components.js view.js
 SRC_MANAGER := key-manager.js task-manager.js file-manager.js
 SRC_EDIT := tasks.js context.js
-SRC_EDITOR := toolbar.js editor.js
+SRC_UI := toolbar.js message.js
+SRC_EDITOR := editor.js
 
 SRC_FILES := $(addprefix js/util/, ${SRC_UTIL}) \
 			$(addprefix js/data/, ${SRC_DATA}) \
 			$(addprefix js/view/, ${SRC_VIEW}) \
 			$(addprefix js/manager/, ${SRC_MANAGER}) \
 			$(addprefix js/edit/, ${SRC_EDIT}) \
+			$(addprefix js/ui/, ${SRC_UI}) \
 			$(addprefix js/, ${SRC_EDITOR})
 
 JS_TARGET := js/voltedit.min.js
