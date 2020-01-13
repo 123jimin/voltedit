@@ -153,11 +153,12 @@ class VChartData {
 			});
 			return arr;
 		};
-		return {
-			'bt': this.note.bt.map(note2arr),
-			'fx': this.note.fx.map(note2arr),
-			'laser': this.note.laser.map(laser2arr)
-		};
+		const obj = {};
+		if(this.note.bt) obj.bt = this.note.bt.map(note2arr);
+		if(this.note.fx) obj.fx = this.note.fx.map(note2arr);
+		if(this.note.laser) obj.laser = this.note.laser.map(laser2arr);
+
+		return obj;
 	}
 
 	_initTreeArr(arr, size) {

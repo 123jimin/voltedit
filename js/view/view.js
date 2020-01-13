@@ -109,12 +109,12 @@ class VView {
 		if(!noteData) return;
 
 		this.render.clearNotes();
-		noteData.bt.forEach((btData, lane) => {
+		if(noteData.bt) noteData.bt.forEach((btData, lane) => {
 			btData.traverse((node) => {
 				this.render.addBtNote(lane, node.y, node.l);
 			})
 		});
-		noteData.fx.forEach((fxData, lane) => {
+		if(noteData.fx) noteData.fx.forEach((fxData, lane) => {
 			fxData.traverse((node) => {
 				this.render.addFxNote(lane, node.y, node.l);
 			})
@@ -126,10 +126,11 @@ class VView {
 		const noteData = this.editor.chartData.note;
 		if(!noteData) return;
 
+		this.render.clearLasers();
+
 		const laserData = noteData.laser;
 		if(!laserData) return;
 
-		this.render.clearLasers();
 		laserData.forEach((tree, ind) => {
 			tree.traverse((node) => this.render.addLaser(ind, node.data));
 		});
@@ -182,7 +183,7 @@ class VView {
 		this.render.clearTickProps();
 
 		if(!this.editor.chartData) return;
-		
+
 		const beatInfo = this.editor.chartData.beat;
 		if(!beatInfo) return;
 
@@ -202,11 +203,11 @@ class VView {
 				measureTick += (sig.idx-prevMeasureInd) * currMeasureLength;
 				prevMeasureInd = sig.idx;
 				currMeasureLength = sig.v.n * this.tickUnit / sig.v.d;
-				
+
 				this.render.addTimeSig(measureTick, sig.v.n, sig.v.d);
 			});
 		}
-		
+
 	}
 	_redrawEditorUI() {
 		this._redrawCursor();
