@@ -7,6 +7,7 @@ class AATree {
 			this.add(data.y, data.l || 0, data.data);
 		});
 	}
+	/// Insert an interval [y, y+l]
 	add(y, l, data) {
 		const node = new AATreeNode(+y, +l, data);
 		if(this.root) {
@@ -25,6 +26,13 @@ class AATree {
 	}
 	get(y) {
 		return this.root ? this.root._get(y) : null;
+	}
+	/// Get all nodes between [y, y+l)
+	/// Note that the range is open to the right side!
+	getAll(y, l) {
+		const arr = [];
+		if(this.root) this.root._getAll(arr, y, l);
+		return arr;
 	}
 	intersects(y, l) {
 		return this.root ? this.root._intersects(y, l) : false;
@@ -137,6 +145,18 @@ class AATreeNode {
 		}
 		return this;
 	}
+	_getAll(arr, y, l) {
+		if(l <= 0) return;
+		if(y < this.y) {
+			this._left && this._left._getAll(arr, y, l);
+		}
+		if(y+l > this.y && y <= this.y+this.l) {
+			arr.push(this);
+		}
+		if(y+l-1 > this.y+this.l) {
+			this._right && this._right._getAll(arr, y, l);
+		}
+	}
 	_intersects(y, l) {
 		if(y+l < this.y) {
 			return this._left ? this._left._intersects(y, l) : false;
@@ -225,4 +245,3 @@ class AATreeNode {
 		}
 	}
 }
-

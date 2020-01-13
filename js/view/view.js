@@ -146,37 +146,19 @@ class VView {
 		const beatInfo = this.editor.chartData.beat;
 		if(!beatInfo || !beatInfo.time_sig) return;
 
-		let measureTick = 0;
-		let measureIndex = 0;
-
-		let currTimeSigInd = -1;
-
-		while(currTimeSigInd+1 < beatInfo.time_sig.length || measureTick <= this.lastTick) {
-			if(currTimeSigInd+1 < beatInfo.time_sig.length) {
-				const nextTimeSig = beatInfo.time_sig[currTimeSigInd+1];
-				if(nextTimeSig.idx <= measureIndex) {
-					++currTimeSigInd;
-				}
-			}
-			const currTimeSig = currTimeSigInd >= 0 ? beatInfo.time_sig[currTimeSigInd] : {'v': {'n': 4, 'd': 4}};
-			const currMeasureLength = currTimeSig.v.n * this.tickUnit / currTimeSig.v.d;
-
+		const endTick = this.editor.chartData.iterMeasures((measureIndex, measureTick, n, d, currMeasureLength) => {
 			// Draw a measure line and beat lines.
 			if(measureIndex > 0) {
 				this.render.addMeasureLine(measureTick);
 			}
 
-			for(let i=1; i<currTimeSig.v.n; ++i) {
-				this.render.addBeatLine(measureTick + i*(this.tickUnit / currTimeSig.v.d));
+			for(let i=1; i<n; ++i) {
+				this.render.addBeatLine(measureTick + i*(this.tickUnit / d));
 			}
+		});
 
-			++measureIndex;
-			measureTick += currMeasureLength;
-		}
-
-		// Draw the very last line.
-		if(measureTick > 0) {
-			this.render.addMeasureLine(measureTick);
+		if(endTick > 0){
+			this.render.addMeasureLine(endTick);
 		}
 	}
 	_redrawTickProps() {

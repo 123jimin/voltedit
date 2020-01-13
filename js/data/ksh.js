@@ -395,6 +395,130 @@ KSHData.create = function KSHData$create(file) {
 	}
 };
 
-KSHData.toKSH = function KSHData$toKSH(chart) {
-	return "";
-};
+/// Exporting to KSH
+{
+	const KSH_VERSIONS = new Set(" 120 120b 121 130 166 167".split(' '));
+	const getVersion = (version) => {
+		if(KSH_VERSIONS.has(version)) return version;
+		return "167";
+	};
+	const getBPM = (bpm) => {
+		if(!bpm || bpm.size === 0) return null;
+		if(bpm.size === 1){
+			return `${bpm.first().data}`;
+		}
+		let min_bpm = 0, max_bpm = 0;
+		bpm.traverse((node) => {
+			if(min_bpm === 0){
+				min_bpm = node.data;
+			}
+			min_bpm = Math.min(min_bpm, node.data);
+			max_bpm = Math.max(max_bpm, node.data);
+		});
+		return `${min_bpm}-${max_bpm}`;
+	};
+	const getHeader = (chart) => {
+		const headerLines = [];
+		const p = (k, v) => v != null && headerLines.push(`${k}=${v}`);
+
+		p('title', chart.meta.title || "");
+		// TODO: title_img
+		p('artist', chart.meta.artist);
+		// TODO: artist_img
+		p('effect', chart.meta.chart_author);
+		// TODO: jacket
+		// TODO: illustrator
+		p('difficulty', ['light','challenge','extended','infinite'][chart.meta.difficulty.idx||0]);
+		p('level', chart.meta.level);
+		p('t', getBPM(chart.beat.bpm));
+		// TODO: to
+		// TODO: m, mvol, o
+		// TODO: bg, layer
+		// TODO: po, plength
+		p('total', chart.gauge && chart.gauge.total);
+		// TODO: chokkakuautovol
+		// TODO: pfilterdelay, v, vo
+		p('ver', getVersion(chart.version));
+		// TODO: information
+
+		return '\uFEFF'+headerLines.join('\r\n')+"\r\n--\r\n";
+	};
+	const getBody = (chart) => {
+		const bodyLines = [];
+		const addLine = (l) => bodyLines.push(l);
+		const addProp = (k, v) => v != null && addLine(`${k}=${v}`);
+		const getTrees = (arr, count, t, l) => {
+			const result = arr ? arr.map((tree) => tree.getAll(t, l)) : [];
+			while(result.length < count) result.push([]);
+			while(result.length > count) result.pop();
+			return result;
+		}
+		const updateTickSizeNote = (tickSize, arr, start, end) => {
+			const check = (t) => {
+				if(start <= t && t < end) tickSize = GCD(tickSize, t);
+			};
+			arr.forEach((nodes) => nodes.forEach((node) => {
+				check(node.y); node.l && check(node.y+node.l);
+			}));
+			return tickSize;
+		};
+		const getNoteStr = (tick, notes, nextNotes, shortNote, longNote) => {
+			return notes.map((laneNotes, lane) => {
+				const nextNoteIdx = nextNotes[lane];
+				if(laneNotes.length <= nextNoteIdx) return '0';
+				const nextNote = laneNotes[nextNoteIdx];
+				if(tick < nextNote.y) return '0';
+				if(nextNote.l){
+					if(nextNote.y+nextNote.l === tick){
+						nextNotes[lane] = nextNoteIdx+1;
+						return '0';
+					}else{
+						return longNote;
+					}
+				}else{
+					nextNotes[lane] = nextNoteIdx+1;
+					return shortNote;
+				}
+			}).join('');
+		};
+
+		let prevN = 0, prevD = 0;
+		chart.iterMeasures((measureIndex, measureTick, n, d, measureLength) => {
+			// beat
+			if(n !== prevN || d !== prevD) {
+				addProp('beat', `${n}/${d}`);
+				[prevN, prevD] = [n, d];
+			}
+			// ticks
+			let tickSize = KSH_DEFAULT_MEASURE_TICK;
+			const btNotes = getTrees(chart.note.bt, 4, measureTick, measureLength);
+			const nextBtNotes = btNotes.map(() => 0);
+			const fxNotes = getTrees(chart.note.fx, 2, measureTick, measureLength);
+			const nextFxNotes = fxNotes.map(() => 0);
+			const lasers = getTrees(chart.note.laser, 2, measureTick, measureLength);
+
+			// Determine tick size
+			tickSize = updateTickSizeNote(tickSize, btNotes, measureTick, measureTick+measureLength);
+			tickSize = updateTickSizeNote(tickSize, fxNotes, measureTick, measureTick+measureLength);
+
+			// TODO: check lasers and other stuffs, especially BPM
+
+			// Print each line
+			const measureEnd = measureTick+measureLength;
+			for(let i=measureTick; i<measureEnd; i+=tickSize){
+				const btStr = getNoteStr(i, btNotes, nextBtNotes, '1', '2');
+				const fxStr = getNoteStr(i, fxNotes, nextFxNotes, '2', '1');
+				addLine(`${btStr}|${fxStr}|--`);
+			}
+
+			addLine("--");
+		});
+		return bodyLines.join('\r\n');
+	};
+	KSHData.toKSH = function KSHData$toKSH(chart) {
+		if(!chart.beat || chart.beat.resolution !== KSH_DEFAULT_MEASURE_TICK/4){
+			throw new Error("Saving to KSH is not supported when the resolution is not 48.");
+		}
+		return getHeader(chart)+getBody(chart);
+	};
+}

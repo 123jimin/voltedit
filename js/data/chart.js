@@ -62,6 +62,36 @@ class VChartData {
 		return this.beat.bpm.add(tick, 0, value);
 	}
 
+	iterMeasures(iterator) {
+		if(!this.beat || !this.beat.time_sig) return 0;
+
+		const tickUnit = (this.beat.resolution||240)*4;
+		const lastTick = this.getLastTick();
+		const DEFAULT_TIME_SIG = {'v': {'n': 4, 'd': 4}};
+
+		let measureTick = 0;
+		let measureIndex = 0;
+		let currTimeSigInd = -1;
+
+		while(measureTick <= lastTick){
+			if(currTimeSigInd+1 < this.beat.time_sig.length) {
+				const nextTimeSig = this.beat.time_sig[currTimeSigInd+1];
+				if(nextTimeSig.idx <= measureIndex) {
+					++currTimeSigInd;
+				}
+			}
+			const currTimeSig = currTimeSigInd >= 0 ? this.beat.time_sig[currTimeSigInd] : DEFAULT_TIME_SIG;
+			const currMeasureLength = currTimeSig.v.n * tickUnit / currTimeSig.v.d;
+
+			iterator(measureIndex, measureTick, currTimeSig.v.n, currTimeSig.v.d, currMeasureLength);
+
+			++measureIndex;
+			measureTick += currMeasureLength;
+		}
+
+		return measureTick;
+	}
+
 	/// Computes the last tick of anything.
 	getLastTick() {
 		let lastTick = 0;
