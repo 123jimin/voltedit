@@ -14,9 +14,9 @@ div#splash {
 	position: fixed;
 	left: 0; right: 0; top: 0; bottom: 0;
 	transition: opacity 100ms ease-out;
-	opacity: 0;
-	z-index: 999999;
-	
+	opacity: 0; z-index: 999999;
+	padding-top: 3em;
+
 	pointer-events: none;
 	user-select: none;
 
@@ -32,13 +32,13 @@ div#splash {
 
 	h1 {
 		font-size: 5em;
-		line-height: 2em;
+		line-height: 1.5em;
 		text-shadow: 3px 3px 6px lighten(@SPLASH_BG, 10%);
 	}
 
 	h2 {
-		font-size: 2em;
-		color: darken(desaturate(@KEY_COLOR, 30%), 50%, relative);
+		font-size: 1.5em;
+		color: darken(desaturate(@KEY_COLOR, 60%), 70%, relative);
+		text-shadow: 2px 2px 4px lighten(@SPLASH_BG, 40%);
 	}
 }
-
