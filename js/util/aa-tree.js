@@ -81,11 +81,25 @@ class AATreeNode {
 	last() {
 		return this._right ? this._right.last() : this;
 	}
-	next() {
-		return this._right ? this._right.first() : null;
-	}
 	prev() {
+		if(this._left) return this._left.first();
+		let node = this;
+		while(!node._parent.root && node === node._parent._left) node = node._parent;
+		if(node._parent.root) return null;
+		return node._parent;
+	}
+	next() {
+		if(this._right) return this._right.first();
+		let node = this;
+		while(!node._parent.root && node === node._parent._right) node = node._parent;
+		if(node._parent.root) return null;
+		return node._parent;
+	}
+	_prevUnderSelf() {
 		return this._left ? this._left.last() : null;
+	}
+	_nextUnderSelf() {
+		return this._right ? this._right.first() : null;
 	}
 	traverse(visitor) {
 		this._left && this._left.traverse(visitor);
@@ -99,11 +113,11 @@ class AATreeNode {
 			parent._adjustAfterRemove(from);
 			return;
 		}else if(!this._left){
-			const l = this.next();
+			const l = this._nextUnderSelf();
 			l._remove(this);
 			this._set(l);
 		}else{
-			const l = this.prev();
+			const l = this._prevUnderSelf();
 			l._remove(this);
 			this._set(l);
 		}
