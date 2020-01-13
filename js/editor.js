@@ -26,6 +26,8 @@ class VEditor {
 		this.keyManager = new VKeyManager(this);
 		this.fileManager = new VFileManager(this);
 
+		this.context = new VEditChartContext(this);
+
 		this._addEventListeners();
 
 		this._onReady();
