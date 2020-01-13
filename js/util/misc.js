@@ -2,8 +2,8 @@
 
 const NOP = () => {};
 
-const SIGN = (x) => { x < 0 ? -1 : x > 0 ? 1 : 0; };
-const IS_POSITIVE_INT = (x) => isFinite(x) && Math.floor(x) === x && x > 0;
+// const SIGN = (x) => { x < 0 ? -1 : x > 0 ? 1 : 0; };
+const IS_POSITIVE_INT = (x) => isFinite(x) && Number.isInteger(x) && x > 0;
 
 /// Shorthand for Math.round()
 const RD = Math.round;
@@ -135,4 +135,3 @@ const SIMPLECODE = (event) => {
 
 	return code;
 };
-

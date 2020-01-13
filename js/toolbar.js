@@ -39,9 +39,9 @@ class VToolbar {
 	}
 
 	_setupHome() {
-		this._button('toolbar-open', 'toolbar-open-desc', this.editor.showOpenFileDialog);
-		this._button('toolbar-save-kson', 'toolbar-save-kson-desc', this.editor.saveToKSON);
-		this._button('toolbar-save-ksh', 'toolbar-save-ksh-desc', this.editor.saveToKSH);
+		this._button('toolbar-open', 'toolbar-open-desc', () => this.editor.fileManager.showOpenFileDialog());
+		this._button('toolbar-save-kson', 'toolbar-save-kson-desc', () => this.editor.fileManager.saveToKSON());
+		this._button('toolbar-save-ksh', 'toolbar-save-ksh-desc', () => this.editor.fileManager.saveToKSH());
 
 		this._bind('toolbar-edit-snap', null, (v) => {
 			v = +v;

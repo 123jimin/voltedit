@@ -123,7 +123,7 @@ class KSHData extends VChartData {
 		parser.end();
 
 		this._setKSONData();
-		
+
 		delete this._ksmMeta;
 		delete this._ksmMeasures;
 	}
@@ -393,4 +393,8 @@ KSHData.create = function KSHData$create(file) {
 		console.error(e);
 		return null;
 	}
+};
+
+KSHData.toKSH = function KSHData$toKSH(chart) {
+	return "";
 };

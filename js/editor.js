@@ -24,9 +24,8 @@ class VEditor {
 		this.toolbar = new VToolbar(this);
 		this.taskManager = new VTaskManager(this);
 		this.keyManager = new VKeyManager(this);
+		this.fileManager = new VFileManager(this);
 
-		this._dropFileIndicator = elem.querySelector('.drop-file-indicator');
-		this._dropFileIndicatorShown = false;
 		this._addEventListeners();
 
 		this._onReady();
@@ -98,38 +97,6 @@ class VEditor {
 		this.taskManager.do(new VNoteAddTask(this, 'fx', index, this.view.cursorStartLoc, 0));
 	}
 
-	/* Opening Files */
-	showOpenFileDialog() {
-		const fileInput = document.createElement('input');
-		fileInput.setAttribute('type', 'file');
-		fileInput.setAttribute('accept', ".ksh, .kson");
-		fileInput.addEventListener('change', (event) => {
-			this.openFileList(fileInput.files);
-			fileInput.remove();
-		});
-		fileInput.click();
-	}
-	openFileList(files) {
-		// TODO: support uploading multiple files (e.g. kson + mp3)
-		if(files.length != 1) return;
-
-		readFileList(files).then((fileContents) => {
-			console.time("Parsing");
-			const chartData = VChartData.create(fileContents[0]);
-			console.timeEnd("Parsing");
-
-			if(chartData === null) {
-				alert(L10N.t('error-reading-chart-data'));
-				return;
-			}
-
-			this.setChartData(chartData);
-			this.view.setLocation(0);
-			this.view.redraw();
-		}).catch((err) => {
-			console.error(err);
-		});
-	}
 	setChartData(chartData) {
 		if(chartData) this.chartData = chartData;
 		if(!this.chartData) return;
@@ -139,6 +106,9 @@ class VEditor {
 
 		this.setChartTitle(`${trimmedChartName} [${chartDifficulty}]`);
 		this.updateEditSnap();
+
+		this.view.setLocation(0);
+		this.view.redraw();
 	}
 	setChartTitle(title) {
 		if(title === ""){
@@ -148,35 +118,12 @@ class VEditor {
 		}
 	}
 
-	/* Saving Files */
-	saveToKSON() {
-		if(!this.chartData) return;
-		this.saveFile(this.chartData.toKSON(), "chart.kson");
-	}
-	saveToKSH() {
-		if(!this.chartData) return;
-	}
-	saveFile(text, fileName) {
-		const blob = new Blob([text], {'type': "text/plain"});
-
-		const elem = document.createElement('a');
-		elem.setAttribute('href', window.URL.createObjectURL(blob));
-		elem.setAttribute('download', fileName);
-		elem.style.display = 'none';
-
-		document.body.appendChild(elem);
-		elem.click();
-		document.body.removeChild(elem);
-
-		window.URL.revokeObjectURL(blob);
-	}
-
 	/* Drag Events */
 	onDragEnter(event) {
 		event.preventDefault();
 
 		if(event.dataTransfer.types.includes("Files")) {
-			this._showDropFileIndicator();
+			this.fileManager.showDropFileIndicator();
 		}
 	}
 	onDragOver(event) {
@@ -186,17 +133,15 @@ class VEditor {
 		event.preventDefault();
 
 		if(event.fromElement === null) {
-			this._hideDropFileIndicator();
+			this.fileManager.hideDropFileIndicator();
 		}
 	}
 	onDrop(event) {
 		event.preventDefault();
-		this._hideDropFileIndicator();
+		this.fileManager.hideDropFileIndicator();
 
-		const files = event.dataTransfer.files;
-		if(files.length == 0) return;
-
-		this.openFileList(files);
+		if(this.fileManager.openFileList(event.dataTransfer.files))
+			return;
 	}
 
 	/* Misc */
@@ -213,17 +158,5 @@ class VEditor {
 		this.elem.addEventListener('dragover', this.onDragOver.bind(this), false);
 		this.elem.addEventListener('dragleave', this.onDragLeave.bind(this), false);
 		document.addEventListener('drop', this.onDrop.bind(this), false);
-	}
-	_showDropFileIndicator() {
-		if(this._dropFileIndicatorShown) return;
-
-		this._dropFileIndicatorShown = true;
-		this._dropFileIndicator.classList.add('active');
-	}
-	_hideDropFileIndicator() {
-		if(!this._dropFileIndicatorShown) return;
-
-		this._dropFileIndicatorShown = false;
-		this._dropFileIndicator.classList.remove('active');
 	}
 }

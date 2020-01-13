@@ -7,7 +7,7 @@
 SRC_UTIL := shim.js aa-tree.js misc.js l10n.js settings.js
 SRC_DATA := graph.js chart.js ksh.js kson.js
 SRC_VIEW := settings.js render-components.js render.js view-components.js view.js
-SRC_EDIT := key-manager.js task-manager.js tasks.js
+SRC_EDIT := key-manager.js task-manager.js file-manager.js tasks.js
 SRC_EDITOR := toolbar.js editor.js
 
 SRC_FILES := $(addprefix js/util/, ${SRC_UTIL}) \

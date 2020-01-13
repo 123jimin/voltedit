@@ -27,13 +27,13 @@ class KSONData extends VChartData {
 	_setBeat(obj) {
 		// No generousity in this case!
 		if(!obj.beat) throw new Error("Invalid kson! [invalid beat]");
-		
+
 		const objBeat = obj.beat;
 		this.beat = {
 			'bpm': new AATree(),
 			'resolution': 240
 		};
-		
+
 		if(!('bpm' in objBeat)) throw new Error("Invalid kson! [invalid bpm]");
 		objBeat.bpm.forEach((bpm) => this.addBPM(bpm.y, bpm.v));
 
@@ -57,7 +57,7 @@ class KSONData extends VChartData {
 	_setGauge(obj) {
 		this.gauge = {};
 		if(!obj.gauge) return;
-		
+
 		// TODO: validate the values (gracefully)
 		if(!obj.gauge.total) return;
 		this.gauge.total = obj.guage.total;
@@ -69,7 +69,7 @@ class KSONData extends VChartData {
 		if(obj.note.bt) obj.note.bt.forEach((notes, lane) => notes.forEach((note) => {
 			this.addNote('bt', lane, note.y, note.l || 0);
 		}));
-		
+
 		if(obj.note.fx) obj.note.fx.forEach((notes, lane) => notes.forEach((note) => {
 			this.addNote('fx', lane, note.y, note.l || 0);
 		}));
@@ -111,7 +111,7 @@ class KSONData extends VChartData {
 KSONData.create = function KSONData$create(file) {
 	try {
 		const fileObj = JSON.parse(file);
-		
+
 		// Check that essential fields are not missing.
 		if(!('version' in fileObj)) return null;
 		if(!('meta' in fileObj)) return null;
@@ -124,4 +124,8 @@ KSONData.create = function KSONData$create(file) {
 		console.error(e);
 		return null;
 	}
+};
+
+KSONData.toKSON = function KSONData$toKSON(chart) {
+	return chart.toKSON();
 };
