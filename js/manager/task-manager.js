@@ -19,7 +19,7 @@ class VTask {
 			// Creates an inverse job and commit it.
 			this._inverse = this._makeInverse();
 			this._inverse._inverse = this;
-			
+
 			if(this._commit()) return true;
 			console.error("Commit failed", this);
 			return false;
@@ -74,7 +74,7 @@ class VTaskManager {
 	}
 	undo() {
 		if(this.nextInd === 0 || this.history.length === 0) return false;
-		const toUndo = this.history[this.nextInd-1];
+		const toUndo = this.history[this.nextInd-1][1];
 		const inverse = toUndo.inverse();
 		if(!inverse) return false;
 		if(inverse.commit()) {
@@ -88,7 +88,7 @@ class VTaskManager {
 	}
 	redo() {
 		if(this.history.length === this.nextInd) return false;
-		if(this.history[this.nextInd].commit()) {
+		if(this.history[this.nextInd][1].commit()) {
 			this.editor.context.clearSelection();
 			++this.nextInd;
 			return true;
@@ -97,13 +97,13 @@ class VTaskManager {
 		console.error("Failed to redo", this.history[this.nextInd]);
 		return false;
 	}
-	do(task) {
+	do(label, task) {
 		if(!task) return false;
 		if(task.commit()) {
 			if(this.history.length > this.nextInd)
 				this.history = this.history.slice(0, this.nextInd);
 			if(task._inverse) {
-				this.history.push(task);
+				this.history.push([label, task]);
 				++this.nextInd;
 			} else {
 				console.error("Clearing history due to an undoable task", task);

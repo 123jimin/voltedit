@@ -1,5 +1,7 @@
 let L10N_STRING = `
 
+### Toolbar ###
+
 tab-home
 	en: Home
 	ko: 홈
@@ -77,6 +79,20 @@ toolbar-margin-side
 toolbar-margin-bottom
 	en: Bottom margin:
 	ko: 아래 여백:
+
+### Tasks ###
+
+task-add-bt
+	en: Add a BT note
+	ko: BT 노트 추가
+task-add-fx
+	en: Add an FX note
+	ko: FX 노트 추가
+task-delete-selection
+	en: Delete selection
+	ko: 선택 요소 삭제
+
+### File I/O ###
 
 drop-file-here
 	en: Drop to Open File

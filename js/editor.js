@@ -94,11 +94,11 @@ class VEditor {
 	}
 	addBt(index) {
 		if(!this.chartData) return;
-		this.taskManager.do(new VNoteAddTask(this, 'bt', index, this.view.cursorStartLoc, 0));
+		this.taskManager.do('task-add-bt', new VNoteAddTask(this, 'bt', index, this.view.cursorStartLoc, 0));
 	}
 	addFx(index) {
 		if(!this.chartData) return;
-		this.taskManager.do(new VNoteAddTask(this, 'fx', index, this.view.cursorStartLoc, 0));
+		this.taskManager.do('task-add-fx', new VNoteAddTask(this, 'fx', index, this.view.cursorStartLoc, 0));
 	}
 
 	setChartData(chartData) {

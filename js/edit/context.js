@@ -14,6 +14,12 @@ class VEditContext {
 
 		this.selectedObjects = new Set();
 	}
+	addToSelection(obj) {
+		if(!obj) return;
+
+		this.selectedObjects.add(obj);
+		obj.sel(this.view, true);
+	}
 	clearSelection() {
 		this.selectedObjects.forEach((obj) => obj.sel(this.view, false));
 		this.selectedObjects.clear();
@@ -24,32 +30,37 @@ class VEditContext {
 		let delTasks = [];
 		this.selectedObjects.forEach((obj) => delTasks.push(obj.delTask(this.editor)));
 
-		if(delTasks.length === 1) this.editor.taskManager.do(delTasks[0]);
-		else this.editor.taskManager.do(new VTaskCollection(this.editor, delTasks));
+		if(delTasks.length === 1) this.editor.taskManager.do('task-delete-selection', delTasks[0]);
+		else this.editor.taskManager.do('task-delete-selection', new VTaskCollection(this.editor, delTasks));
 	}
 	getObjectAt(event) {
 		return null;
+	}
+	createObjectAt(event) {
 	}
 	/// tick: y-value, lane and v: x-value
 	/// lane can be -1 or 4 (out of range)
 	/// x-value: 0.0 for left laser pos, and 1.0 for right laser pos
 	onMouseDown(event) {
-		this.dragStarted = true;
-		this.startTick = event.tick;
-		this.startLane = event.lane;
-		this.startLaser = event.v;
+		this._setDragStart(event);
 
 		const obj = this.getObjectAt(event);
 		if(!obj || !this.selectedObjects.has(obj)){
 			if(!event.shiftKey) this.clearSelection();
 			if(!obj){
 				this.view.setCursor(event.tick);
+				if(this.editor.chartData) this.createObjectAt(event);
 				return;
 			}
 		}
 
-		this.selectedObjects.add(obj);
-		obj.sel(this.view, true);
+		this.addToSelection(obj);
+	}
+	_setDragStart(event) {
+		this.dragStarted = true;
+		this.startTick = event.tick;
+		this.startLane = event.lane;
+		this.startLaser = event.v;
 	}
 	onMouseDrag(event) {
 	}
@@ -69,6 +80,13 @@ class VEditNoteContext extends VEditContext {
 		super(editor);
 		this.type = type;
 		this.draggingNote = false;
+	}
+	createObjectAt(event) {
+		if(event.lane < 0 || event.lane >= 4) return;
+		const addTask = new VNoteAddTask(this.editor, this.type, event.lane, event.tick, 0);
+		if(this.editor.taskManager.do(`task-add-${this.type}`, addTask)) {
+			this.addToSelection(this.getObjectAt(event));
+		}
 	}
 	getObjectAt(event) {
 		let lane = event.lane;
