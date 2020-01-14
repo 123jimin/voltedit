@@ -12,6 +12,7 @@ class KSHExporter {
 		this.nextBtNotes = null;
 		this.nextFxNotes = null;
 		this.nextLasers = null;
+		this.nextLaserSlams = null;
 
 		this.nextBPM = null;
 	}
@@ -97,11 +98,12 @@ class KSHExporter {
 	putBody() {
 		let prevN = 0, prevD = 0;
 		const note = this.chart.note;
-		const getFirst = (arr, lane) => lane < arr.length ? arr[lane].first() : null;
+		const getFirst = (arr, lane) => arr && lane < arr.length ? arr[lane].first() : null;
 
 		this.nextBtNotes = [0, 1, 2, 3].map((lane) => getFirst(note.bt, lane));
 		this.nextFxNotes = [0, 1].map((lane) => getFirst(note.fx, lane));
 		this.nextLasers = [0, 1].map((lane) => getFirst(note.laser, lane));
+		this.nextLaserSlams = [[-1, null], [-1, null]];
 		this.nextBPM = this.chart.beat && this.chart.beat.bpm ? this.chart.beat.bpm.first() : null;
 
 		this.chart.iterMeasures((measureIndex, measureTick, n, d, measureLength) => {
@@ -128,8 +130,16 @@ class KSHExporter {
 		const updateTickSizeNodes = (nodes) => nodes.forEach((node) => {
 			updateTickSize(node.y); node.l && updateTickSize(node.y+node.l);
 		});
-		const updateTickSizeNote = (tickSize, arr, start, end) => {
+		const updateTickSizeNote = (arr) => {
 			arr.forEach(updateTickSizeNodes);
+		};
+		const updateTickSizeLaser = (arr) => {
+			arr.forEach((graphs) => {
+				graphs.forEach((graph) => {
+					const minResolution = graph.data.getMinResolution(measureTick, measureLength, true);
+					tickSize = GCD(tickSize, minResolution);
+				});
+			});
 		};
 
 		// ticks
@@ -138,11 +148,11 @@ class KSHExporter {
 		const lasers = getTrees(chart.note.laser, 2);
 
 		// Determine tick size
-		updateTickSizeNote(tickSize, btNotes);
-		updateTickSizeNote(tickSize, fxNotes);
+		updateTickSizeNote(btNotes);
+		updateTickSizeNote(fxNotes);
+		updateTickSizeLaser(lasers);
 
 		chart.beat && chart.beat.bpm && updateTickSizeNodes(chart.beat.bpm.getAll(measureTick, measureLength));
-		// TODO: check lasers and other stuffs
 
 		// Print each line
 		for(let i=measureTick; i<measureEnd; i+=tickSize){
@@ -153,14 +163,40 @@ class KSHExporter {
 
 			const btStr = this._getNoteStr(i, btNotes, this.nextBtNotes, '1', '2');
 			const fxStr = this._getNoteStr(i, fxNotes, this.nextFxNotes, '2', '1');
-			const laserStr = this._getLaserStr(i);
+			const laserStr = this._getLaserStr(i, 0) + this._getLaserStr(i, 1);
 			this.putLine(`${btStr}|${fxStr}|${laserStr}`);
 		}
 
 		this.putLine("--");
 	}
-	_getLaserStr() {
-		return '--';
+	_getLaserStr(tick, lane) {
+		const nextLaserSlam = this.nextLaserSlams[lane];
+		if(tick < nextLaserSlam[0]) return ':';
+		if(tick === nextLaserSlam[0]){
+			return nextLaserSlam[1];
+		}
+
+		const nextLaser = this.nextLasers[lane];
+		if(!nextLaser || tick < nextLaser.y) return '-';
+
+		if(tick === nextLaser.y){
+			if(nextLaser.data.wide !== 1)
+				this.putProperty(`laserrange_${'lr'[lane]}`, `${nextLaser.data.wide}x`);
+		}
+
+		const point = nextLaser.data.points.get(tick-nextLaser.data.iy);
+		if(tick === nextLaser.y+nextLaser.l){
+			this.nextLasers[lane] = nextLaser.next();
+		}
+
+		if(!point) return ':';
+
+
+		if(point.data.isSlam()){
+			nextLaserSlam[0] = tick + nextLaser.data.collapseTick;
+			nextLaserSlam[1] = point.data.toKSH(true);
+		}
+		return point.data.toKSH(false);
 	}
 	_getNoteStr(tick, notes, nextNotes, shortNote, longNote) {
 		return notes.map((laneNotes, lane) => {

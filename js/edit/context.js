@@ -106,8 +106,8 @@ class VEditNoteContext extends VEditContext {
 }
 
 class VEditLaserContext extends VEditContext {
-	constructor(editor, isRightSide) {
+	constructor(editor, lane) {
 		super(editor);
-		this.isRightSide = isRightSide;
+		this.lane = lane;
 	}
 }

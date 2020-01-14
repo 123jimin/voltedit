@@ -1,4 +1,4 @@
-class VGraphPoint {
+ class VGraphPoint {
 	/// Y is stored in the tree containing the point.
 	constructor(v, vf, a, b) {
 		this.v = v;
@@ -19,6 +19,10 @@ class VGraphPoint {
 
 		return obj;
 	}
+	toKSH(vf) {
+		const v = vf ? this.vf : this.v;
+		return KSH_LASER_VALUES[Math.round(CLIP(v, 0, 1)*(KSH_LASER_VALUES.length-1))];
+	}
 }
 
 /// Graphs used by lasers, cameras, etc... of KSON
@@ -35,7 +39,7 @@ class VGraph {
 			this.iy = options.y || 0;
 		}else{
 			this.collapseTick = 0;
-			this.range = 1;
+			this.wide = 1;
 			this.iy = 0;
 		}
 
@@ -43,6 +47,21 @@ class VGraph {
 	}
 	getLength() {
 		return this.points.size ? this.points.last().y : 0;
+	}
+	getMinResolution(begin, len, forKSH) {
+		begin -= this.iy;
+
+		let resolution = 0;
+		const points = this.points.getAll(begin-this.collapseTick, len+this.collapseTick);
+		points.forEach((point) => {
+			if(point.y >= begin) resolution = GCD(resolution, point.y);
+			if(point.data.isSlam()) {
+				const slamY = point.y + this.collapseTick;
+				if(slamY < begin+len) resolution = GCD(resolution, slamY);
+			}
+		});
+
+		return resolution;
 	}
 	toKSON() {
 		const obj = {'y': this.iy, 'v': []};

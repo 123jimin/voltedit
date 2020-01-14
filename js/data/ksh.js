@@ -335,6 +335,7 @@ class KSHData extends VChartData {
 
 			this.addLaser(lane, laserSegments[lane]);
 			laserSegments[lane] = null;
+			laserWide[lane] = 1;
 		};
 		const addLaserSegment = (lane, y, v) => {
 			if(laserSegments[lane] === null)
