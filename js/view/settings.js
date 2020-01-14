@@ -91,13 +91,15 @@ class VChartColor {
 		this.hueLaserLeft = 180;
 		this.hueLaserRight = 300;
 
+		this.selected = '#FF0';
+
 		this.btFill = '#FFF';
 		this.btBorder = '#AAA';
 		this.btLong = '#EEE';
 
 		this.fxFill = '#F90';
 		this.fxBorder = '#A40';
-		this.fxLong = '#EA0';
+		this.fxLong = '#B80';
 
 		this.measureLine = '#FF0';
 		this.beatLine = '#444';
@@ -108,4 +110,3 @@ class VChartColor {
 		this.textBPM = '#6AF'
 	}
 }
-

@@ -40,14 +40,16 @@ This is where the JS source codes resides.
 	* `key-manager.js` managing keybindings
 	* `task-manager.js` managing edit operations
 * `js/edit` contains codes related to editing.
-	* `tasks.js` contains various edit operations.
+	* `task.js` contains various edit operations.
 		* Each operation inherits `VTask`, and must override certain functions.
 			* `constructor(editor, ...)` with a call `super(editor)`
 			* `_validate()` for validating the operation just before committing it
 			* `_commit()` for actually doing the operation
 			* `_makeInverse()` for generating the inverse operation just before committing
 		* This enables *extremely* liberal execution of redo and undo, no limit on how many operations can be undo.
-	* `context.js` manages edit contexts. (TBD)
+	* `context.js` manages edit contexts.
+	* `object.js` manages various chart objects.
+		* They "know" how to translate edit commands into view+data commands.
 * `js/ui` contains code related to UI, excluding chart display.
 	* `toolbar.js` contains code for managing the toolbar.
 	* `message.js` contains code for displaying various messages.

@@ -161,7 +161,10 @@ class VViewRenderQueue {
 
 		const triggerAnimationFrame = (this.queue.length == 0);
 		if(priority == this.currPriority && priority < VVIEW_RENDER_PRIORITY.RESIZE) {
-			this.queue.push(func.bind(this.view));
+			const lowPriority = priority === VVIEW_RENDER_PRIORITY.NONE;
+			if(!lowPriority || this.queue.length === 0) {
+				this.queue.push(func.bind(this.view));
+			}
 		}
 		else {
 			this.queue = [func.bind(this.view)];

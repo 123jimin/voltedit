@@ -50,34 +50,70 @@ class VViewRender {
 		this._clear(this.fxShorts);
 		this._clear(this.btShorts);
 
+		// [note, noteSelected]
 		this.fxNotesByY = [{}, {}];
 		this.btNotesByY = [{}, {}, {}, {}];
 	}
 	addBtNote(lane, pos, len) {
 		let note = null;
 		if(len === 0) {
-			note = this._addNote(this.btShorts, this.btShortTemplate, lane, pos);
+			note = this._addNote(this.btShorts, this.btShortTemplate, this.btShortSelectedTemplate, lane, pos);
 		} else {
-			note = this._addNote(this.btLongs, this._createLongNoteTemplate(this.view.scale.noteWidth, 1, this.view.color.btLong, len), lane, pos);
+			note = this._addNote(this.btLongs,
+				this._createLongNoteTemplate(this.view.scale.noteWidth, 1, this.view.color.btLong, len),
+				this._createLongNoteTemplate(this.view.scale.noteWidth, 1, this.view.color.selected, len),
+				lane, pos);
 		}
 		this.btNotesByY[lane][pos] = note;
 	}
 	addFxNote(lane, pos, len) {
 		let note = null;
 		if(len === 0) {
-			note = this._addNote(this.fxShorts, this.fxShortTemplate, lane*2, pos);
+			note = this._addNote(this.fxShorts, this.fxShortTemplate, this.fxShortSelectedTemplate, lane*2, pos);
 		} else {
-			note = this._addNote(this.btLongs, this._createLongNoteTemplate(this.view.scale.noteWidth*2, 0, this.view.color.fxLong, len), lane*2, pos);
+			note = this._addNote(this.fxLongs,
+				this._createLongNoteTemplate(this.view.scale.noteWidth*2, 0, this.view.color.fxLong, len),
+				this._createLongNoteTemplate(this.view.scale.noteWidth*2, 0, this.view.color.selected, len),
+				lane*2, pos);
 		}
 		this.fxNotesByY[lane][pos] = note;
 	}
-	_addNote(noteCollection, noteTemplate, lane, pos) {
+	_addNote(noteCollection, noteTemplate, noteSelectedTemplate, lane, pos) {
 		const scale = this.view.scale;
 		const note = noteTemplate.create();
 		note.position.set((lane-2)*scale.noteWidth, RD(this.view.t2p(pos)), 0);
 		noteCollection.add(note);
 
-		return note;
+		let noteSelected = null;
+		if(noteSelectedTemplate){
+			noteSelected = noteSelectedTemplate.create();
+			noteSelected.visible = false;
+			note.add(noteSelected);
+		}
+
+		return [note, noteSelected];
+	}
+	selBtNote(lane, pos, selected) {
+		this._selNote(this.btNotesByY, lane, pos, selected);
+	}
+	selFxNote(lane, pos, selected) {
+		this._selNote(this.fxNotesByY, lane, pos, selected);
+	}
+	_selNote(notesByY, lane, pos, selected) {
+		if(!(pos in notesByY[lane])) return;
+		const [_, noteSelected] = notesByY[lane][pos];
+		noteSelected.visible = selected;
+	}
+	showBtShortNoteDrawing(lane, pos, visible) {
+		this._showShortNoteDrawing(this.btShortDrawing, lane, pos, visible);
+	}
+	showFxShortNoteDrawing(lane, pos, visible) {
+		this._showShortNoteDrawing(this.fxShortDrawing, lane, pos, visible);
+	}
+	_showShortNoteDrawing(obj, lane, pos, visible) {
+		const scale = this.view.scale;
+		obj.visible = visible;
+		obj.position.set((lane-2)*scale.noteWidth, RD(this.view.t2p(pos)), 0);
 	}
 	delBtNote(lane, pos) {
 		this._delNote(this.btNotesByY, lane, pos);
@@ -86,7 +122,7 @@ class VViewRender {
 		this._delNote(this.fxNotesByY, lane, pos);
 	}
 	_delNote(notesByY, lane, pos){
-		const note = notesByY[lane][pos];
+		const [note, _] = notesByY[lane][pos];
 		note.parent.remove(note);
 
 		delete notesByY[lane][pos];
@@ -248,12 +284,27 @@ class VViewRender {
 		this.btLongs = this._createGroup(0);
 		this.fxShorts = this._createGroup(0);
 		this.btShorts = this._createGroup(0);
+		this.noteDrawings = this._createGroup(0);
 
 		this.fxNotesByY = [{}, {}];
 		this.btNotesByY = [{}, {}, {}, {}];
 
 		this.btShortTemplate = this._createRectangleTemplate(0, 0, scale.noteWidth, scale.btNoteHeight, color.btFill, color.btBorder);
 		this.fxShortTemplate = this._createRectangleTemplate(0, 0, scale.noteWidth*2, scale.fxNoteHeight, color.fxFill, color.fxBorder);
+
+		this.btShortSelectedTemplate = this._createRectangleTemplate(0, 0, scale.noteWidth, scale.btNoteHeight, color.selected);
+		this.fxShortSelectedTemplate = this._createRectangleTemplate(0, 0, scale.noteWidth*2, scale.fxNoteHeight, color.selected);
+
+		this.btShortDrawing = this.btShortTemplate.create();
+		this.btShortDrawing.visible = false;
+		this.noteDrawings.add(this.btShortDrawing);
+
+		this.fxShortDrawing = this.fxShortTemplate.create();
+		this.fxShortDrawing.visible = false;
+		this.noteDrawings.add(this.fxShortDrawing);
+
+		this.btLongDrawing = null;
+		this.fxLongDrawing = null;
 	}
 	_createLongNoteTemplate(width, padding, color, len) {
 		return this._createRectangleTemplate(padding, 0, width-padding*2, this.view.t2p(len), color);
@@ -336,8 +387,13 @@ class VViewRender {
 	}
 	_createRectangleTemplate(x, y, w, h, fill, stroke) {
 		const templates = [];
-		const planeGeometry = this._createPlaneGeometry(x+0.5, y+0.5, w-1, h-1);
-		templates.push(new VModelTemplate(THREE.Mesh, planeGeometry, new THREE.MeshBasicMaterial({'color': fill})));
+
+		if(fill) {
+			const planeGeometry = stroke ?
+				this._createPlaneGeometry(x+0.5, y+0.5, w-1, h-1) :
+				this._createPlaneGeometry(x, y, w, h);
+			templates.push(new VModelTemplate(THREE.Mesh, planeGeometry, new THREE.MeshBasicMaterial({'color': fill})));
+		}
 
 		if(stroke) {
 			const edges = new THREE.EdgesGeometry(this._createPlaneGeometry(x, y, w, h));

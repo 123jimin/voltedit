@@ -8,7 +8,7 @@ class VKeyManager {
 
 		this._initOps();
 		this.makeBindMap();
-		
+
 		document.body.addEventListener('keydown', this._onKeyPress.bind(this));
 	}
 
@@ -25,7 +25,7 @@ class VKeyManager {
 		for(let i=0; i<template.length; ++i){
 			const t = template[i];
 			if(t === '*') continue;
-			
+
 			const q = this.queue[i+(this.queue.length-template.length)];
 			if(t === q) continue;
 
@@ -55,7 +55,7 @@ class VKeyManager {
 			case 'Alt': case 'AltRight':
 				return;
 		}
-		
+
 		this.queue.push(code);
 
 		for(let key in this.bindMap){
@@ -75,7 +75,7 @@ class VKeyManager {
 
 		if(this.queue.length >= 16) this.queue.shift();
 	}
-	
+
 	_initOps() {
 		const editor = this.editor;
 
@@ -84,7 +84,7 @@ class VKeyManager {
 
 		this._registerOp('cursor-forward', editor.moveCursor.bind(editor, +1));
 		this._registerOp('cursor-backward', editor.moveCursor.bind(editor, -1));
-		
+
 		this._registerOp('add-bt-a', editor.addBt.bind(editor, 0));
 		this._registerOp('add-bt-b', editor.addBt.bind(editor, 1));
 		this._registerOp('add-bt-c', editor.addBt.bind(editor, 2));
@@ -92,8 +92,11 @@ class VKeyManager {
 
 		this._registerOp('add-fx-l', editor.addFx.bind(editor, 0));
 		this._registerOp('add-fx-r', editor.addFx.bind(editor, 1));
-		
-		this._registerOp('max-440', function(){ document.location.href = "https://youtu.be/5tCEzv_bu9Q"; });
+
+		this._registerOp('clear-selection', () => editor.context.clearSelection());
+		this._registerOp('delete-selection', () => editor.context.deleteSelection());
+
+		this._registerOp('max-440', () => { document.location.href = "https://youtu.be/5tCEzv_bu9Q"; });
 	}
 	_registerOp(op, func) {
 		this.ops[op] = func;
@@ -107,6 +110,9 @@ class VKeyManager {
 
 		this.bind("Up", 'cursor-forward');
 		this.bind("Down", 'cursor-backward');
+
+		this.bind("Backspace", 'delete-selection');
+		this.bind("Delete", 'delete-selection');
 
 		this.bind("1", 'add-bt-a');
 		this.bind("2", 'add-bt-b');

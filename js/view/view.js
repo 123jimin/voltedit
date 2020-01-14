@@ -85,6 +85,17 @@ class VView {
 		}
 		this.refresh();
 	}
+	selNote(type, lane, tick, selected) {
+		switch(type){
+			case 'bt':
+				this.render.selBtNote(lane, tick, selected);
+				break;
+			case 'fx':
+				this.render.selFxNote(lane, tick, selected);
+				break;
+		}
+		this.refresh();
+	}
 
 	/// Clear and redraw everything.
 	_redraw() {
@@ -221,7 +232,7 @@ class VView {
 
 	onMouseDown(event) {
 		if(this.elem.contains(event.target) && !this.scrollBar.elem.contains(event.target)){
-			this.setCursorWithMouse(event.offsetX, event.offsetY);
+			this.editor.context.onMouseDown(this.toChartViewEvent(event));
 		}
 	}
 	onMouseMove(event) {
@@ -230,12 +241,15 @@ class VView {
 			this.scrollBar.trigger(event.pageY);
 			return;
 		}
+		this.editor.context.onMouseDrag(this.toChartViewEvent(event));
 	}
 	onMouseUp(event) {
 		if(this.scrollBar.scrolling){
 			this.scrollBar.trigger(event.pageY);
 			this.scrollBar.stopScroll();
 		}
+
+		this.editor.context.onMouseUp(this.toChartViewEvent(event));
 	}
 	onWheel(event) {
 		if(!this.editor.chartData || !this.editor.chartData.beat) return;
@@ -247,17 +261,28 @@ class VView {
 			this.setLocation(this.tickLoc-deltaTick);
 		}
 	}
-	setCursorWithMouse(x, y) {
-		let clickTick = this.getTick(x, y);
-		clickTick = ALIGN(this.editor._editSnapTick, clickTick);
-		this.setCursor(clickTick);
-	}
-	getTick(x, y) {
-		let column = Math.floor(x/this.scale.columnOffset);
-		if(column >= this.scale.columns) column = this.scale.columns-1;
+	getClickCoord(x, y) {
+		let column = Math.floor((x-this.scale.marginSide/2)/this.scale.columnOffset);
+		column = CLIP(column, 0, this.scale.columns-1);
 
 		const effectivePos = y-column*this.height;
-		return -this.p2t(this.getTopPixel()+effectivePos);
+		const tick = -this.p2t(this.getTopPixel()+effectivePos);
+
+		const columnCenter = this.scale.marginSide+this.scale.columnRight+column*this.scale.columnOffset;
+		const offsetX = (x-columnCenter)/this.scale.noteWidth;
+
+		let lane = Math.floor(offsetX);
+		lane = CLIP(lane+2, -1, 4);
+		const laser = (offsetX+2.5)/5;
+
+		return [tick, lane, laser];
+	}
+	toChartViewEvent(event) {
+		const coord = this.getClickCoord(event.offsetX, event.offsetY);
+		return {
+			'tick': ALIGN(this.editor._editSnapTick, coord[0]), 'lane': coord[1], 'v': coord[2], 'which': event.which,
+			'ctrlKey': event.ctrlKey, 'altKey': event.altKey, 'shiftKey': event.shiftKey,
+		};
 	}
 	_updateLocation() {
 		// this.svg.viewbox(this.scale.viewBoxLeft, this._getViewBoxTop(), this.scale.fullWidth, this.height);

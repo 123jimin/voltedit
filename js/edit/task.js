@@ -49,6 +49,6 @@ class VNoteDelTask extends VTask {
 		const noteData = this.chartData.getNoteData(this.type, this.lane);
 		const node = noteData.get(this.tick);
 
-		return new VNoteAddTask(this.editor, this.lane, this.tick, node.l);
+		return new VNoteAddTask(this.editor, this.type, this.lane, this.tick, node.l);
 	}
 }

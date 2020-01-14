@@ -26,7 +26,9 @@ class VEditor {
 		this.keyManager = new VKeyManager(this);
 		this.fileManager = new VFileManager(this);
 
-		this.context = new VEditChartContext(this);
+		// For testing
+		this.context = new VEditNoteContext(this, 'bt');
+		// this.context = new VEditChartContext(this);
 
 		this._addEventListeners();
 

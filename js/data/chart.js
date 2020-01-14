@@ -37,7 +37,7 @@ class VChartData {
 		if(!this.note[type]) this.note[type] = [];
 		this._initTreeArr(this.note[type], lane+1);
 
-		return this.getNoteData(type, lane).add(tick, len, null);
+		return this.getNoteData(type, lane).add(tick, len, new VNoteObject(type, lane, tick, len));
 	}
 	/// Returns: whether the deletion is successful
 	delNote(type, lane, tick) {
