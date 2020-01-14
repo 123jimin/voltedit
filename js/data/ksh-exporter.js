@@ -12,6 +12,8 @@ class KSHExporter {
 		this.nextBtNotes = null;
 		this.nextFxNotes = null;
 		this.nextLasers = null;
+
+		this.nextBPM = null;
 	}
 	putLine(l) {
 		this.lines.push(l);
@@ -100,6 +102,7 @@ class KSHExporter {
 		this.nextBtNotes = [0, 1, 2, 3].map((lane) => getFirst(note.bt, lane));
 		this.nextFxNotes = [0, 1].map((lane) => getFirst(note.fx, lane));
 		this.nextLasers = [0, 1].map((lane) => getFirst(note.laser, lane));
+		this.nextBPM = this.chart.beat && this.chart.beat.bpm ? this.chart.beat.bpm.first() : null;
 
 		this.chart.iterMeasures((measureIndex, measureTick, n, d, measureLength) => {
 			// beat
@@ -121,14 +124,12 @@ class KSHExporter {
 			while(result.length > count) result.pop();
 			return result;
 		};
+		const updateTickSize = (t) => { if(measureTick <= t && t < measureEnd) tickSize = GCD(tickSize, t); };
+		const updateTickSizeNodes = (nodes) => nodes.forEach((node) => {
+			updateTickSize(node.y); node.l && updateTickSize(node.y+node.l);
+		});
 		const updateTickSizeNote = (tickSize, arr, start, end) => {
-			const check = (t) => {
-				if(measureTick <= t && t < measureEnd) tickSize = GCD(tickSize, t);
-			};
-			arr.forEach((nodes) => nodes.forEach((node) => {
-				check(node.y); node.l && check(node.y+node.l);
-			}));
-			return tickSize;
+			arr.forEach(updateTickSizeNodes);
 		};
 
 		// ticks
@@ -137,19 +138,29 @@ class KSHExporter {
 		const lasers = getTrees(chart.note.laser, 2);
 
 		// Determine tick size
-		tickSize = updateTickSizeNote(tickSize, btNotes);
-		tickSize = updateTickSizeNote(tickSize, fxNotes);
+		updateTickSizeNote(tickSize, btNotes);
+		updateTickSizeNote(tickSize, fxNotes);
 
-		// TODO: check lasers and other stuffs, including BPM
+		chart.beat && chart.beat.bpm && updateTickSizeNodes(chart.beat.bpm.getAll(measureTick, measureLength));
+		// TODO: check lasers and other stuffs
 
 		// Print each line
 		for(let i=measureTick; i<measureEnd; i+=tickSize){
+			if(this.nextBPM && this.nextBPM.y == i){
+				this.putProperty('t', this.nextBPM.data);
+				this.nextBPM = this.nextBPM.next();
+			}
+
 			const btStr = this._getNoteStr(i, btNotes, this.nextBtNotes, '1', '2');
 			const fxStr = this._getNoteStr(i, fxNotes, this.nextFxNotes, '2', '1');
-			this.putLine(`${btStr}|${fxStr}|--`);
+			const laserStr = this._getLaserStr(i);
+			this.putLine(`${btStr}|${fxStr}|${laserStr}`);
 		}
 
 		this.putLine("--");
+	}
+	_getLaserStr() {
+		return '--';
 	}
 	_getNoteStr(tick, notes, nextNotes, shortNote, longNote) {
 		return notes.map((laneNotes, lane) => {
