@@ -10,14 +10,18 @@ VOLTEdit uses "Office S" icons of [icons8](https://icons8.com).
 ## Features
 Currently, these features are available.
 
-* Importing KSH and KSON files via drag-drop
+* **Reading and writing KSH and KSON files**
+	* Yes, basic KSH <-> KSON conversion is supported!
+	* Only supports notes, lasers, beat lines, and BPM changes for now.
+* **Multi-column view using WebGL**
 	* Currently only notes, lasers, and beat lines are visible.
-* Exporting to KSON format
-* Multi-column view using WebGL
-	* Scrolling view via scrollbar / mouse wheel
-* Intuitive ribbon UI
-	* Editor settings, saved via `localStorage`
-* Support for English and Korean
+	* Scrolling view can be done via scrollbar / mouse wheel.
+* **Editing chart**
+	* Currently only inserting BT/FXs and deleting BTs are supported.
+	* Full redo/undo support for most edit operations.
+	* Editor settings are saved via `localStorage`.
+	* Ribbon UI available.
+* **Available in English and Korean**
 
 Also see the "Planned Features" section.
 
@@ -35,7 +39,7 @@ npm install -g uglify-es less less-plugin-clean-css
 Then use `make` to build the JS and CSS files.
 
 ## Planned Features
-These are planned features, as of 12 Jan 2020.
+These are planned features, as of 14 Jan 2020.
 
 Also see the [milestones page](https://github.com/123jimin/voltedit/milestones).
 
@@ -49,9 +53,7 @@ Also see the [milestones page](https://github.com/123jimin/voltedit/milestones).
 
 ### Simple Chart Creator
 These features will be implemented by this weekend.
-* Selecting
 * Editing notes
-* Writing simple KSH file
 * Utilizing native FS if possible
 
 These features will be implemented by this month.
