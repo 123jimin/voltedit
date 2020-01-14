@@ -50,8 +50,15 @@ class VEditor {
 			this._editSnapTick = 1;
 
 		if(oldSnapBeat !== this._editSnapBeat || this._editSnapBeat !== snap){
-			for(let elem of this.elem.querySelectorAll(".toolbar .toolbar-edit-snap")){
-				elem.value = this._editSnapBeat;
+			let postfix = 'th';
+			if(this._editSnapBeat % 10 < 4 && this._editSnapBeat % 10 > 0 && (this._editSnapBeat < 10 || this._editSnapBeat > 20)){
+				postfix = ['', 'st', 'nd', 'rd'][this._editSnapBeat % 10];
+			}
+			for(let elem of this.elem.querySelectorAll(".toolbar span.toolbar-edit-tick-disp .beat")){
+				elem.innerText = `${this._editSnapBeat}`;
+			}
+			for(let elem of this.elem.querySelectorAll(".toolbar span.toolbar-edit-tick-disp .ord")){
+				elem.innerText = postfix;
 			}
 		}
 	}

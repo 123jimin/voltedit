@@ -43,11 +43,10 @@ class VToolbar {
 		this._button('toolbar-save-kson', 'toolbar-save-kson-desc', () => this.editor.fileManager.saveToKSON());
 		this._button('toolbar-save-ksh', 'toolbar-save-ksh-desc', () => this.editor.fileManager.saveToKSH());
 
-		this._bind('toolbar-edit-snap', null, (v) => {
-			v = +v;
-			if(v === this.editor.editSnap) return;
-			this.editor.setEditSnap(v);
-		});
+		this._button('btn-toolbar-decrease-edit-tick', 'toolbar-decrease-edit-tick',
+			() => this.editor.setEditSnap(this.editor._editSnapBeat-1));
+		this._button('btn-toolbar-increase-edit-tick', 'toolbar-increase-edit-tick',
+			() => this.editor.setEditSnap(this.editor._editSnapBeat+1));
 		this._bind('toolbar-note-width', 'editor:note:width', (v) => this.editor.view.scale.setNoteWidth(+v));
 		this._bind('toolbar-measure-scale', 'editor:measure:scale', (v) => this.editor.view.scale.setMeasureScale(+v));
 		this._bind('toolbar-columns', 'editor:columns', (v) => this.editor.view.scale.setColumns(+v),

@@ -6,26 +6,34 @@ div.veditor div.toolbar {
 	background-color: @TOOLBAR_TOP;
 	box-shadow: 0 3px 4px black;
 	
-	input[type="number"] {
-		width: 3em;
-
-		&.toolbar-edit-snap {
-			font-size: 2.5em;
-			width: 2.25em;
-		}
-	}
+	user-select: none;
 	
+	select {
+		height: 1.75em;
+	}
+
+	input[type='number'] {
+		width: 3em;
+	}
+
 	button {
+		height: 3em;
 		font-size: .9em;
 		cursor: pointer;
 		background-color: @TOOLBAR_BG;
+		border: solid 1px desaturate(@KEY_COLOR, 50%, relative);
 
 		&:focus {
 			outline: 0;
 		}
+			
+		&:hover {
+			background-color: lighten(@TOOLBAR_BG, 30%, relative);
+			font-weight: bold;
+		}
 
 		&[style*="background-image"] {
-			width: 3em; height: 3em;
+			width: 3em;
 			padding: 3.1em 0 0;
 			background-size: 2.7em;
 			background-position: .15em .15em;
@@ -35,15 +43,10 @@ div.veditor div.toolbar {
 
 			transition: background-color 100ms ease-out;
 
-			&:hover {
-				background-color: lighten(@TOOLBAR_BG, 30%, relative);
-				font-weight: bold;
-			}
 		}
 	}
 
 	div.toolbar-tab {
-		user-select: none;
 
 		&>ul li {
 			display: inline-block;
@@ -91,8 +94,11 @@ div.veditor div.toolbar {
 		padding: .2em .3em;
 		text-align: center;
 
+		display: flex;
+		flex-flow: row;
+
 		&.short {
-			line-height: 4em;
+			padding-top: 1.3em;
 		}
 
 		&:after {
@@ -118,6 +124,41 @@ div.veditor div.toolbar {
 			td {
 				padding: .1em .4em;
 			}
+		}
+	}
+
+	div.toolbar-edit-tick-section {
+		button {
+			height: 4.5em;
+		}
+		span.toolbar-edit-tick-disp {
+			display: inline-block;
+			font-size: 2em;
+			min-width: 2.75em;
+			max-width: 4em;
+			position: relative;
+			top: .15em;
+
+			&>.ord {
+				font-size: .7em;
+			}
+		}
+	}
+
+	table.toolbar-edit-contexts {
+		position: relative;
+		top: -.2em;
+		margin-left: 1em;
+		border-collapse: collapse;
+		border-spacing: 0;
+		td {
+			padding: 0 !important;
+		}
+		button {
+			background-color: lightgray;
+			border: none;
+			width: 2.96em;
+			height: 2.3em;
 		}
 	}
 }

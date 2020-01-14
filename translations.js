@@ -60,9 +60,13 @@ toolbar-save-ksh-desc
 	en: Save as a KSH format. (k-shoot 1.xx)
 	ko: KSH 포맷으로 저장합니다. (케슛 1.xx)
 
-toolbar-edit-snap
-	en: Beat:
-	ko: 박자:
+toolbar-decrease-edit-tick
+	en: Decrease edit tick beat
+	ko: 편집 단위박 감소
+toolbar-increase-edit-tick
+	en: Increase edit tick beat
+	ko: 편집 단위박 증가
+
 toolbar-note-width
 	en: Note width:
 	ko: 노트 너비:
