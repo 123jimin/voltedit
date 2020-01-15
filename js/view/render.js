@@ -104,17 +104,6 @@ class VViewRender {
 		const [_, noteSelected] = notesByY[lane][pos];
 		noteSelected.visible = selected;
 	}
-	showBtShortNoteDrawing(lane, pos, visible) {
-		this._showShortNoteDrawing(this.btShortDrawing, lane, pos, visible);
-	}
-	showFxShortNoteDrawing(lane, pos, visible) {
-		this._showShortNoteDrawing(this.fxShortDrawing, lane, pos, visible);
-	}
-	_showShortNoteDrawing(obj, lane, pos, visible) {
-		const scale = this.view.scale;
-		obj.visible = visible;
-		obj.position.set((lane-2)*scale.noteWidth, RD(this.view.t2p(pos)), 0);
-	}
 	delBtNote(lane, pos) {
 		this._delNote(this.btNotesByY, lane, pos);
 	}
@@ -126,6 +115,19 @@ class VViewRender {
 		note.parent.remove(note);
 
 		delete notesByY[lane][pos];
+	}
+
+	fakeMoveBtNoteTo(lane, pos, newLane, newPos) {
+		this._fakeMoveNoteTo(this.btNotesByY[lane], pos, newLane, newPos);
+	}
+	fakeMoveFxNoteTo(lane, pos, newLane, newPos) {
+		this._fakeMoveNoteTo(this.fxNotesByY[lane], pos, newLane*2, newPos);
+	}
+	_fakeMoveNoteTo(notesByY, pos, newLane, newPos) {
+		if(!(pos in notesByY)) return;
+
+		const [note, _] = notesByY[pos];
+		note.position.set((newLane-2)*this.view.scale.noteWidth, RD(this.view.t2p(newPos)), 0);
 	}
 
 	/** Drawing laser data **/
@@ -294,14 +296,6 @@ class VViewRender {
 
 		this.btShortSelectedTemplate = this._createRectangleTemplate(0, 0, scale.noteWidth, scale.btNoteHeight, color.selected);
 		this.fxShortSelectedTemplate = this._createRectangleTemplate(0, 0, scale.noteWidth*2, scale.fxNoteHeight, color.selected);
-
-		this.btShortDrawing = this.btShortTemplate.create();
-		this.btShortDrawing.visible = false;
-		this.noteDrawings.add(this.btShortDrawing);
-
-		this.fxShortDrawing = this.fxShortTemplate.create();
-		this.fxShortDrawing.visible = false;
-		this.noteDrawings.add(this.fxShortDrawing);
 
 		this.btLongDrawing = null;
 		this.fxLongDrawing = null;

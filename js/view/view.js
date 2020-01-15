@@ -103,6 +103,17 @@ class VView {
 		}
 		this.refresh();
 	}
+	fakeMoveNoteTo(type, lane, tick, newLane, newTick) {
+		switch(type){
+			case 'bt':
+				this.render.fakeMoveBtNoteTo(lane, tick, newLane, newTick);
+				break;
+			case 'fx':
+				this.render.fakeMoveFxNoteTo(lane, tick, newLane, newTick);
+				break;
+		}
+		this.refresh();
+	}
 
 	/// Clear and redraw everything.
 	_redraw() {

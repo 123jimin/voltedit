@@ -4,7 +4,11 @@ class VEditObject {
 	delTask(editor) { return null; }
 	moveTask(editor) { return null; }
 
-	fakeMoveTo(view, newPos) {}
+	fakeMoveTo(view, startEvent, event) {}
+	resetFakeMoveTo(view) {}
+
+	serialize() { return []; }
+	unserialize(data) {}
 }
 
 class VNoteObject extends VEditObject {
@@ -21,4 +25,14 @@ class VNoteObject extends VEditObject {
 	delTask(editor) {
 		return new VNoteDelTask(editor, this.type, this.lane, this.tick);
 	}
+
+	fakeMoveTo(view, startEvent, event) {
+		view.fakeMoveNoteTo(this.type, this.lane, this.tick, this.lane, this.tick+event.tick-startEvent.tick);
+	}
+	resetFakeMoveTo(view) {
+		view.fakeMoveNoteTo(this.type, this.lane, this.tick, this.lane, this.tick);
+	}
+
+	serialize() { return [this.type, this.lane, this.tick, this.len]; }
+	unserialize(data) { [this.type, this.lane, this.tick, this.len] = data; }
 }
