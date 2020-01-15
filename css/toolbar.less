@@ -1,13 +1,14 @@
 @TOOLBAR_BG: lighten(desaturate(@KEY_COLOR, 30%), 75%, relative);
 @TOOLBAR_TOP: darken(@KEY_COLOR, 30%, relative);
+@TOOLBAR_HOVER: lighten(desaturate(@KEY_COLOR, 30%), 20%, relative);
 
 div.veditor div.toolbar {
 	flex: 0 1 auto;
 	background-color: @TOOLBAR_TOP;
 	box-shadow: 0 3px 4px black;
-	
+
 	user-select: none;
-	
+
 	select {
 		height: 1.75em;
 	}
@@ -26,7 +27,7 @@ div.veditor div.toolbar {
 		&:focus {
 			outline: 0;
 		}
-			
+
 		&:hover {
 			background-color: lighten(@TOOLBAR_BG, 30%, relative);
 			font-weight: bold;
@@ -57,7 +58,7 @@ div.veditor div.toolbar {
 			cursor: pointer;
 
 			&:hover {
-				background-color: lighten(desaturate(@KEY_COLOR, 30%), 20%, relative);
+				background-color: @TOOLBAR_HOVER;
 			}
 			&.active {
 				background-color: @TOOLBAR_BG;
@@ -155,10 +156,26 @@ div.veditor div.toolbar {
 			padding: 0 !important;
 		}
 		button {
-			background-color: lightgray;
+			background-color: desaturate(lighten(@KEY_COLOR, 30%, relative), 70%, relative);
 			border: none;
 			width: 2.96em;
 			height: 2.3em;
+
+			&[class^="btn-toolbar-context-"] {
+				opacity: 0.5;
+			}
+
+			&.selected {
+				background-color: lighten(@TOOLBAR_HOVER, 35%, relative);
+				opacity: 1;
+			}
+			&.btn-toolbar-toggle-insert.selected {
+				background-color: #a3e2a3;
+			}
+			&:hover {
+				background-color: lighten(@TOOLBAR_HOVER, 40%, relative) !important;
+				opacity: 1;
+			}
 		}
 	}
 }

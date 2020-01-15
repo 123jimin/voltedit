@@ -1,11 +1,8 @@
-const VCONTEXT_MODE = Object.freeze({
-
-});
-
 class VEditContext {
-	constructor(editor) {
+	constructor(editor, contextId) {
 		this.editor = editor;
 		this.view = this.editor.view;
+		this.contextId = contextId;
 
 		this.dragStarted = false;
 		this.startTick = 0;
@@ -13,6 +10,9 @@ class VEditContext {
 		this.startV = 0;
 
 		this.selectedObjects = new Set();
+	}
+	addObjectEnabled() {
+		return this.editor.insertMode;
 	}
 	addToSelection(obj) {
 		if(!obj) return;
@@ -47,9 +47,11 @@ class VEditContext {
 		const obj = this.getObjectAt(event);
 		if(!obj || !this.selectedObjects.has(obj)){
 			if(!event.shiftKey) this.clearSelection();
-			if(!obj){
+			if(!obj && !event.shiftKey){
 				this.view.setCursor(event.tick);
-				if(this.editor.chartData) this.createObjectAt(event);
+				if(this.addObjectEnabled() && this.editor.chartData){
+					this.createObjectAt(event);
+				}
 				return;
 			}
 		}
@@ -71,13 +73,13 @@ class VEditContext {
 
 class VEditChartContext extends VEditContext {
 	constructor(editor) {
-		super(editor);
+		super(editor, 'chart');
 	}
 }
 
 class VEditNoteContext extends VEditContext {
 	constructor(editor, type) {
-		super(editor);
+		super(editor, type);
 		this.type = type;
 		this.draggingNote = false;
 	}
@@ -107,7 +109,7 @@ class VEditNoteContext extends VEditContext {
 
 class VEditLaserContext extends VEditContext {
 	constructor(editor, lane) {
-		super(editor);
+		super(editor, `${['left','right'][lane]}-laser`);
 		this.lane = lane;
 	}
 }

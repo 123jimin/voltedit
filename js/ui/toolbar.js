@@ -47,6 +47,21 @@ class VToolbar {
 			() => this.editor.setEditSnap(this.editor._editSnapBeat-1));
 		this._button('btn-toolbar-increase-edit-tick', 'toolbar-increase-edit-tick',
 			() => this.editor.setEditSnap(this.editor._editSnapBeat+1));
+
+		this._button('btn-toolbar-toggle-insert', null,
+			() => this.editor.setInsertMode(!this.editor.insertMode));
+
+		this._button('btn-toolbar-context-chart', null,
+			() => this.editor.setContext(new VEditChartContext(this.editor)));
+		this._button('btn-toolbar-context-bt', null,
+			() => this.editor.setContext(new VEditNoteContext(this.editor, 'bt')));
+		this._button('btn-toolbar-context-fx', null,
+			() => this.editor.setContext(new VEditNoteContext(this.editor, 'fx')));
+		this._button('btn-toolbar-context-left-laser', null,
+			() => this.editor.setContext(new VEditLaserContext(this.editor, 0)));
+		this._button('btn-toolbar-context-right-laser', null,
+			() => this.editor.setContext(new VEditLaserContext(this.editor, 1)));
+
 		this._bind('toolbar-note-width', 'editor:note:width', (v) => this.editor.view.scale.setNoteWidth(+v));
 		this._bind('toolbar-measure-scale', 'editor:measure:scale', (v) => this.editor.view.scale.setMeasureScale(+v));
 		this._bind('toolbar-columns', 'editor:columns', (v) => this.editor.view.scale.setColumns(+v),

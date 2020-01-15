@@ -26,9 +26,11 @@ class VEditor {
 		this.keyManager = new VKeyManager(this);
 		this.fileManager = new VFileManager(this);
 
-		// For testing
-		this.context = new VEditNoteContext(this, 'bt');
-		// this.context = new VEditChartContext(this);
+		this.context = null;
+		this.setContext(new VEditChartContext(this));
+
+		this.insertMode = false;
+		this.setInsertMode(false);
 
 		this._addEventListeners();
 
@@ -39,7 +41,25 @@ class VEditor {
 		if(!this.chartData) return 0;
 		return ((this.chartData.beat && this.chartData.beat.resolution) || 240)*4;
 	}
+	setContext(context) {
+		if(this.context && this.context.contextId === context.contextId) return;
 
+		this.context = context;
+
+		for(let elem of this.elem.querySelectorAll(".toolbar table.toolbar-edit-contexts button[class^='btn-toolbar-context-']")){
+			elem.classList.remove('selected');
+		}
+		for(let elem of this.elem.querySelectorAll(`.toolbar table.toolbar-edit-contexts button.btn-toolbar-context-${context.contextId}`)){
+			elem.classList.add('selected');
+		}
+	}
+	setInsertMode(insertMode) {
+		this.insertMode = insertMode;
+		for(let elem of this.elem.querySelectorAll('.btn-toolbar-toggle-insert')) {
+			if(insertMode) elem.classList.add('selected');
+			else elem.classList.remove('selected');
+		}
+	}
 	setEditSnap(snap) {
 		const oldSnapBeat = this._editSnapBeat;
 		this._setEditSnap(snap);
