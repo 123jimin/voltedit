@@ -79,6 +79,8 @@ class VView {
 				this.render.addFxNote(lane, tick, len);
 				break;
 		}
+
+		this._checkRedrawMesaures(tick);
 		this.refresh();
 	}
 	delNote(type, lane, tick) {
@@ -112,6 +114,7 @@ class VView {
 				this.render.fakeMoveFxNoteTo(lane, tick, newLane, newTick);
 				break;
 		}
+		this._checkRedrawMesaures(newTick);
 		this.refresh();
 	}
 
@@ -164,6 +167,13 @@ class VView {
 			tree.traverse((node) => this.render.addLaser(ind, node.data));
 		});
 	}
+	_checkRedrawMesaures(tick) {
+		const newLastTick = Math.max(tick || 0, this.editor.chartData ? this.editor.chartData.getLastTick() : 0);
+		if(this.lastTick < newLastTick){
+			this.lastTick = newLastTick;
+			this.renderQueue.push(this._redrawMeasures, VVIEW_RENDER_PRIORITY.MINOR);
+		}
+	}
 	_redrawMeasures() {
 		this.render.clearMeasures();
 
@@ -175,7 +185,7 @@ class VView {
 		const beatInfo = this.editor.chartData.beat;
 		if(!beatInfo || !beatInfo.time_sig) return;
 
-		const endTick = this.editor.chartData.iterMeasures((measureIndex, measureTick, n, d, currMeasureLength) => {
+		let endTick = this.editor.chartData.iterMeasures((measureIndex, measureTick, n, d, currMeasureLength) => {
 			// Draw a measure line and beat lines.
 			if(measureIndex > 0) {
 				this.render.addMeasureLine(measureTick);
@@ -184,7 +194,7 @@ class VView {
 			for(let i=1; i<n; ++i) {
 				this.render.addBeatLine(measureTick + i*(this.tickUnit / d));
 			}
-		});
+		}, this.lastTick);
 
 		if(endTick > 0){
 			this.render.addMeasureLine(endTick);

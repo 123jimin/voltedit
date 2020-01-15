@@ -17,6 +17,7 @@ class VNoteAddTask extends VTask {
 
 		this.editor.view.setCursor(this.tick);
 		this.editor.view.addNote(this.type, this.lane, this.tick, this.len);
+
 		return true;
 	}
 	_makeInverse() {

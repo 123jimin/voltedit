@@ -12,6 +12,7 @@ class VChartData {
 		// XXX: bpm, scroll_speed are each an AATree, but time_sig is NOT.
 		this.beat = {
 			'bpm': new AATree([{'y': 0, 'data': 120}]),
+			'time_sig': [{'idx': 0, 'v': {'n': 4, 'd': 4}}],
 			'resolution': 240,
 		};
 		this.gauge = {};
@@ -67,11 +68,11 @@ class VChartData {
 		return this.beat.bpm.add(tick, 0, value);
 	}
 
-	iterMeasures(iterator) {
+	iterMeasures(iterator, customLastTick) {
 		if(!this.beat || !this.beat.time_sig) return 0;
 
 		const tickUnit = (this.beat.resolution||240)*4;
-		const lastTick = this.getLastTick();
+		const lastTick = Math.max(customLastTick || 0, this.getLastTick());
 		const DEFAULT_TIME_SIG = {'v': {'n': 4, 'd': 4}};
 
 		let measureTick = 0;

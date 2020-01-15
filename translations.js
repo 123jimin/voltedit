@@ -41,10 +41,16 @@ toolbar-default
 	en: Default:
 	ko: 기본 값:
 
-toolbar-open
+toolbar-new-file
+	en: New
+	ko: 새로
+toolbar-new-file-desc
+	en: Create a new chart.
+	ko: 새 채보를 만듭니다.
+toolbar-open-file
 	en: Open
 	ko: 열기
-toolbar-open-desc
+toolbar-open-file-desc
 	en: Choose a chart file to be edited.
 	ko: 편집할 채보 파일을 선택합니다.
 toolbar-save-kson

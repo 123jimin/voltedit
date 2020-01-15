@@ -128,9 +128,11 @@ class VEditor {
 		this.taskManager.do('task-add-fx', new VNoteAddTask(this, 'fx', index, this.view.cursorStartLoc, 0));
 	}
 
+	createNewChart() {
+		this.setChartData(new VChartData());
+	}
 	setChartData(chartData) {
 		if(chartData) this.chartData = chartData;
-		if(!this.chartData) return;
 
 		const trimmedChartName = this.chartData.meta.title.trim();
 		const chartDifficulty = ['NOV','ADV','EXH','INF'][this.chartData.meta.difficulty.idx];
@@ -181,6 +183,8 @@ class VEditor {
 	}
 	_onReady() {
 		document.body.classList.remove('loading');
+
+		this.createNewChart();
 	}
 	_addEventListeners() {
 		window.addEventListener('resize', this.onResize.bind(this));
