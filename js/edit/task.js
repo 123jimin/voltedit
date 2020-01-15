@@ -1,3 +1,12 @@
+/// A no-op task
+class VEmptyTask extends VTask {
+	constructor(editor) { super(editor); }
+	_validate() { return true; }
+	_commit() { return true; }
+	_makeInverse() { return this; }
+}
+
+/// Creates a note (fails if there's an overlapping note)
 class VNoteAddTask extends VTask {
 	constructor(editor, type, lane, tick, len) {
 		super(editor);
@@ -22,6 +31,26 @@ class VNoteAddTask extends VTask {
 	}
 	_makeInverse() {
 		return new VNoteDelTask(this.editor, this.type, this.lane, this.tick);
+	}
+}
+
+/// Creates a note (and becomes no-op if there's an overlapping note)
+class VNoteMaybeAddTask extends VNoteAddTask {
+	constructor(editor, type, lane, tick, len) {
+		super(editor, type, lane, tick, len);
+		this.no_op = false;
+	}
+	_validate() {
+		this.no_op = !super._validate();
+		return true;
+	}
+	_commit() {
+		if(this.no_op) return true;
+		return super._commit();
+	}
+	_makeInverse() {
+		if(this.no_op) return new VEmptyTask(this.editor);
+		else return super._makeInverse();
 	}
 }
 

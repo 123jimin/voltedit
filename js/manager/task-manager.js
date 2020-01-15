@@ -1,7 +1,7 @@
 class VTask {
 	constructor(editor) {
 		this.editor = editor;
-		this.chartData = editor.chartData;
+		this.chartData = editor && editor.chartData;
 		this._inverse = null;
 	}
 	// Things to override
@@ -28,6 +28,12 @@ class VTask {
 	}
 	_commonValidate() { return !!(this.editor && this.chartData && this.editor.chartData === this.chartData); }
 }
+
+VTask.join = function VTask$merge(tasks) {
+	if(tasks.length === 0) return null;
+	if(tasks.length === 1) return tasks[0];
+	return new VTaskCollection(tasks[0].editor, tasks);
+};
 
 class VTaskCollection extends VTask {
 	constructor(editor, tasks) {

@@ -2,7 +2,7 @@ class VEditObject {
 	constructor() {}
 	sel(view, selected) {}
 	delTask(editor) { return null; }
-	moveTask(editor) { return null; }
+	moveTask(editor, startEvent, endEvent) { return null; }
 
 	fakeMoveTo(view, startEvent, event) {}
 	resetFakeMoveTo(view) {}
@@ -24,6 +24,9 @@ class VNoteObject extends VEditObject {
 	}
 	delTask(editor) {
 		return new VNoteDelTask(editor, this.type, this.lane, this.tick);
+	}
+	moveTask(editor, startEvent, endEvent) {
+		return new VNoteMaybeAddTask(editor, this.type, this.lane, this.tick+endEvent.tick-startEvent.tick, this.len);
 	}
 
 	fakeMoveTo(view, startEvent, event) {

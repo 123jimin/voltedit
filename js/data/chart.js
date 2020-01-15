@@ -36,6 +36,12 @@ class VChartData {
 		if(!(type in this.note)) return null;
 		return this.note[type][lane];
 	}
+	forAllNotesInRange(type, from, to, callBack) {
+		// All notes are range-selectable while in any EditNoteContext.
+		this.note[type].forEach((noteData) => {
+			noteData.getAll(from, to-from).forEach(callBack);
+		});
+	}
 
 	/// Returns: null if param is invalid, [success, node] otherwise
 	addNote(type, lane, tick, len) {

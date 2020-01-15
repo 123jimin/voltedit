@@ -77,6 +77,7 @@ class VEditContext {
 				this.selectRange(this.view.cursorStartLoc, this.view.cursorEndLoc);
 				break;
 			case VEDIT_DRAG_INTENT.MOVE:
+				this.moveSelection(this.startEvent, event);
 				break;
 		}
 		this.dragIntent = VEDIT_DRAG_INTENT.NONE;
@@ -101,18 +102,42 @@ class VEditContext {
 	}
 	deleteSelection() {
 		if(this.selectedObjects.size === 0) return;
-
-		let delTasks = [];
+		
+		const delTasks = [];
 		this.selectedObjects.forEach((obj) => delTasks.push(obj.delTask(this.editor)));
 
-		if(delTasks.length === 1) this.editor.taskManager.do('task-delete-selection', delTasks[0]);
-		else this.editor.taskManager.do('task-delete-selection', new VTaskCollection(this.editor, delTasks));
+		this.editor.taskManager.do('task-delete-selection', VTask.join(delTasks));
+
+		this.selectedObjects.clear();
+	}
+	moveSelection(startEvent, endEvent) {
+		if(this.selectedObjects.size === 0) return;
+
+		const delTasks = [];
+		this.selectedObjects.forEach((obj) => delTasks.push(obj.delTask(this.editor)));
+		
+		const moveTasks = [];
+		this.selectedObjects.forEach((obj) => moveTasks.push(obj.moveTask(this.editor, startEvent, endEvent)));
+		
+		this.editor.taskManager.do('task-move-selection', VTask.join([VTask.join(delTasks), VTask.join(moveTasks)]));
+		
+		// TODO: retain selection
+		this.selectedObjects.clear();
 	}
 }
 
 class VEditChartContext extends VEditContext {
 	constructor(editor) {
 		super(editor, 'chart');
+	}
+	selectRange(from, to) {
+		if(!this.editor.chartData) return;
+		
+		const chartData = this.editor.chartData;
+		if(!chartData) return;
+
+		['bt', 'fx'].forEach((type) => chartData.forAllNotesInRange(type, from, to,
+			(node) => this.addToSelection(node.data)));
 	}
 }
 
@@ -160,21 +185,11 @@ class VEditNoteContext extends VEditContext {
 		return null;
 	}
 	selectRange(from, to) {
-		if(!this.editor.chartData) return;
+		const chartData = this.editor.chartData;
+		if(!chartData) return;
 
-		// All notes are range-selectable while in any EditNoteContext.
-		['bt', 'fx'].forEach((type) => {
-			const lanes = this.editor.chartData.getLaneCount(type);
-			for(let i=0; i<lanes; ++i) {
-				const noteData = this.editor.chartData.getNoteData(type, i);
-				if(!noteData) continue;
-
-				// `to` is intentionally omitted
-				noteData.getAll(from, to-from).forEach((node) => {
-					this.addToSelection(node.data);
-				});
-			}
-		});
+		['bt', 'fx'].forEach((type) => chartData.forAllNotesInRange(type, from, to,
+			(node) => this.addToSelection(node.data)));
 	}
 }
 
