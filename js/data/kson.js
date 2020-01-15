@@ -63,7 +63,8 @@ class KSONData extends VChartData {
 		this.gauge.total = obj.guage.total;
 	}
 	_setNote(obj) {
-		this.note = {};
+		this._initNote();
+
 		if(!obj.note) return;
 
 		if(obj.note.bt) obj.note.bt.forEach((notes, lane) => notes.forEach((note) => {

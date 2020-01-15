@@ -1,6 +1,10 @@
 class VEditObject {
 	constructor() {}
 	sel(view, selected) {}
+	delTask(editor) { return null; }
+	moveTask(editor) { return null; }
+
+	fakeMoveTo(view, newPos) {}
 }
 
 class VNoteObject extends VEditObject {

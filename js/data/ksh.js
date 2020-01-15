@@ -305,7 +305,7 @@ class KSHData extends VChartData {
 	}
 	/// Processes notes and lasers
 	_setKSONNoteInfo() {
-		this.note = {};
+		this._initNote();
 
 		// Stores [start, len] long note infos
 		let longInfo = {'bt': [null, null, null, null], 'fx': [null, null]};

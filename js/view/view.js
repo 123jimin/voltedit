@@ -50,9 +50,16 @@ class VView {
 		this.tickLoc = isFinite(tickLoc) && tickLoc >= 0 ? tickLoc : 0;
 		this.renderQueue.push(this._updateLocation, VVIEW_RENDER_PRIORITY.MINOR);
 	}
-	setCursor(cursorLoc) {
+	setCursor(cursorLoc, cursorEndLoc) {
 		if(cursorLoc == null) cursorLoc = this.cursorStartLoc;
-		this.cursorStartLoc = this.cursorEndLoc = isFinite(cursorLoc) && cursorLoc > 0 ? cursorLoc : 0;
+		if(cursorEndLoc == null) cursorEndLoc = cursorLoc;
+
+		if(!isFinite(cursorLoc) || cursorLoc < 0) cursorLoc = 0;
+		if(!isFinite(cursorEndLoc) || cursorEndLoc < 0) cursorEndLoc = 0;
+
+		if(cursorLoc > cursorEndLoc) [cursorLoc, cursorEndLoc] = [cursorEndLoc, cursorLoc];
+		[this.cursorStartLoc, this.cursorEndLoc] = [cursorLoc, cursorEndLoc];
+
 		this.renderQueue.push(this._redrawCursor, VVIEW_RENDER_PRIORITY.MINOR);
 	}
 	redraw() {
@@ -271,9 +278,10 @@ class VView {
 		const columnCenter = this.scale.marginSide+this.scale.columnRight+column*this.scale.columnOffset;
 		const offsetX = (x-columnCenter)/this.scale.noteWidth;
 
+		const laneCount = (this.editor.chartData && this.editor.chartData.getLaneCount('bt')) || 4;
 		let lane = Math.floor(offsetX);
-		lane = CLIP(lane+2, -1, 4);
-		const laser = (offsetX+2.5)/5;
+		lane = CLIP(lane+2, -1, laneCount);
+		const laser = (offsetX+(laneCount+0.5))/(laneCount+1);
 
 		return [tick, lane, laser];
 	}

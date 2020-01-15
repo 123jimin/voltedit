@@ -18,6 +18,7 @@ class VChartData {
 
 		// XXX: bt, fx, laser are each an array of AATrees
 		this.note = {};
+		this._initNote();
 
 		this.audio = {};
 		this.camera = {};
@@ -25,6 +26,10 @@ class VChartData {
 		this.impl = {};
 	}
 
+	/// Yup, VOLTEdit internally supports more than 4 BT lanes, 2 FX lanes, and 2 lasers.
+	getLaneCount(type) {
+		return (this.note && this.note[type] && this.note[type].length) || 0;
+	}
 	getNoteData(type, lane) {
 		if(!this.note) return null;
 		if(!(type in this.note)) return null;
@@ -193,6 +198,12 @@ class VChartData {
 
 	_initTreeArr(arr, size) {
 		while(arr.length < size) arr.push(new AATree());
+	}
+	_initNote() {
+		this.note = {'bt': [], 'fx': [], 'laser': []};
+		this._initTreeArr(this.note.bt, 4);
+		this._initTreeArr(this.note.fx, 2);
+		this._initTreeArr(this.note.laser, 2);
 	}
 }
 

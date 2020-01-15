@@ -43,7 +43,7 @@ class VEditor {
 	}
 	setContext(context) {
 		if(this.context && this.context.contextId === context.contextId) return;
-
+		if(this.context) this.context.clearSelection();
 		this.context = context;
 
 		for(let elem of this.elem.querySelectorAll(".toolbar table.toolbar-edit-contexts button[class^='btn-toolbar-context-']")){
