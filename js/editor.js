@@ -37,6 +37,10 @@ class VEditor {
 		this._onReady();
 	}
 
+	doOp(op) {
+		this.keyManager.doOp(op);
+	}
+
 	getTicksPerWholeNote() {
 		if(!this.chartData) return 0;
 		return ((this.chartData.beat && this.chartData.beat.resolution) || 240)*4;
@@ -200,8 +204,13 @@ class VEditor {
 		});
 	}
 	error(err) {
-		err && err.message && this.alert(err.message);
-		err && console.error(err, err && err.stack);
+		if(err instanceof Error){
+			err.message && this.alert(err.message);
+			console.error(err, err.stack);
+		}else{
+			this.alert(err);
+			console.error(err);
+		}
 	}
 	warn(message) {
 		console.warn(message);

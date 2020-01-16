@@ -6,8 +6,14 @@ class VFileManager {
 
 		this.dropFileIndicator = elem.querySelector('.drop-file-indicator');
 		this.dropFileIndicatorShown = false;
+
+		this.useNativeFS = window.chooseFileSystemEntries && typeof(window.chooseFileSystemEntries) === 'function';
 	}
-	showOpenFileDialog() {
+	showOpenChartFileDialog() {
+		if(this.useNativeFS) this._showOpenChartFileDialog_nativeFS();
+		else this._showOpenChartFileDialog_htmlInput();
+	}
+	_showOpenChartFileDialog_htmlInput() {
 		const fileInput = document.createElement('input');
 		fileInput.setAttribute('type', 'file');
 		fileInput.setAttribute('accept', ".ksh, .kson");
@@ -16,6 +22,12 @@ class VFileManager {
 			fileInput.remove();
 		});
 		fileInput.click();
+	}
+	async _showOpenChartFileDialog_nativeFS() {
+		const fileHandle = await window.chooseFileSystemEntries({
+			'type': "open-file", 'multiple': false,
+		});
+		console.log(fileHandle);
 	}
 	openFileList(files) {
 		if(files.length === 0) return false;
@@ -28,8 +40,8 @@ class VFileManager {
 			const chartData = VChartData.create(fileContents[0]);
 			console.timeEnd("Parsing");
 
-			if(chartData === null) {
-				alert(L10N.t('error-reading-chart-data'));
+			if(chartData == null) {
+				this.editor.error(L10N.t('error-reading-chart-data'));
 				return;
 			}
 
@@ -42,11 +54,19 @@ class VFileManager {
 	}
 	saveToKSON() {
 		if(!this.editor.chartData) return;
-		this.saveFile(KSONData.toKSON(this.editor.chartData), "chart.kson");
+		try{
+			this.saveFile(KSONData.toKSON(this.editor.chartData), "chart.kson");
+		}catch(e){
+			logger.error(e);
+		}
 	}
 	saveToKSH() {
 		if(!this.editor.chartData) return;
-		this.saveFile(KSHData.toKSH(this.editor.chartData), "chart.ksh");
+		try{
+			this.saveFile(KSHData.toKSH(this.editor.chartData), "chart.ksh");
+		}catch(e){
+			logger.error(e);
+		}
 	}
 	saveFile(text, fileName) {
 		const blob = new Blob([text], {'type': "text/plain"});

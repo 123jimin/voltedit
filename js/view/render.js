@@ -71,10 +71,8 @@ class VViewRender {
 		if(len === 0) {
 			note = this._addNote(this.btShorts, this.btShortTemplate, this.btShortSelectedTemplate, lane, pos);
 		} else {
-			note = this._addNote(this.btLongs,
-				this._createLongNoteTemplate(this.view.scale.noteWidth, 1, this.view.color.btLong, len),
-				this._createLongNoteTemplate(this.view.scale.noteWidth, 1, this.view.color.selected, len),
-				lane, pos);
+			note = this._addLongNote(this.btLongs, this.view.scale.noteWidth, 1,
+				this.view.color.btLong ,this.view.color.selected, lane, pos, len);
 		}
 		this.btNotesByY[lane][pos] = note;
 	}
@@ -83,12 +81,23 @@ class VViewRender {
 		if(len === 0) {
 			note = this._addNote(this.fxShorts, this.fxShortTemplate, this.fxShortSelectedTemplate, lane*2, pos);
 		} else {
-			note = this._addNote(this.fxLongs,
-				this._createLongNoteTemplate(this.view.scale.noteWidth*2, 0, this.view.color.fxLong, len),
-				this._createLongNoteTemplate(this.view.scale.noteWidth*2, 0, this.view.color.selected, len),
-				lane*2, pos);
+			note = this._addLongNote(this.fxLongs, this.view.scale.noteWidth*2, 0,
+				this.view.color.fxLong ,this.view.color.selected, lane*2, pos, len);
 		}
 		this.fxNotesByY[lane][pos] = note;
+	}
+	_addLongNote(noteCollection, noteWidth, padding, color, selectedColor, lane, pos, len) {
+		const [note, noteSelected] = this._addNote(noteCollection,
+			this._createLongNoteTemplate(noteWidth, padding, color, len),
+			this._createLongNoteTemplate(noteWidth, padding, selectedColor, len),
+			lane, pos);
+
+		note.userData._disposeGeometry = true;
+		note.userData._disposeMaterial = true;
+		noteSelected.userData._disposeGeometry = true;
+		noteSelected.userData._disposeMaterial = true;
+
+		return [note, noteSelected];
 	}
 	_addNote(noteCollection, noteTemplate, noteSelectedTemplate, lane, pos) {
 		const scale = this.view.scale;
@@ -123,9 +132,10 @@ class VViewRender {
 		this._delNote(this.fxNotesByY, lane, pos);
 	}
 	_delNote(notesByY, lane, pos){
-		const [note, _] = notesByY[lane][pos];
-		note.parent.remove(note);
+		const [note, noteSelected] = notesByY[lane][pos];
 
+		this._remove(noteSelected);
+		this._remove(note);
 		delete notesByY[lane][pos];
 	}
 
@@ -419,7 +429,21 @@ class VViewRender {
 	}
 	_clear(elem) {
 		for(let i=elem.children.length; i-->0;) {
-			elem.remove(elem.children[i]);
+			this._remove(elem.children[i]);
+		}
+	}
+	_remove(elem) {
+		elem.parent.remove(elem);
+		if(elem.userData){
+			const disposeGeometry = !!(elem.userData._disposeGeometry);
+			const disposeMaterial = !!(elem.userData._disposeMaterial);
+			const checkDispose = (elem) => {
+				if('geometry' in elem && disposeGeometry) elem.geometry.dispose();
+				if('material' in elem && disposeMaterial) elem.material.dispose();
+			};
+
+			elem.children.forEach(checkDispose);
+			checkDispose(elem);
 		}
 	}
 }

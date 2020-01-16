@@ -39,29 +39,21 @@ class VToolbar {
 	}
 
 	_setupHome() {
-		this._button('toolbar-new-file', 'toolbar-new-file-desc', () => this.editor.createNewChart());
-		this._button('toolbar-open-file', 'toolbar-open-file-desc', () => this.editor.fileManager.showOpenFileDialog());
-		this._button('toolbar-save-kson', 'toolbar-save-kson-desc', () => this.editor.fileManager.saveToKSON());
-		this._button('toolbar-save-ksh', 'toolbar-save-ksh-desc', () => this.editor.fileManager.saveToKSH());
+		this._button('toolbar-new-file', 'toolbar-new-file-desc', 'new-chart-file');
+		this._button('toolbar-open-file', 'toolbar-open-file-desc', 'open-chart-file');
+		this._button('toolbar-save-kson', 'toolbar-save-kson-desc', 'save-chart-kson');
+		this._button('toolbar-save-ksh', 'toolbar-save-ksh-desc', 'save-chart-ksh');
 
-		this._button('btn-toolbar-decrease-edit-tick', 'toolbar-decrease-edit-tick',
-			() => this.editor.setEditSnap(this.editor._editSnapBeat-1));
-		this._button('btn-toolbar-increase-edit-tick', 'toolbar-increase-edit-tick',
-			() => this.editor.setEditSnap(this.editor._editSnapBeat+1));
+		this._button('btn-toolbar-decrease-edit-tick', 'toolbar-decrease-edit-tick', 'decrease-edit-tick');
+		this._button('btn-toolbar-increase-edit-tick', 'toolbar-increase-edit-tick', 'increase-edit-tick');
 
-		this._button('btn-toolbar-toggle-insert', null,
-			() => this.editor.setInsertMode(!this.editor.insertMode));
+		this._button('btn-toolbar-toggle-insert', null, 'toggle-insert');
 
-		this._button('btn-toolbar-context-chart', null,
-			() => this.editor.setContext(new VEditChartContext(this.editor)));
-		this._button('btn-toolbar-context-bt', null,
-			() => this.editor.setContext(new VEditNoteContext(this.editor, 'bt')));
-		this._button('btn-toolbar-context-fx', null,
-			() => this.editor.setContext(new VEditNoteContext(this.editor, 'fx')));
-		this._button('btn-toolbar-context-left-laser', null,
-			() => this.editor.setContext(new VEditLaserContext(this.editor, 0)));
-		this._button('btn-toolbar-context-right-laser', null,
-			() => this.editor.setContext(new VEditLaserContext(this.editor, 1)));
+		this._button('btn-toolbar-context-chart', null, 'context-chart');
+		this._button('btn-toolbar-context-bt', null, 'context-bt');
+		this._button('btn-toolbar-context-fx', null, 'context-fx');
+		this._button('btn-toolbar-context-left-laser', null, 'context-left-laser');
+		this._button('btn-toolbar-context-right-laser', null, 'context-right-laser');
 
 		this._bind('toolbar-note-width', 'editor:note:width', (v) => this.editor.view.scale.setNoteWidth(+v));
 		this._bind('toolbar-measure-scale', 'editor:measure:scale', (v) => this.editor.view.scale.setMeasureScale(+v));
@@ -76,11 +68,18 @@ class VToolbar {
 	}
 
 	_button(className, title, onClick) {
+		let onClickFunc = NOP;
+		switch(typeof onClick){
+			case 'string':
+				onClickFunc = (event) => this.editor.doOp(onClick);
+				break;
+			case 'function':
+				onClickFunc = (event) => onClick.call(this.editor);
+				break;
+		}
 		for(let elem of this.elem.querySelectorAll(`.${className}`)){
 			if(title) elem.title = L10N.t(title);
-			elem.addEventListener('click', (event) => {
-				onClick.call(this.editor);
-			});
+			elem.addEventListener('click', onClickFunc);
 		}
 	}
 

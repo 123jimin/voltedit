@@ -19,6 +19,14 @@ class VKeyManager {
 		this.bindMap[key] = op;
 	}
 
+	doOp(op) {
+		if(op in this.ops){
+			this.ops[op].call(this.editor);
+		}else{
+			this.editor.warn(`Operation '${op}' is not registered to keyManager.`);
+		}
+	}
+
 	_isMatch(template) {
 		template = template.split(' ');
 		if(template.length > this.queue.length) return false;
@@ -61,13 +69,8 @@ class VKeyManager {
 		for(let key in this.bindMap){
 			if(this._isMatch(key)){
 				event.preventDefault();
+				this.doOp(this.bindMap[key]);
 
-				const op = this.bindMap[key];
-				if(op in this.ops){
-					this.ops[op].call(this.editor);
-				}else{
-					this.editor.warn(`Operation '${op}' is not registered to keyManager.`);
-				}
 				this.queue = [];
 				return;
 			}
@@ -79,11 +82,26 @@ class VKeyManager {
 	_initOps() {
 		const editor = this.editor;
 
+		this._registerOp('new-chart-file', this.editor.createNewChart);
+		this._registerOp('open-chart-file', () => this.editor.fileManager.showOpenChartFileDialog());
+		this._registerOp('save-chart-file', NOP); // TODO
+		this._registerOp('save-chart-kson', () => this.editor.fileManager.saveToKSON()); // TODO
+		this._registerOp('save-chart-ksh', () => this.editor.fileManager.saveToKSH()); // TODO
+
 		this._registerOp('undo', editor.undo);
 		this._registerOp('redo', editor.redo);
 
 		this._registerOp('cursor-forward', editor.moveCursor.bind(editor, +1));
 		this._registerOp('cursor-backward', editor.moveCursor.bind(editor, -1));
+		this._registerOp('decrease-edit-tick', editor.moveCursor.bind(editor, +1));
+		this._registerOp('increase-edit-tick', editor.moveCursor.bind(editor, -1));
+		this._registerOp('toggle-insert', () => this.editor.setInsertMode(!this.editor.insertMode));
+
+		this._registerOp('context-chart', () => this.editor.setContext(new VEditChartContext(this.editor)));
+		this._registerOp('context-bt', () => this.editor.setContext(new VEditNoteContext(this.editor, 'bt')));
+		this._registerOp('context-fx', () => this.editor.setContext(new VEditNoteContext(this.editor, 'fx')));
+		this._registerOp('context-left-laser', () => this.editor.setContext(new VEditLaserContext(this.editor, 0)));
+		this._registerOp('context-right-laser', () => this.editor.setContext(new VEditLaserContext(this.editor, 1)));
 
 		this._registerOp('add-bt-a', editor.addNote.bind(editor, 'bt', 0));
 		this._registerOp('add-bt-b', editor.addNote.bind(editor, 'bt', 1));
@@ -104,6 +122,9 @@ class VKeyManager {
 
 	makeBindMap() {
 		this.clearAllBinds();
+
+		this.bind("Ctrl+N", 'new-chart-file');
+		this.bind("Ctrl+O", 'open-chart-file');
 
 		this.bind("Ctrl+Z", 'undo');
 		this.bind("Ctrl+Y", 'redo');
