@@ -4,7 +4,7 @@
 
 # Can't use wildcards as they need to be ordered.
 # I'm not using modules for now.
-SRC_UTIL := shim.js aa-tree.js misc.js l10n.js settings.js
+SRC_UTIL := shim.js aa-tree.js misc.js logger.js l10n.js settings.js
 SRC_DATA := graph.js chart.js ksh.js ksh-exporter.js kson.js
 SRC_VIEW := settings.js render-components.js render.js view-components.js view.js
 SRC_MANAGER := key-manager.js task-manager.js file-manager.js

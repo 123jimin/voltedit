@@ -16,12 +16,13 @@ const L10N = ((lines) => {
 	});
 	Object.freeze(data);
 	return ({
-		'_d': data, '_l': "en", 't': function L10N_getText(id){
+		'_d': data, '_l': "en", 't': function L10N_getText(id, ...args){
 			if(!(id in this._d)) return id;
 			const values = this._d[id];
 
-			if(this._l in values) return values[this._l];
-			return id;
+			if(!(this._l in values)) return id;
+			let str = values[this._l].replace(/%([\d%])/g, (txt, ind) => ind === '%' ? '%' : ind>0 && ind<=args.length ? args[ind-1] : txt);
+			return str;
 		}, 'l': function L10N_setLocale(l) {
 			this._l = l.toLowerCase();
 

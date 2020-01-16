@@ -21,7 +21,7 @@ class VTask {
 			this._inverse._inverse = this;
 
 			if(this._commit()) return true;
-			console.error("Commit failed", this);
+			logger.error("Commit failed", this);
 			return false;
 		}
 		return false;
@@ -89,7 +89,7 @@ class VTaskManager {
 			return true;
 		}
 
-		console.error("Failed to undo", this.history[this.nextInd-1]);
+		logger.error("Failed to undo", this.history[this.nextInd-1]);
 		return false;
 	}
 	redo() {
@@ -100,7 +100,7 @@ class VTaskManager {
 			return true;
 		}
 
-		console.error("Failed to redo", this.history[this.nextInd]);
+		logger.error("Failed to redo", this.history[this.nextInd]);
 		return false;
 	}
 	do(label, task) {
@@ -112,7 +112,7 @@ class VTaskManager {
 				this.history.push([label, task]);
 				++this.nextInd;
 			} else {
-				console.error("Clearing history due to an undoable task", task);
+				logger.warn("Clearing history due to an undoable task", task);
 				this.history = [];
 				this.nextInd = 0;
 			}

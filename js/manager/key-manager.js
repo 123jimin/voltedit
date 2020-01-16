@@ -66,7 +66,7 @@ class VKeyManager {
 				if(op in this.ops){
 					this.ops[op].call(this.editor);
 				}else{
-					console.warn("Operation '%s' is not registered to keyManager.", op);
+					this.editor.warn(`Operation '${op}' is not registered to keyManager.`);
 				}
 				this.queue = [];
 				return;

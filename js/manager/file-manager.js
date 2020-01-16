@@ -35,7 +35,7 @@ class VFileManager {
 
 			this.editor.setChartData(chartData);
 		}).catch((err) => {
-			console.error(err);
+			this.editor.error(err);
 		});
 
 		return true;

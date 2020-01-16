@@ -15,14 +15,14 @@ class VSettings {
 					if(key in this.fields) this.settings[key] = savedSettings[key];
 				}
 			}catch(e){
-				console.error(e);
+				logger.error(e);
 			}
 		}
 	}
 
 	_setFields() {
 		this._define('ui:language', "en");
-		
+
 		this._define('editor:note:width', 9);
 		this._define('editor:margin:side', 15);
 		this._define('editor:margin:bottom', 40);
@@ -45,7 +45,7 @@ class VSettings {
 			this.settings[key] = value;
 			this.save();
 		}else{
-			console.error(`Key '${key}' does not exist in settings!`);
+			logger.error(`Key '${key}' does not exist in settings!`);
 		}
 	}
 
@@ -56,7 +56,7 @@ class VSettings {
 		}else if(key in this.fields){
 			return this.fields[key].defaultValue;
 		}else{
-			console.error(`Key '${key}' does not exist in settings!`);
+			logger.error(`Key '${key}' does not exist in settings!`);
 			return null;
 		}
 	}
@@ -82,7 +82,7 @@ class VSettings {
 		this.save();
 	}
 
-	/// Reset 
+	/// Reset
 	_reset() {
 		this.settings = {};
 	}

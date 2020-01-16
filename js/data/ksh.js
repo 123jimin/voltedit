@@ -64,7 +64,7 @@ class KSHParser {
 		// If there's no `--` at the end, then the KSH file is malformed.
 		// Let's gracefully add the last measure.
 		if(this.queue.length > 0) {
-			console.warn("Processing a KSH file with no `--` at the end...");
+			logger.warn("Processing a KSH file with no `--` at the end...");
 			this._onReadMeasure();
 		}
 	}
@@ -407,7 +407,7 @@ KSHData.create = function KSHData$create(file) {
 		const ksh = new KSHData(file);
 		return ksh;
 	} catch(e) {
-		console.error(e);
+		logger.error(e);
 		return null;
 	}
 };

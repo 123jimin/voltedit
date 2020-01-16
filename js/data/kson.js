@@ -122,7 +122,7 @@ KSONData.create = function KSONData$create(file) {
 
 		return kson;
 	} catch(e) {
-		console.error(e);
+		logger.error(e);
 		return null;
 	}
 };

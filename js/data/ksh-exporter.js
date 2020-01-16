@@ -46,7 +46,7 @@ class KSHExporter {
 			p('plength', bgmInfo.preview_duration);
 
 			if(bgmInfo.preview_filename != null){
-				console.warn("The chart contains preview_filename, which can't be represented in KSH.");
+				logger.warn("The chart contains preview_filename, which can't be represented in KSH.");
 			}
 		}
 

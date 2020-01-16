@@ -117,7 +117,7 @@ class VToolbar {
 					initValue(elem.value);
 					return;
 			}
-			console.warn(`VToolbar bind failed: tag ${elem.tagName} is not well understood.`);
+			logger.warn(`VToolbar bind failed: tag ${elem.tagName} is not well understood.`);
 		}
 	}
 }

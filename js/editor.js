@@ -183,6 +183,30 @@ class VEditor {
 			return;
 	}
 
+	/* Message (let's use browser defaults for now) */
+	async alert(message) {
+		return new Promise((resolve, reject) => {
+			setTimeout(() => { alert(message); resolve(); }, 0);
+		});
+	}
+	async prompt(message, defalutValue) {
+		return new Promise((resolve, reject) => {
+			setTimeout(() => resolve(prompt(message, defalutValue)), 0);
+		});
+	}
+	async confirm(message) {
+		return new Promise((resolve, reject) => {
+			setTimeout(() => resolve(confirm(message)), 0);
+		});
+	}
+	error(err) {
+		err && err.message && this.alert(err.message);
+		err && console.error(err, err && err.stack);
+	}
+	warn(message) {
+		console.warn(message);
+	}
+
 	/* Misc */
 	onResize() {
 		this.view.resize();
@@ -194,6 +218,7 @@ class VEditor {
 	}
 	_addEventListeners() {
 		window.addEventListener('resize', this.onResize.bind(this));
+		window.addEventListener('error', this.error.bind(this));
 
 		this.elem.addEventListener('dragenter', this.onDragEnter.bind(this), false);
 		this.elem.addEventListener('dragover', this.onDragOver.bind(this), false);
