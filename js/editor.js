@@ -1,13 +1,3 @@
-const readFileList = (files) => Promise.all([].map.call(files, (file) => new Promise((resolve, reject) => {
-	const reader = new FileReader();
-	reader.addEventListener('error', reject);
-	reader.addEventListener('load', (event) => {
-		resolve(reader.result);
-	});
-
-	reader.readAsText(file);
-})));
-
 /// A main editor class
 class VEditor {
 	constructor(elem) {

@@ -1,3 +1,17 @@
+const readFileList = (files) => Promise.all([].map.call(files, (file) => new Promise((resolve, reject) => {
+	if(typeof(file.text) === 'function'){
+		file.text().then((text) => resolve(text));
+	}else{
+		const reader = new FileReader();
+		reader.addEventListener('error', reject);
+		reader.addEventListener('load', (event) => {
+			resolve(reader.result);
+		});
+
+		reader.readAsText(file);
+	}
+})));
+
 /// A class for managing reading/writing files
 class VFileManager {
 	constructor(editor) {
@@ -10,8 +24,9 @@ class VFileManager {
 		this.useNativeFS = window.chooseFileSystemEntries && typeof(window.chooseFileSystemEntries) === 'function';
 	}
 	showOpenChartFileDialog() {
-		if(this.useNativeFS) this._showOpenChartFileDialog_nativeFS();
-		else this._showOpenChartFileDialog_htmlInput();
+		//if(this.useNativeFS) this._showOpenChartFileDialog_nativeFS();
+		// else 
+		this._showOpenChartFileDialog_htmlInput();
 	}
 	_showOpenChartFileDialog_htmlInput() {
 		const fileInput = document.createElement('input');
@@ -25,9 +40,10 @@ class VFileManager {
 	}
 	async _showOpenChartFileDialog_nativeFS() {
 		const fileHandle = await window.chooseFileSystemEntries({
-			'type': "open-file", 'multiple': false,
+			'multiple': false,
 		});
-		console.log(fileHandle);
+
+		this.openFileList([fileHandle]);
 	}
 	openFileList(files) {
 		if(files.length === 0) return false;
