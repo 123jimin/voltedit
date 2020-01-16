@@ -39,7 +39,7 @@ class VEditContext {
 			if(!event.shiftKey) this.clearSelection();
 			if(!obj && !event.shiftKey){
 				this.view.setCursor(event.tick);
-				if(this.addObjectEnabled() && this.editor.chartData){
+				if(event.tick >= 0 && this.addObjectEnabled() && this.editor.chartData){
 					this.startCreated = this.createObjectAt(event);
 					this.dragIntent = VEDIT_DRAG_INTENT.CREATE;
 				}
@@ -102,7 +102,7 @@ class VEditContext {
 	}
 	deleteSelection() {
 		if(this.selectedObjects.size === 0) return;
-		
+
 		const delTasks = [];
 		this.selectedObjects.forEach((obj) => delTasks.push(obj.delTask(this.editor)));
 
@@ -115,12 +115,12 @@ class VEditContext {
 
 		const delTasks = [];
 		this.selectedObjects.forEach((obj) => delTasks.push(obj.delTask(this.editor)));
-		
+
 		const moveTasks = [];
 		this.selectedObjects.forEach((obj) => moveTasks.push(obj.moveTask(this.editor, startEvent, endEvent)));
-		
+
 		this.editor.taskManager.do('task-move-selection', VTask.join([VTask.join(delTasks), VTask.join(moveTasks)]));
-		
+
 		// TODO: retain selection
 		this.selectedObjects.clear();
 	}
@@ -132,7 +132,7 @@ class VEditChartContext extends VEditContext {
 	}
 	selectRange(from, to) {
 		if(!this.editor.chartData) return;
-		
+
 		const chartData = this.editor.chartData;
 		if(!chartData) return;
 

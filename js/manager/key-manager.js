@@ -85,13 +85,13 @@ class VKeyManager {
 		this._registerOp('cursor-forward', editor.moveCursor.bind(editor, +1));
 		this._registerOp('cursor-backward', editor.moveCursor.bind(editor, -1));
 
-		this._registerOp('add-bt-a', editor.addBt.bind(editor, 0));
-		this._registerOp('add-bt-b', editor.addBt.bind(editor, 1));
-		this._registerOp('add-bt-c', editor.addBt.bind(editor, 2));
-		this._registerOp('add-bt-d', editor.addBt.bind(editor, 3));
+		this._registerOp('add-bt-a', editor.addNote.bind(editor, 'bt', 0));
+		this._registerOp('add-bt-b', editor.addNote.bind(editor, 'bt', 1));
+		this._registerOp('add-bt-c', editor.addNote.bind(editor, 'bt', 2));
+		this._registerOp('add-bt-d', editor.addNote.bind(editor, 'bt', 3));
 
-		this._registerOp('add-fx-l', editor.addFx.bind(editor, 0));
-		this._registerOp('add-fx-r', editor.addFx.bind(editor, 1));
+		this._registerOp('add-fx-l', editor.addNote.bind(editor, 'fx', 0));
+		this._registerOp('add-fx-r', editor.addNote.bind(editor, 'fx', 1));
 
 		this._registerOp('clear-selection', () => editor.context.clearSelection());
 		this._registerOp('delete-selection', () => editor.context.deleteSelection());

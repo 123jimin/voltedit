@@ -119,13 +119,19 @@ class VEditor {
 	redo() {
 		this.taskManager.redo();
 	}
-	addBt(index) {
+	addNote(type, index) {
 		if(!this.chartData) return;
-		this.taskManager.do('task-add-bt', new VNoteAddTask(this, 'bt', index, this.view.cursorStartLoc, 0));
-	}
-	addFx(index) {
-		if(!this.chartData) return;
-		this.taskManager.do('task-add-fx', new VNoteAddTask(this, 'fx', index, this.view.cursorStartLoc, 0));
+
+		const noteData = this.chartData.getNoteData(type, index);
+		if(!noteData) return;
+
+		const note = noteData.get(this.view.cursorStartLoc);
+		if(note){
+			this.context.addToSelection(note.data);
+		}else{
+			this.context.clearSelection();
+			this.taskManager.do(`task-add-${type}`, new VNoteAddTask(this, type, index, this.view.cursorStartLoc, 0));
+		}
 	}
 
 	createNewChart() {

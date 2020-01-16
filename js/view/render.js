@@ -24,6 +24,18 @@ class VViewRender {
 	setCursor(start, end) {
 		this.cursorStart.position.y = this.view.t2p(start);
 		this.cursorEnd.position.y = this.view.t2p(end);
+
+		if(this.selection.visible = (start !== end)){
+			const points = [];
+			const scale = this.view.scale;
+			RECT(points, [scale.cursorLeft, this.cursorStart.position.y], [scale.cursorRight, this.cursorEnd.position.y]);
+
+			const geometry = this.selection.geometry;
+			const geometry_position = geometry.attributes.position;
+			points.forEach((value, ind) => geometry_position.array[ind] = value);
+			geometry_position.needsUpdate = true;
+			geometry.computeBoundingSphere();
+		}
 	}
 
 	/** Drawing measure data **/
@@ -338,6 +350,7 @@ class VViewRender {
 
 	_initEditorUIDrawData() {
 		const color = this.view.color;
+		const scale = this.view.scale;
 
 		this.cursors = this._createGroup(VVIEW_EDITOR_UI_Z);
 
@@ -348,6 +361,14 @@ class VViewRender {
 
 		this.cursorStart = cursorTemplate.create();
 		this.cursorEnd = cursorTemplate.create();
+
+		this.selection = new THREE.Mesh(
+			this._createPlaneGeometry(scale.cursorLeft, 0, scale.cursorRight-scale.cursorLeft, 50),
+			new THREE.MeshBasicMaterial({'color': color.selected, 'opacity': color.rangeSelectOpacity, 'transparent': true})
+		);
+		this.selection.visible = false;
+
+		this.cursors.add(this.selection);
 
 		this.cursors.add(this.cursorStart);
 		this.cursors.add(this.cursorEnd);

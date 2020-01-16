@@ -92,6 +92,7 @@ class VChartColor {
 		this.hueLaserRight = 300;
 
 		this.selected = '#FF0';
+		this.rangeSelectOpacity = 0.2;
 
 		this.btFill = '#FFF';
 		this.btBorder = '#AAA';

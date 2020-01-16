@@ -26,6 +26,8 @@ const QUAD = (points, [ax, ay], [bx, by], [cx, cy], [dx, dy]) => points.push(
 	ax, ay, 0, bx, by, 0, cx, cy, 0, ax, ay, 0, cx, cy, 0, dx, dy, 0
 );
 
+const RECT = (points, [ax, ay], [bx, by]) => QUAD(points, [ax, ay], [bx, ay], [bx, by], [ax, by]);
+
 const TOUCH = (func) => (event) => {
 	const changedTouches = event.changedTouches;
 	if(!changedTouches || changedTouches.length < 1) return;
