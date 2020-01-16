@@ -173,8 +173,10 @@ class VEditor {
 		event.preventDefault();
 		this.fileManager.hideDropFileIndicator();
 
-		if(this.fileManager.openFileList(event.dataTransfer.files))
+		if(event.dataTransfer && event.dataTransfer.files && event.dataTransfer.files.length === 1){
+			this.fileManager.openChartFile([null, event.dataTransfer.files[0]]);
 			return;
+		}
 	}
 
 	/* Message (let's use browser defaults for now) */
@@ -204,6 +206,9 @@ class VEditor {
 	}
 	warn(message) {
 		console.warn(message);
+	}
+	info(message) {
+		console.info(message);
 	}
 
 	/* Misc */

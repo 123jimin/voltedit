@@ -83,10 +83,11 @@ class VKeyManager {
 		const editor = this.editor;
 
 		this._registerOp('new-chart-file', this.editor.createNewChart);
-		this._registerOp('open-chart-file', () => this.editor.fileManager.showOpenChartFileDialog());
-		this._registerOp('save-chart-file', NOP); // TODO
-		this._registerOp('save-chart-kson', () => this.editor.fileManager.saveToKSON()); // TODO
-		this._registerOp('save-chart-ksh', () => this.editor.fileManager.saveToKSH()); // TODO
+		this._registerOp('open-chart-file', () => this.editor.fileManager.showOpenChartDialog());
+		this._registerOp('save-chart-file', () => this.editor.fileManager.saveChart());
+		this._registerOp('save-chart-file-as', () => this.editor.fileManager.saveChartAs());
+		this._registerOp('save-chart-kson', () => this.editor.fileManager.saveChartAsKSON());
+		this._registerOp('save-chart-ksh', () => this.editor.fileManager.saveChartAsKSH());
 
 		this._registerOp('undo', editor.undo);
 		this._registerOp('redo', editor.redo);
@@ -125,6 +126,8 @@ class VKeyManager {
 
 		this.bind("Ctrl+N", 'new-chart-file');
 		this.bind("Ctrl+O", 'open-chart-file');
+		this.bind("Ctrl+S", 'save-chart-file');
+		this.bind("Ctrl+Shift+S", 'save-chart-file-as');
 
 		this.bind("Ctrl+Z", 'undo');
 		this.bind("Ctrl+Y", 'redo');

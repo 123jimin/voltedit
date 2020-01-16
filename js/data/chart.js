@@ -25,6 +25,8 @@ class VChartData {
 		this.camera = {};
 		this.bg = {};
 		this.impl = {};
+
+		this.fileHandle = null;
 	}
 
 	/// Yup, VOLTEdit internally supports more than 4 BT lanes, 2 FX lanes, and 2 lasers.
