@@ -11,8 +11,8 @@ class VMessage {
 		this.parentElem.appendChild(this.elem);
 		this.decaying = false;
 
-		this.autoDecay = setTimeout(() => this.decay(800), 5000);
-		this.elem.addEventListener('click', () => this.decay(300));
+		this.autoDecay = setTimeout(() => this.decay(500), 4000);
+		this.elem.addEventListener('click', () => this.decay(250));
 	}
 
 	decay(time) {

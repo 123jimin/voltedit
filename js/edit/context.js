@@ -195,7 +195,7 @@ class VEditNoteContext extends VEditContext {
 
 class VEditLaserContext extends VEditContext {
 	constructor(editor, lane) {
-		super(editor, `${['left','right'][lane]}-laser`);
+		super(editor, `laser-${['left','right'][lane]}`);
 		this.lane = lane;
 	}
 }

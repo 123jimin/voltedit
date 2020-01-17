@@ -1,5 +1,9 @@
 let L10N_STRING = `
 
+not-yet-implemented
+	en: Not yet implemented.
+	ko: 아직 구현되지 않은 기능입니다.
+
 ### Toolbar ###
 
 tab-home
@@ -90,19 +94,64 @@ toolbar-margin-bottom
 	en: Bottom margin:
 	ko: 아래 여백:
 
+### Operations ###
+
+operation-invalid
+	en: Operation %1 is not valid.
+	ko: 작업 %1은 유효한 작업이 아닙니다.
+
 ### Tasks ###
 
 task-add-bt
-	en: Add a BT note
+	en: adding a BT note
 	ko: BT 노트 추가
 task-add-fx
-	en: Add an FX note
+	en: adding an FX note
 	ko: FX 노트 추가
+task-move-selection
+	en: moving selection
+	ko: 선택 영역 이동
 task-delete-selection
-	en: Delete selection
+	en: deleting selection
 	ko: 선택 요소 삭제
 
-### File I/O ###
+task-commit-error
+	en: Committing "%1" failed!
+	ko: %1 작업에 실패했습니다.
+task-undo
+	en: Undid "%1"
+	ko: %1 되돌리기
+task-undo-error
+	en: Failed to undo "%1"
+	ko: %1 되돌리기 실패
+task-undo-invalid
+	en: Can't make an inverse of a task with invalid state.
+	ko: 유효하지 않은 상태의 작업의 반대 작업을 만들 수 없습니다.
+task-redo
+	en: Redid "%1"
+	ko: %1 다시하기
+task-redo-error
+	en: Failed to redo "%1"
+	ko: %1 다시하기 실패
+task-warn-clear-history
+	en: Clearing history due to an undoable task "%1"
+	ko: 되돌리기 불가능한 %1 작업으로 인해 작업 내역이 삭제되었습니다.
+
+task-collection-commit-revert-error
+	en: Revert failed while tryping to commit multiple tasks at once!
+	ko: 여러 작업을 한 번에 되돌리는 중 오류가 발생했습니다!
+
+### Chart I/O ###
+
+k-shoot-mania-chart-file
+	en: k-shoot mania chart file
+	ko: 케슛매니아 채보 파일
+usc-binary-chart-file
+	en: USC binary chart file
+	ko: USC 바이너리 채보 파일
+file-saved-as
+	en: File saved as %1
+	ko: 파일 %1 저장 성공
 
 drop-file-here
 	en: Drop to Open File
@@ -111,5 +160,35 @@ drop-file-here
 error-reading-chart-data
 	en: Failed to read the chart data!
 	ko: 채보 데이터를 읽을 수 없습니다!
+
+
+
+ksh-import-warn-no-trailing-dashes
+	en: Processing a KSH file with no '--' at the end...
+	ko: 끝에 '--'가 지정되지 않은 KSH 파일을 처리하는 중...
+ksh-import-error-invalid-header
+	en: Invalid KSH header
+	ko: 올바르지 않은 KSH 헤더
+ksh-import-error-value
+	en: Invalid KSH %1 value
+	ko: 올바르지 않은 KSH %1값
+ksh-import-error-malformed-measure
+	en: Malformed KSH measure
+	ko: 올바르지 않은 KSH 마디
+ksh-import-error-invalid-measure-line-count
+	en: Invalid KSH measure line count
+	ko: 올바르지 않은 KSH 마디 줄 수
+ksh-import-error-invalid-time-sig-location
+	en: KSH time signature at invalid location
+	ko: 올바르지 않은 변박 지정 위치
+ksh-import-error-invalid-laser-pos
+	en: Invalid KSH laser position
+	ko: 올바르지 않은 KSH 레이저 위치
+ksh-export-error-resolution
+	en: Exporting to KSH is not supported when the chart resolution is not %1.
+	ko: Resolution값이 %1이 아닌 채보는 KSH로 내보낼 수 없습니다.
+ksh-export-warn-omitted
+	en: This chart contains %1, which can't be represented in KSH.
+	ko: 이 채보는 KSH로 내보낼 수 없는 %1 요소를 포함하고 있습니다.
 
 `;

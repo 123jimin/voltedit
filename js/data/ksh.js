@@ -18,9 +18,9 @@ class KSHTimeSig {
 	constructor(str) {
 		const timeSig = this.timeSig = str.split('/').map((x) => parseInt(x));
 		if(timeSig.length != 2 || timeSig.some((x) => !isFinite(x) || x < 1))
-			throw new Error("Invalid ksh time signature! [invalid value]");
+			throw new Error(L10N.t('ksh-import-error-value', 'beat'));
 		if(KSH_DEFAULT_MEASURE_TICK % timeSig[1] != 0)
-			throw new Error("Invalid ksh time signature! [invalid denom]");
+			throw new Error(L10N.t('ksh-import-error-value', 'beat'));
 	}
 	toKSON() {
 		return {'n': this.timeSig[0], 'd': this.timeSig[1]};
@@ -51,7 +51,7 @@ class KSHParser {
 		// Lines of modifiers, which will be applied to the following line.
 		this.modifiers = [];
 	}
-	readLine(line) {
+	readLine(line, lineNumber) {
 		if(line === "") return;
 		switch(this.currLineType) {
 			case KSH_LINE_TYPE.HEADER:
@@ -64,7 +64,7 @@ class KSHParser {
 		// If there's no `--` at the end, then the KSH file is malformed.
 		// Let's gracefully add the last measure.
 		if(this.queue.length > 0) {
-			logger.warn("Processing a KSH file with no `--` at the end...");
+			logger.warn(L10N.t('ksh-import-warn-no-trailing-dashes'));
 			this._onReadMeasure();
 		}
 	}
@@ -73,9 +73,12 @@ class KSHParser {
 			this.currLineType = KSH_LINE_TYPE.BODY;
 			return;
 		}
+		if(line.startsWith("//")) {
+			return;
+		}
 
 		const match = line.match(KSH_REGEX.OPTION);
-		if(match === null) return;
+		if(match === null) throw new Error(L10N.t('ksh-import-error-invalid-header'));
 
 		const [key, value] = [match[1], match[2]];
 		this.ksh.setKSHMeta(key, value);
@@ -119,7 +122,8 @@ class KSHData extends VChartData {
 		};
 		this._ksmMeasures = [];
 
-		str.split('\n').map((line) => parser.readLine(line.replace(/^[\r\n\uFEFF]+|[\r\n]+$/g, '')));
+		str.split('\n').map((line, i) =>
+			parser.readLine(line.replace(/^[\r\n\uFEFF]+|[\r\n]+$/g, ''), i+1));
 		parser.end();
 
 		this._setKSONData();
@@ -155,7 +159,7 @@ class KSHData extends VChartData {
 
 		if('total' in this._ksmMeta) {
 			let total = parseInt(this._ksmMeta.total);
-			if(!isFinite(total)) throw new Error("Invalid ksh `total` value!");
+			if(!isFinite(total)) throw new Error(L10N.t('ksh-import-error-value', 'total'));
 			if(total < 100) total = 100;
 			this.gauge = {'total': total};
 		}
@@ -182,7 +186,7 @@ class KSHData extends VChartData {
 		if('to' in ksmMeta) {
 			meta.std_bpm = parseFloat(ksmMeta.to);
 			if(!isFinite(meta.std_bpm) || meta.std_bpm <= 0)
-				throw new Error("Invalid ksh `to` value!");
+				throw new Error(L10N.t('ksh-import-error-value', 'to'));
 		}
 		if('jacket' in ksmMeta) meta.jacket_filename = ksmMeta.jacket;
 		if('illustrator' in ksmMeta) meta.jacket_author = ksmMeta.illustrator;
@@ -246,7 +250,7 @@ class KSHData extends VChartData {
 		let time_sig = [4, 4]; // Default time signature, which is the common time signature.
 
 		this._ksmMeasures.forEach((measure, measure_idx) => {
-			if(measure.length === 0) throw new Error("Malformed ksh measure!");
+			if(measure.length === 0) throw new Error(L10N.t('ksh-import-errir-malformed-measure'));
 
 			// Check the timing signature of this measure.
 			measure[0].mods.forEach(([key, value]) => {
@@ -261,7 +265,7 @@ class KSHData extends VChartData {
 
 			const measure_len = (KSH_DEFAULT_MEASURE_TICK / time_sig[1]) * time_sig[0];
 			if(measure_len % measure.length != 0)
-				throw new Error("Invalid ksh measure line count!");
+				throw new Error(L10N.t('ksh-import-error-invalid-measure-line-count'));
 			const tick_per_line = measure_len / measure.length;
 
 			measure.forEach((kshLine, line_idx) => {
@@ -275,15 +279,15 @@ class KSHData extends VChartData {
 						case 'beat':
 							// `beat`s are already processed above.
 							// If a `beat` is in the middle of a measure, then the chart is invalid.
-							if(line_idx > 0) throw new Error("Invalid ksh time signature! [invalid location]");
+							if(line_idx > 0) throw new Error(L10N.t('ksh-import-error-invalid-time-sig-location'));
 							break;
 						case 't':
 							if(tick > 0) this._tryAddBPMFromMeta();
-							if(floatValue <= 0 || !isFinite(floatValue)) throw new Error("Invalid ksh BPM value!");
+							if(floatValue <= 0 || !isFinite(floatValue)) throw new Error(L10N.t('ksh-import-error-value', 't(BPM)'));
 							beatInfo.bpm.add(tick, 0, floatValue);
 							break;
 						case 'stop':
-							if(intValue <= 0 || !isFinite(intValue)) throw new Error("Invalid ksh stop length!");
+							if(intValue <= 0 || !isFinite(intValue)) throw new Error(L10N.t('ksh-import-error-value', 'stop'));
 							// TODO: add ScrollSpeedPoints
 							break;
 					}
@@ -389,7 +393,7 @@ class KSHData extends VChartData {
 					if(c === ':') continue;
 
 					const pos = KSH_LASER_VALUES.indexOf(c);
-					if(pos === -1) throw new Error("Invalid ksh laser pos value!");
+					if(pos === -1) throw new Error(L10N.t('ksh-import-error-invalid-laser-pos'));
 
 					addLaserSegment(i, kshLine.tick, pos/50);
 				}

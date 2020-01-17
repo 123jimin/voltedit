@@ -23,7 +23,7 @@ class VKeyManager {
 		if(op in this.ops){
 			this.ops[op].call(this.editor);
 		}else{
-			this.editor.warn(`Operation '${op}' is not registered to keyManager.`);
+			this.editor.warn(L10N.t('operation-invalid', op));
 		}
 	}
 
@@ -101,8 +101,8 @@ class VKeyManager {
 		this._registerOp('context-chart', () => this.editor.setContext(new VEditChartContext(this.editor)));
 		this._registerOp('context-bt', () => this.editor.setContext(new VEditNoteContext(this.editor, 'bt')));
 		this._registerOp('context-fx', () => this.editor.setContext(new VEditNoteContext(this.editor, 'fx')));
-		this._registerOp('context-left-laser', () => this.editor.setContext(new VEditLaserContext(this.editor, 0)));
-		this._registerOp('context-right-laser', () => this.editor.setContext(new VEditLaserContext(this.editor, 1)));
+		this._registerOp('context-laser-left', () => this.editor.setContext(new VEditLaserContext(this.editor, 0)));
+		this._registerOp('context-laser-right', () => this.editor.setContext(new VEditLaserContext(this.editor, 1)));
 
 		this._registerOp('add-bt-a', editor.addNote.bind(editor, 'bt', 0));
 		this._registerOp('add-bt-b', editor.addNote.bind(editor, 'bt', 1));

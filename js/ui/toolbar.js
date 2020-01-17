@@ -52,8 +52,8 @@ class VToolbar {
 		this._button('btn-toolbar-context-chart', null, 'context-chart');
 		this._button('btn-toolbar-context-bt', null, 'context-bt');
 		this._button('btn-toolbar-context-fx', null, 'context-fx');
-		this._button('btn-toolbar-context-left-laser', null, 'context-left-laser');
-		this._button('btn-toolbar-context-right-laser', null, 'context-right-laser');
+		this._button('btn-toolbar-context-laser-left', null, 'context-laser-left');
+		this._button('btn-toolbar-context-laser-right', null, 'context-laser-right');
 
 		this._bind('toolbar-note-width', 'editor:note:width', (v) => this.editor.view.scale.setNoteWidth(+v));
 		this._bind('toolbar-measure-scale', 'editor:measure:scale', (v) => this.editor.view.scale.setMeasureScale(+v));

@@ -6,7 +6,7 @@ class KSHExporter {
 		this.lines = [];
 
 		if(!chart.beat || chart.beat.resolution !== KSH_DEFAULT_MEASURE_TICK/4){
-			throw new Error("Exporting to KSH is not supported when the resolution is not 48.");
+			throw new Error(L10N.t('ksh-export-error-resolution', KSH_DEFAULT_MEASURE_TICK/4));
 		}
 
 		this.nextBtNotes = null;
@@ -46,7 +46,7 @@ class KSHExporter {
 			p('plength', bgmInfo.preview_duration);
 
 			if(bgmInfo.preview_filename != null){
-				logger.warn("The chart contains preview_filename, which can't be represented in KSH.");
+				logger.warn(L10N.t('ksh-export-warn-omitted', 'preview_filename'));
 			}
 		}
 

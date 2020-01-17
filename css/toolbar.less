@@ -23,6 +23,7 @@ div.veditor div.toolbar {
 		cursor: pointer;
 		background-color: @TOOLBAR_BG;
 		border: solid 1px desaturate(@KEY_COLOR, 50%, relative);
+		padding: 0; margin: 0;
 
 		&:focus {
 			outline: 0;
@@ -130,6 +131,7 @@ div.veditor div.toolbar {
 
 	div.toolbar-edit-tick-section {
 		button {
+			padding: 0 .4em;
 			height: 4.5em;
 		}
 		span.toolbar-edit-tick-disp {
@@ -146,23 +148,22 @@ div.veditor div.toolbar {
 		}
 	}
 
-	table.toolbar-edit-contexts {
+	div.toolbar-edit-contexts {
 		position: relative;
-		top: -.2em;
 		margin-left: 1em;
-		border-collapse: collapse;
-		border-spacing: 0;
-		td {
-			padding: 0 !important;
-		}
+
+
 		button {
 			background-color: desaturate(lighten(@KEY_COLOR, 30%, relative), 70%, relative);
-			border: none;
-			width: 2.96em;
+			background-size: contain;
+			background-repeat: no-repeat;
+			background-position: center;
+			border: none; padding: 0;
+			width: 2.3em;
 			height: 2.3em;
-
+			line-height: 2.3em;
 			&[class^="btn-toolbar-context-"] {
-				opacity: 0.5;
+				opacity: 0.3;
 			}
 
 			&.selected {
@@ -178,4 +179,18 @@ div.veditor div.toolbar {
 			}
 		}
 	}
+/*
+	table.toolbar-edit-contexts {
+		position: relative;
+		top: -.2em;
+		margin-left: 1em;
+		border-collapse: collapse;
+		border-spacing: 0;
+		td {
+			background-color: black;
+			padding: 0 !important;
+			width: 2.3em; height: 2.3em;
+		}
+	}
+*/
 }

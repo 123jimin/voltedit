@@ -30,8 +30,7 @@ class VFileManager {
 		else resultFile = this._showOpenChartDialogHTML();
 
 		if(!resultFile) return;
-
-		this.openChartFile(resultFile);
+		await this.openChartFile(resultFile);
 	}
 	_showOpenChartDialogHTML() {
 		return new Promise((resolve, reject) => {
@@ -49,18 +48,23 @@ class VFileManager {
 		});
 	}
 	async _showOpenChartDialogFS() {
-		const fileHandle = await window.chooseFileSystemEntries({
-			'type': 'openFile', 'multiple': false, 'accepts': [{
-				'description': "k-shoot mania chart file",
-				'extensions': ['ksh', 'kson'],
-			}]
-		});
-		if(!fileHandle) return null;
+		try{
+			const fileHandle = await window.chooseFileSystemEntries({
+				'type': 'openFile', 'multiple': false, 'accepts': [{
+					'description': "k-shoot mania chart file",
+					'extensions': ['ksh', 'kson'],
+				}]
+			});
+			if(!fileHandle) return null;
 
-		const file = await fileHandle.getFile();
-		if(!file) return null;
+			const file = await fileHandle.getFile();
+			if(!file) return null;
 
-		return [fileHandle, file];
+			return [fileHandle, file];
+		}catch(e){
+			if(!(e instanceof DOMException)) this.editor.error(e);
+			return null;
+		}
 	}
 	async openChartFile([fileHandle, file]) {
 		if(!file) return;
@@ -102,7 +106,7 @@ class VFileManager {
 			return false;
 		}
 
-		this.editor.info(`File saved as ${chartData.fileHandle.name}!`);
+		this.editor.info(L10N.t('file-saved-as', chartData.fileHandle.name));
 	}
 	async saveChartAs() {
 		const chartData = this.editor.chartData;
@@ -112,11 +116,11 @@ class VFileManager {
 			this.saveChartAsKSON();
 			return;
 		}
-		
+
 		try{
 			let fileHandle = await window.chooseFileSystemEntries({
 				'type': 'saveFile', 'accepts': [{
-					'description': "k-shoot mania chart file",
+					'description': L10N.t('k-shoot-mania-chart-file'),
 					'extensions': ['ksh', 'kson'],
 				}],
 			});
@@ -132,14 +136,13 @@ class VFileManager {
 			await writer.close();
 
 			chartData.fileHandle = fileHandle;
-		
-			this.editor.info(`File saved as ${fileHandle.name}!`);
+			this.editor.info(L10N.t('file-saved-as', fileHandle.name));
 		}catch(e){
 			this.editor.error(e);
 			return;
 		}
 	}
-	saveToKSON() {
+	saveChartAsKSON() {
 		const chartData = this.editor.chartData;
 		if(!chartData) return;
 		try{
@@ -148,7 +151,7 @@ class VFileManager {
 			this.editor.error(e);
 		}
 	}
-	saveToKSH() {
+	saveChartAsKSH() {
 		const chartData = this.editor.chartData;
 		if(!chartData) return;
 		try{
@@ -179,7 +182,7 @@ class VFileManager {
 		try{
 			let fileHandle = await window.chooseFileSystemEntries({
 				'type': 'saveFile', 'accepts': [{
-					'description': "k-shoot mania chart file",
+					'description': L10N.t('k-shoot-mania-chart-file'),
 					'extensions': [ext],
 				}],
 			});
@@ -187,10 +190,10 @@ class VFileManager {
 			const writer = await fileHandle.createWriter({'keepExistingData': false});
 			await writer.write(0, data);
 			await writer.close();
-		
-			this.editor.info(`File saved as ${fileHandle.name}!`);
+
+			this.editor.info(L10N.t('file-saved-as', fileHandle.name));
 		}catch(e){
-			this.editor.error(e);
+			if(!(e instanceof DOMException)) this.editor.error(e);
 			return;
 		}
 	}

@@ -19,7 +19,7 @@ class KSONData extends VChartData {
 		this.version = obj.version.toString();
 	}
 	_setMeta(obj) {
-		// TODO: gracefully handle this case by adding custom version string
+		// TODO: gracefully handle this case by adding custom meta
 		if(!obj.meta) throw new Error("Invalid kson! [invalid meta]");
 		// TODO: validate the values (gracefully)
 		this.meta = obj.meta;
