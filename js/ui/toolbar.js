@@ -47,13 +47,13 @@ class VToolbar {
 		this._button('btn-toolbar-decrease-edit-tick', 'toolbar-decrease-edit-tick', 'decrease-edit-tick');
 		this._button('btn-toolbar-increase-edit-tick', 'toolbar-increase-edit-tick', 'increase-edit-tick');
 
-		this._button('btn-toolbar-toggle-insert', null, 'toggle-insert');
+		this._button('btn-toolbar-toggle-insert', 'toolbar-toggle-insert', 'toggle-insert');
 
-		this._button('btn-toolbar-context-chart', null, 'context-chart');
-		this._button('btn-toolbar-context-bt', null, 'context-bt');
-		this._button('btn-toolbar-context-fx', null, 'context-fx');
-		this._button('btn-toolbar-context-laser-left', null, 'context-laser-left');
-		this._button('btn-toolbar-context-laser-right', null, 'context-laser-right');
+		this._button('btn-toolbar-context-chart', 'toolbar-context-chart', 'context-chart');
+		this._button('btn-toolbar-context-bt', 'toolbar-context-bt', 'context-bt');
+		this._button('btn-toolbar-context-fx', 'toolbar-context-fx', 'context-fx');
+		this._button('btn-toolbar-context-laser-left', 'toolbar-context-laser-left', 'context-laser-left');
+		this._button('btn-toolbar-context-laser-right', 'toolbar-context-laser-right', 'context-laser-right');
 
 		this._bind('toolbar-note-width', 'editor:note:width', (v) => this.editor.view.scale.setNoteWidth(+v));
 		this._bind('toolbar-measure-scale', 'editor:measure:scale', (v) => this.editor.view.scale.setMeasureScale(+v));
@@ -79,6 +79,7 @@ class VToolbar {
 		}
 		for(let elem of this.elem.querySelectorAll(`.${className}`)){
 			if(title) elem.title = L10N.t(title);
+			console.log(className, elem.title);
 			elem.addEventListener('click', onClickFunc);
 		}
 	}

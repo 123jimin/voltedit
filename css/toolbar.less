@@ -49,7 +49,6 @@ div.veditor div.toolbar {
 	}
 
 	div.toolbar-tab {
-
 		&>ul li {
 			display: inline-block;
 			padding: .2em .4em .3em;
@@ -157,7 +156,6 @@ div.veditor div.toolbar {
 		}
 
 		button {
-			background-color: desaturate(lighten(@KEY_COLOR, 30%, relative), 70%, relative);
 			background-size: contain;
 			background-repeat: no-repeat;
 			background-position: center;
@@ -165,15 +163,20 @@ div.veditor div.toolbar {
 			width: calc(115em/54);
 			height: calc(115em/54);
 			&[class^="btn-toolbar-context-"] {
-				opacity: 0.3;
+				opacity: 0.2;
 			}
 
 			&.selected {
 				background-color: lighten(@TOOLBAR_HOVER, 35%, relative);
 				opacity: 1;
 			}
-			&.btn-toolbar-toggle-insert.selected {
-				background-color: #a3e2a3;
+			&.btn-toolbar-toggle-insert {
+				background-image: url("../icon/cursor.png");
+				background-color: inherit;
+				opacity: 1;
+				&.selected {
+					background-image: url("../icon/edit.png");
+				}
 			}
 			&:hover {
 				background-color: lighten(@TOOLBAR_HOVER, 40%, relative) !important;

@@ -94,15 +94,15 @@ class VKeyManager {
 
 		this._registerOp('cursor-forward', editor.moveCursor.bind(editor, +1));
 		this._registerOp('cursor-backward', editor.moveCursor.bind(editor, -1));
-		this._registerOp('decrease-edit-tick', editor.moveCursor.bind(editor, +1));
-		this._registerOp('increase-edit-tick', editor.moveCursor.bind(editor, -1));
-		this._registerOp('toggle-insert', () => this.editor.setInsertMode(!this.editor.insertMode));
+		this._registerOp('decrease-edit-tick', () => editor.setEditSnap(editor._editSnapBeat-1));
+		this._registerOp('increase-edit-tick', () => editor.setEditSnap(editor._editSnapBeat+1));
+		this._registerOp('toggle-insert', () => editor.setInsertMode(!editor.insertMode));
 
-		this._registerOp('context-chart', () => this.editor.setContext(new VEditChartContext(this.editor)));
-		this._registerOp('context-bt', () => this.editor.setContext(new VEditNoteContext(this.editor, 'bt')));
-		this._registerOp('context-fx', () => this.editor.setContext(new VEditNoteContext(this.editor, 'fx')));
-		this._registerOp('context-laser-left', () => this.editor.setContext(new VEditLaserContext(this.editor, 0)));
-		this._registerOp('context-laser-right', () => this.editor.setContext(new VEditLaserContext(this.editor, 1)));
+		this._registerOp('context-chart', () => editor.setContext(new VEditChartContext(editor)));
+		this._registerOp('context-bt', () => editor.setContext(new VEditNoteContext(editor, 'bt')));
+		this._registerOp('context-fx', () => editor.setContext(new VEditNoteContext(editor, 'fx')));
+		this._registerOp('context-laser-left', () => editor.setContext(new VEditLaserContext(editor, 0)));
+		this._registerOp('context-laser-right', () => editor.setContext(new VEditLaserContext(editor, 1)));
 
 		this._registerOp('add-bt-a', editor.addNote.bind(editor, 'bt', 0));
 		this._registerOp('add-bt-b', editor.addNote.bind(editor, 'bt', 1));
@@ -134,6 +134,15 @@ class VKeyManager {
 
 		this.bind("Up", 'cursor-forward');
 		this.bind("Down", 'cursor-backward');
+		this.bind("Left", 'decrease-edit-tick');
+		this.bind("Right", 'increase-edit-tick');
+		
+		this.bind("E", 'toggle-insert');
+		
+		this.bind("D", 'context-bt');
+		this.bind("F", 'context-fx');
+		this.bind("Q", 'context-laser-left');
+		this.bind("W", 'context-laser-right');
 
 		this.bind("Backspace", 'delete-selection');
 		this.bind("Delete", 'delete-selection');

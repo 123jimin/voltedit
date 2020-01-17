@@ -77,6 +77,26 @@ toolbar-increase-edit-tick
 	en: Increase edit tick beat
 	ko: 편집 단위박 증가
 
+toolbar-toggle-insert
+	en: Toggle between select/edit mode
+	ko: 선택/편집 모드간 변환
+
+toolbar-context-chart
+	en: Edit chart BPM/beat
+	ko: 채보 BPM/박자 편집
+toolbar-context-bt
+	en: Edit BT notes
+	ko: BT 노트 편집
+toolbar-context-fx
+	en: Edit FX notes
+	ko: FX 노트 편집
+toolbar-context-laser-left
+	en: Edit left laser
+	ko: 왼쪽 레이저 편집
+toolbar-context-laser-right
+	en: Edit right laser
+	ko: 오른쪽 레이저 편집
+
 toolbar-note-width
 	en: Note width:
 	ko: 노트 너비:
