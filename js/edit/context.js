@@ -18,6 +18,7 @@ class VEditContext {
 	getObjectAt(event) { return null; }
 	createObjectAt(event) {}
 	selectRange(from, to) {}
+	areSamePos(e1, e2) { return e1.tick === e2.tick && e1.lane === e2.lane; }
 
 	/* Provided */
 	/// tick: y-value, lane and v: x-value
@@ -112,6 +113,8 @@ class VEditContext {
 	}
 	moveSelection(startEvent, endEvent) {
 		if(this.selectedObjects.size === 0) return;
+		// Just clicking at the same position should do nothing
+		if(this.areSamePos(startEvent, endEvent)) return;
 
 		const delTasks = [];
 		this.selectedObjects.forEach((obj) => delTasks.push(obj.delTask(this.editor)));
