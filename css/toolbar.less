@@ -148,10 +148,13 @@ div.veditor div.toolbar {
 		}
 	}
 
-	div.toolbar-edit-contexts {
+	table.toolbar-edit-contexts {
 		position: relative;
 		margin-left: 1em;
 
+		td {
+			padding: 0 !important;
+		}
 
 		button {
 			background-color: desaturate(lighten(@KEY_COLOR, 30%, relative), 70%, relative);
@@ -159,9 +162,8 @@ div.veditor div.toolbar {
 			background-repeat: no-repeat;
 			background-position: center;
 			border: none; padding: 0;
-			width: 2.3em;
-			height: 2.3em;
-			line-height: 2.3em;
+			width: calc(115em/54);
+			height: calc(115em/54);
 			&[class^="btn-toolbar-context-"] {
 				opacity: 0.3;
 			}
@@ -179,18 +181,4 @@ div.veditor div.toolbar {
 			}
 		}
 	}
-/*
-	table.toolbar-edit-contexts {
-		position: relative;
-		top: -.2em;
-		margin-left: 1em;
-		border-collapse: collapse;
-		border-spacing: 0;
-		td {
-			background-color: black;
-			padding: 0 !important;
-			width: 2.3em; height: 2.3em;
-		}
-	}
-*/
 }

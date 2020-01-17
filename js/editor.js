@@ -42,10 +42,10 @@ class VEditor {
 		if(this.context) this.context.clearSelection();
 		this.context = context;
 
-		for(let elem of this.elem.querySelectorAll(".toolbar div.toolbar-edit-contexts button[class^='btn-toolbar-context-']")){
+		for(let elem of this.elem.querySelectorAll(".toolbar table.toolbar-edit-contexts button[class^='btn-toolbar-context-']")){
 			elem.classList.remove('selected');
 		}
-		for(let elem of this.elem.querySelectorAll(`.toolbar div.toolbar-edit-contexts button.btn-toolbar-context-${context.contextId}`)){
+		for(let elem of this.elem.querySelectorAll(`.toolbar table.toolbar-edit-contexts button.btn-toolbar-context-${context.contextId}`)){
 			elem.classList.add('selected');
 		}
 	}
