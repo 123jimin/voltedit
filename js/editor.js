@@ -22,6 +22,8 @@ class VEditor {
 		this.insertMode = false;
 		this.setInsertMode(false);
 
+		this.messages = [];
+
 		this._addEventListeners();
 
 		this._onReady();
@@ -180,10 +182,11 @@ class VEditor {
 	}
 
 	/* Message (let's use browser defaults for now) */
-	async alert(message) {
-		return new Promise((resolve, reject) => {
-			setTimeout(() => { alert(message); resolve(); }, 0);
-		});
+	msg(messageObject) {
+		this.messages.push(messageObject);
+	}
+	alert(message) {
+		this.msg(new VAlertMessage(this, message));
 	}
 	async prompt(message, defalutValue) {
 		return new Promise((resolve, reject) => {
@@ -205,10 +208,11 @@ class VEditor {
 		}
 	}
 	warn(message) {
+		this.msg(new VWarnMessage(this, message));
 		console.warn(message);
 	}
 	info(message) {
-		console.info(message);
+		this.msg(new VInfoMessage(this, message));
 	}
 
 	/* Misc */

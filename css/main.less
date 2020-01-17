@@ -21,6 +21,46 @@ div.veditor {
 	display: flex;
 	flex-flow: column;
 
+	div.messages {
+		position: fixed;
+		right: 0; bottom: 0; top: 0;
+		padding: .2em .3em;
+		font-size: 1.25em;
+		overflow-y: hidden;
+		display: flex;
+		justify-content: flex-end;
+		flex-direction: column;
+		color: white;
+
+		user-select: none;
+
+		div.message {
+			opacity: 0.6;
+			padding: .2em .3em;
+			margin-bottom: .25em;
+			margin-right: .5em;
+			background-color: #666;
+			border: solid 2px #AAA;
+			border-radius: 5px;
+
+			box-shadow: 2px 2px 4px black;
+
+			transition-property: opacity;
+
+			&.alert {
+				background-color: #FAA;
+				border-color: #F00;
+				color: #C00;
+			}
+
+			&.warn {
+				background-color: #FC9;
+				border-color: #F90;
+				color: #B50;
+			}
+		}
+	}
+
 	div.drop-file-indicator {
 		position: absolute; z-index: 1000;
 		left: 0; right: 0; top: 0;
