@@ -9,7 +9,7 @@ const KSH_LASER_LOOKUP = Object.freeze(((str) => {
 
 const KSH_LINE_TYPE = Object.freeze({'HEADER': 0, 'BODY': 1});
 const KSH_REGEX = Object.freeze({
-	'OPTION': /^([^=]+)=(.+)$/,
+	'OPTION': /^([^=]+)=(.*)$/,
 	'LINE': /^([012]{4})\|(.{2})\|([0-9A-Za-o\-:]{2})(?:(@\(|@\)|@<|@>|S<|S>)([0-9;]+))?$/
 });
 
@@ -78,7 +78,7 @@ class KSHParser {
 		}
 
 		const match = line.match(KSH_REGEX.OPTION);
-		if(match === null) throw new Error(L10N.t('ksh-import-error-invalid-header'));
+		if(!match) throw new Error(L10N.t('ksh-import-error-invalid-header'));
 
 		const [key, value] = [match[1], match[2]];
 		this.ksh.setKSHMeta(key, value);
