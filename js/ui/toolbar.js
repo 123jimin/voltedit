@@ -79,7 +79,6 @@ class VToolbar {
 		}
 		for(let elem of this.elem.querySelectorAll(`.${className}`)){
 			if(title) elem.title = L10N.t(title);
-			console.log(className, elem.title);
 			elem.addEventListener('click', onClickFunc);
 		}
 	}

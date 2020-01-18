@@ -88,8 +88,7 @@ class VChartColor {
 	}
 
 	load() {
-		this.hueLaserLeft = 180;
-		this.hueLaserRight = 300;
+		this.hueLasers = [225, 325, 145, 55];
 
 		this.selected = '#FF0';
 		this.rangeSelectOpacity = 0.2;

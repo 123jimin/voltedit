@@ -352,20 +352,17 @@ class VViewRender {
 	_initLaserDrawData() {
 		this.lasers = this._createGroup(CLIP(this.view.scale.laserFloat, 1, VVIEW_EDITOR_UI_Z));
 
-		this.laserBodyMaterials = [0, 1].map((index) => this._createLaserBodyMaterial(index));
+		this.laserBodyMaterials = [];
+		this.view.color.hueLasers.forEach((hue) => this.laserBodyMaterials.push(this._createLaserBodyMaterial(hue)));
 	}
-	_createLaserBodyMaterial(index) {
+	_createLaserBodyMaterial(hue) {
+		const color = new THREE.Color();
+		color.setHSL(hue/360, 1.0, 0.6);
 		return new THREE.MeshBasicMaterial({
-			'color': this._getLaserBodyColor(index),
+			'color': color,
 			'opacity': 0.5,
 			'transparent': true
 		});
-	}
-	_getLaserBodyColor(index) {
-		const hue = index === 0 ? this.view.color.hueLaserLeft : this.view.color.hueLaserRight;
-		const color = new THREE.Color();
-		color.setHSL(hue/360, 1.0, 0.6);
-		return color;
 	}
 
 	_initTickPropData() {

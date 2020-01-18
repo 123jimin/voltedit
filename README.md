@@ -16,6 +16,10 @@ Currently, these features are available.
 	* [Native file system](https://web.dev/native-file-system/) is supported (if enabled via `chrome://flags`)
 		* Ctrl+S actually updates the original ksh/kson file!
 		* Be careful that currently some informations such as camera zooms and FX effects are lost while done on KSH.
+	* No internal restriction on number of lanes/lasers
+		* To enable for VOLTEdit to edit other games' chart such as Pop'n Music, DDR, PIU, ...
+		* Data structure and edit operations have no fundamental limitations on them.
+		* Current renderer does not support configuration other than 4 BT lanes and 2 FX lanes currently, but multiple lasers are supported.
 * **Multi-column view using WebGL**
 	* Currently only notes, lasers, and beat lines are visible.
 	* Scrolling view can be done via scrollbar / mouse wheel.
@@ -51,14 +55,14 @@ Also see the [milestones page](https://github.com/123jimin/voltedit/milestones).
 * KSH/KSON editor which can replace current kshoot editor
 * Web-based editor supporting modern web browsers (mobile support, but _no IE_)
 * Multi column, scrollable chart view using WebGL
-* Live view of the chart as it's being edited (ambitious!)
+* Live camera view of the chart as it's being edited (ambitious!)
 * kson-centric, but can export to ksh with some degrade
 * Multilingual (en and ko during development)
 
 ### Simple Chart Creator
 These features will be implemented by this weekend.
 * Creating and editing long notes
-* UI improvement, including message bubbles and mode icons
+* Reading/writing camera effects for KSON and KSH (read only for now)
 
 These features will be implemented by this month.
 * Ctrl+C/V
@@ -74,7 +78,6 @@ These features will likely be implemented by Feburary.
 These features are planned to be implemented by April.
 * Live chart viewer (!)
 * Displaying most of KSH contents
-* Reading camera effects of a KSH file
 * Editing simple camera effects
 
 These features are planned to be implemented by June.
@@ -96,3 +99,4 @@ I hope to be able to implement these features in this year, but not sure whether
 * Playing all audio effects supported by KSON
 * Editing/previewing KSON chart layers
 * Advanced chart linter (measures ballpark difficulty)
+* Multiple game support, including Pop'n Music, DDR, PIU, WACCA, RB, ...
