@@ -42,7 +42,11 @@ class KSONData extends VChartData {
 		}
 
 		if(objBeat.scroll_speed){
-			// TODO: What should I do?
+			objBeat.scroll_speed.forEach((data) => {
+				const graph = new VGraph(true, {'y': data.y});
+				data.v.forEach((point) => graph.pushKSON(point));
+				this.addScrollSpeed(graph);
+			});
 		}
 
 		if(objBeat.resolution){

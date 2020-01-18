@@ -75,6 +75,12 @@ class VChartData {
 	addBPM(tick, value) {
 		return this.beat.bpm.add(tick, 0, value);
 	}
+	addScrollSpeed(graph) {
+		if(!this.beat.scroll_speed)
+			this.beat.scroll_speed = new AATree();
+	
+		return this.beat.scroll_speed.add(graph.iy, graph.getLength(), graph);
+	}
 
 	iterMeasures(iterator, customLastTick) {
 		if(!this.beat || !this.beat.time_sig) return 0;
@@ -172,7 +178,13 @@ class VChartData {
 			beatNode.time_sig = this.beat.time_sig;
 		}
 
-		// TODO: What should I do with scroll_speed?
+		if(this.beat.scroll_speed && this.beat.scroll_speed.size > 0){
+			const arr = [];
+			this.beat.scroll_speed.traverse((node) => {
+				arr.push(node.data.toKSON());
+			});
+			beatNode.scroll_speed = arr;
+		}
 
 		if(this.beat.resolution && this.beat.resolution !== 240){
 			beatNode.resolution = this.beat.resolution;

@@ -15,6 +15,7 @@ class KSHExporter {
 		this.nextLaserSlams = null;
 
 		this.nextBPM = null;
+		this.nextScrollSpeed = null;
 	}
 	putLine(l) {
 		this.lines.push(l);
@@ -104,7 +105,9 @@ class KSHExporter {
 		this.nextFxNotes = [0, 1].map((lane) => getFirst(note.fx, lane));
 		this.nextLasers = [0, 1].map((lane) => getFirst(note.laser, lane));
 		this.nextLaserSlams = [[-1, null], [-1, null]];
+
 		this.nextBPM = this.chart.beat && this.chart.beat.bpm ? this.chart.beat.bpm.first() : null;
+		this.nextScrollSpeed = this.chart.beat && this.chart.beat.scroll_speed ? this.chart.beat.scroll_speed.first() : null;
 
 		this.chart.iterMeasures((measureIndex, measureTick, n, d, measureLength) => {
 			// beat
@@ -133,7 +136,7 @@ class KSHExporter {
 		const updateTickSizeNote = (arr) => {
 			arr.forEach(updateTickSizeNodes);
 		};
-		const updateTickSizeLaser = (arr) => {
+		const updateTickSizeGraphs = (arr) => {
 			arr.forEach((graphs) => {
 				graphs.forEach((graph) => {
 					const minResolution = graph.data.getMinResolution(measureTick, measureLength, true);
@@ -150,9 +153,12 @@ class KSHExporter {
 		// Determine tick size
 		updateTickSizeNote(btNotes);
 		updateTickSizeNote(fxNotes);
-		updateTickSizeLaser(lasers);
+		updateTickSizeGraphs(lasers);
 
-		chart.beat && chart.beat.bpm && updateTickSizeNodes(chart.beat.bpm.getAll(measureTick, measureLength));
+		if(chart.beat){
+			chart.beat.bpm && updateTickSizeNodes(chart.beat.bpm.getAll(measureTick, measureLength));
+			chart.beat.scroll_speed && updateTickSizeGraphs([chart.beat.scroll_speed.getAll(measureTick, measureLength)]);
+		}
 
 		// Print each line
 		for(let i=measureTick; i<measureEnd; i+=tickSize){
@@ -160,6 +166,7 @@ class KSHExporter {
 				this.putProperty('t', this.nextBPM.data);
 				this.nextBPM = this.nextBPM.next();
 			}
+			this._putStopStr(i);
 
 			const btStr = this._getNoteStr(i, btNotes, this.nextBtNotes, '1', '2');
 			const fxStr = this._getNoteStr(i, fxNotes, this.nextFxNotes, '2', '1');
@@ -168,6 +175,36 @@ class KSHExporter {
 		}
 
 		this.putLine("--");
+	}
+	_putStopStr(tick) {
+		if(!this.nextScrollSpeed || tick < this.nextScrollSpeed.y) return;
+
+		const point = this.nextScrollSpeed.data.points.get(tick-this.nextScrollSpeed.data.iy);
+		if(!point) return;
+
+		let nextPoint = point.next();
+		if(!nextPoint) return;
+
+		if(point.data.vf !== nextPoint.data.v){
+			logger.warn("Non-constant scroll_speed can't be represented in KSH.");
+			return;
+		}
+
+		if(point.data.vf === 1) return;
+		if(point.data.vf !== 0){
+			logger.warn("Non-zero scroll_speed can't be represented in KSH.");
+			return;
+		}
+
+		// Condense multiple flat points into one
+		while(nextPoint.data.v === nextPoint.data.vf){
+			let nextNext = nextPoint.next();
+			if(!nextNext) break;
+			if(nextNext.data.v !== point.data.vf) break;
+			nextPoint = nextnext;
+		}
+
+		this.putProperty('stop', nextPoint.y - point.y);
 	}
 	_getLaserStr(tick, lane) {
 		const nextLaserSlam = this.nextLaserSlams[lane];

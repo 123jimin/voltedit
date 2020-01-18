@@ -55,7 +55,7 @@ class VGraph {
 		const points = this.points.getAll(begin-this.collapseTick, len+this.collapseTick);
 		points.forEach((point) => {
 			if(point.y >= begin) resolution = GCD(resolution, point.y);
-			if(point.data.isSlam()) {
+			if(this.collapseTick && point.data.isSlam()) {
 				const slamY = point.y + this.collapseTick;
 				if(slamY < begin+len) resolution = GCD(resolution, slamY);
 			}
@@ -75,7 +75,7 @@ class VGraph {
 	}
 	/// Push points read from the KSH, in an increasing y order.
 	pushKSH(y, v) {
-		// For ksh charts, lasers' ticks are given in absolute values.
+		// For ksh charts, ticks are given in absolute values.
 		y -= this.iy;
 		if(this.points.size > 0){
 			const lastPoint = this.points.last();

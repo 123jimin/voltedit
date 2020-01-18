@@ -164,7 +164,9 @@ class KSHData extends VChartData {
 			this.gauge = {'total': total};
 		}
 
-		this._setKSONBeatInfo();
+		// Yes, KSM file is read three time (once for splitting, twice here)
+		// But currently reading time is dominated by rendering time, so let's ignore this problem for now.
+		this._setKSONFromKSHLineOps();
 		this._setKSONNoteInfo();
 	}
 	_setKSONVersion() {
@@ -223,23 +225,32 @@ class KSHData extends VChartData {
 
 		this.bg = {'legacy': legacyInfo};
 
-		// TODO: how to handle bg and layer presets?
+		if('bg' in ksmMeta) legacyInfo.bg = ksmMeta.bg.split(';').map((s) => ({'filename': s}));
+		// TODO: handle layer info
 
-		if('v' in ksmMeta || 'vo' in ksmMeta) {
+		if('v' in ksmMeta || 'vo' in ksmMeta){
 			const movieInfo = {};
 			if('v' in ksmMeta) movieInfo.filename = ksmMeta.v;
 			if('vo' in ksmMeta) movieInfo.offset = parseInt(ksmMeta.vo);
 			legacyInfo.movie = movieInfo;
 		}
 	}
-	/// Processes timing of the chart, and computes `tick` and `len` of each line
-	_setKSONBeatInfo() {
+	/// Processes timing of the chart, computes `tick` and `len` of each line,
+	/// and process options of each line to fill KSON data.
+	_setKSONFromKSHLineOps() {
 		const beatInfo = this.beat = {
 			'bpm': new AATree(),
 			'time_sig': [],
 			'scroll_speed': new AATree(),
 			'resolution': KSH_DEFAULT_MEASURE_TICK / 4
 		};
+		const tiltInfo = {};
+		const camInfo = {};
+		this.camera = {
+			'tilt': tiltInfo,
+			'cam': camInfo
+		};
+		
 		const ksmMeta = this._ksmMeta;
 
 		if('beat' in ksmMeta) {
@@ -279,16 +290,29 @@ class KSHData extends VChartData {
 						case 'beat':
 							// `beat`s are already processed above.
 							// If a `beat` is in the middle of a measure, then the chart is invalid.
-							if(line_idx > 0) throw new Error(L10N.t('ksh-import-error-invalid-time-sig-location'));
+							if(line_idx > 0)
+								throw new Error(L10N.t('ksh-import-error-invalid-time-sig-location'));
 							break;
 						case 't':
 							if(tick > 0) this._tryAddBPMFromMeta();
-							if(floatValue <= 0 || !isFinite(floatValue)) throw new Error(L10N.t('ksh-import-error-value', 't(BPM)'));
+							if(floatValue <= 0 || !isFinite(floatValue))
+								throw new Error(L10N.t('ksh-import-error-value', 't(BPM)'));
 							beatInfo.bpm.add(tick, 0, floatValue);
 							break;
 						case 'stop':
-							if(intValue <= 0 || !isFinite(intValue)) throw new Error(L10N.t('ksh-import-error-value', 'stop'));
-							// TODO: add ScrollSpeedPoints
+							if(intValue <= 0 || !isFinite(intValue))
+								throw new Error(L10N.t('ksh-import-error-value', 'stop'));
+							const graph = new VGraph(true, {'y': tick});
+							graph.pushKSH(tick, 0);
+							graph.pushKSH(tick+intValue, 0);
+
+							const [result, hit] = this.addScrollSpeed(graph);
+							if(!result) throw new Error("Two overlapping stops are present!");
+							break;
+							// TODO: process these events
+						case 'zoom_top':
+						case 'zoom_bottom':
+						case 'zoom_side':
 							break;
 					}
 				});
