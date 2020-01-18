@@ -15,6 +15,8 @@ class VEditContext {
 		this.selectedObjects = new Set();
 	}
 	/* Encouraged to override */
+	_showHoverDrawing(event) { return false; }
+	_showDragDrawing(event) {}
 	getObjectAt(event) { return null; }
 	createObjectAt(event) {}
 	selectRange(from, to) {}
@@ -27,6 +29,7 @@ class VEditContext {
 	onMouseDown(event) {
 		this._setDragStart(event);
 		this.view.setCursor();
+		this.view.hideDrawing();
 
 		const obj = this.getObjectAt(event);
 		if(obj) {
@@ -70,6 +73,13 @@ class VEditContext {
 					obj.fakeMoveTo(this.view, this.startEvent, event);
 				});
 				break;
+		}
+	}
+	onMouseHover(event) {
+		if(this.editor.insertMode){
+			if(!this._showHoverDrawing(event)){
+				this.view.hideDrawing();
+			}
 		}
 	}
 	onMouseUp(event) {
@@ -158,12 +168,25 @@ class VEditNoteContext extends VEditContext {
 
 		return this.editor.chartData.getNoteData(type, lane);
 	}
+	_showHoverDrawing(event) {
+		if(event.tick < 0) return false;
+		let lane = event.lane;
+		if(!this.editor.chartData || lane < 0) return false;
+		if(this.type === 'fx') lane >>= 1;
+		if(lane >= this.editor.chartData.getLaneCount(this.type)) return false;
+
+		this.view.showNoteDrawing(this.type, lane, event.tick);
+		return true;
+	}
+	_showDragDrawing(event) {
+
+	}
 	getObjectAt(event) {
 		if(!this.editor.chartData) return null;
 
 		let noteData = this._getNoteData(this.type, event.lane)
 		let note = noteData && noteData.get(event.tick);
-		if(!note) {
+		if(!note && !this.editor.insertMode) {
 			// For selecting notes, let's enable users to select FX in BT mode and vice versa.
 			noteData = this._getNoteData(this.type === 'fx' ? 'bt' : 'fx', event.lane);
 			note = noteData && noteData.get(event.tick);
@@ -196,7 +219,9 @@ class VEditNoteContext extends VEditContext {
 	}
 }
 
-class VEditLaserContext extends VEditContext {
+class VEditGraphSectionContext extends VEditContext {}
+
+class VEditLaserContext extends VEditGraphSectionContext {
 	constructor(editor, lane) {
 		super(editor, `laser-${['left','right'][lane]}`);
 		this.lane = lane;

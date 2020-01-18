@@ -118,6 +118,23 @@ class VView {
 		this.refresh();
 	}
 
+	showNoteDrawing(type, lane, tick) {
+		switch(type){
+			case 'bt':
+				this.render.showBTDrawing(lane, tick);
+				break;
+			case 'fx':
+				this.render.showFXDrawing(lane, tick);
+				break;
+		}
+		this._checkRedrawMesaures(tick);
+		this.refresh();
+	}
+	hideDrawing() {
+		this.render.hideDrawing();
+		this.refresh();
+	}
+
 	/// Clear and redraw everything.
 	_redraw() {
 		this.tickUnit = this.editor.getTicksPerWholeNote() || 240*4;
@@ -264,7 +281,9 @@ class VView {
 		}
 	}
 	onMouseMove(event) {
-		if(event.which === 0) return;
+		if(event.which === 0){
+			this.editor.context.onMouseHover(this.toChartViewEvent(event));
+		}
 		if(this.scrollBar.scrolling){
 			this.scrollBar.trigger(event.pageY);
 			return;

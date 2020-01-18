@@ -152,12 +152,25 @@ class VViewRender {
 		note.position.set((newLane-2)*this.view.scale.noteWidth, RD(this.view.t2p(newPos)), 0);
 	}
 
+	showBTDrawing(lane, pos) {
+		this.btShortDrawing.visible = true;
+		this.btShortDrawing.position.set((lane-2)*this.view.scale.noteWidth, RD(this.view.t2p(pos)), 0);
+	}
+	showFXDrawing(lane, pos) {
+		this.fxShortDrawing.visible = true;
+		this.fxShortDrawing.position.set((lane-1)*2*this.view.scale.noteWidth, RD(this.view.t2p(pos)), 0);
+	}
+	hideDrawing() {
+		this.btShortDrawing.visible = false;
+		this.fxShortDrawing.visible = false;
+	}
+
 	/** Drawing laser data **/
 	clearLasers() {
 		this._clear(this.lasers);
 	}
 	addLaser(index, graph) {
-		const laserObject = new THREE.Object3D();
+		const laserObject = new THREE.Group();
 		const scale = this.view.scale;
 		const WIDE = graph.wide;
 		const HALF_LASER = scale.noteWidth/2-0.5;
@@ -172,6 +185,7 @@ class VViewRender {
 			let prevX = 0, prevY = 0;
 			let isFirstNode = true;
 
+			// TODO: make each GraphSectionPoint a separate object
 			graph.points.traverse((node) => {
 				const gp = node.data;
 				const x = X(gp.v), y = Y(node.y);
@@ -213,7 +227,7 @@ class VViewRender {
 			geometry.setAttribute('position', new THREE.Float32BufferAttribute(points, 3));
 			geometry.computeBoundingSphere();
 
-			const material = index === 0 ? this.leftLaserBodyMaterial : this.rightLaserBodyMaterial;
+			const material = this.laserBodyMaterials[index];
 			const laserBody = new THREE.Mesh(geometry, material);
 
 			laserObject.add(laserBody);
@@ -310,8 +324,9 @@ class VViewRender {
 		this.btShorts = this._createGroup(0);
 		this.noteDrawings = this._createGroup(0);
 
-		this.fxNotesByY = [{}, {}];
+		// TODO: let's support more than 4 columns, because why not
 		this.btNotesByY = [{}, {}, {}, {}];
+		this.fxNotesByY = [{}, {}];
 
 		this.btShortTemplate = this._createRectangleTemplate(0, 0, scale.noteWidth, scale.btNoteHeight, color.btFill, color.btBorder);
 		this.fxShortTemplate = this._createRectangleTemplate(0, 0, scale.noteWidth*2, scale.fxNoteHeight, color.fxFill, color.fxBorder);
@@ -321,6 +336,14 @@ class VViewRender {
 
 		this.btLongDrawing = null;
 		this.fxLongDrawing = null;
+
+		this.btShortDrawing = this.btShortTemplate.create();
+		this.btShortDrawing.visible = false;
+		this.noteDrawings.add(this.btShortDrawing);
+
+		this.fxShortDrawing = this.fxShortTemplate.create();
+		this.fxShortDrawing.visible = false;
+		this.noteDrawings.add(this.fxShortDrawing);
 	}
 	_createLongNoteTemplate(width, padding, color, len) {
 		return this._createRectangleTemplate(padding, 0, width-padding*2, this.view.t2p(len), color);
@@ -329,8 +352,7 @@ class VViewRender {
 	_initLaserDrawData() {
 		this.lasers = this._createGroup(CLIP(this.view.scale.laserFloat, 1, VVIEW_EDITOR_UI_Z));
 
-		this.leftLaserBodyMaterial = this._createLaserBodyMaterial(0);
-		this.rightLaserBodyMaterial = this._createLaserBodyMaterial(1);
+		this.laserBodyMaterials = [0, 1].map((index) => this._createLaserBodyMaterial(index));
 	}
 	_createLaserBodyMaterial(index) {
 		return new THREE.MeshBasicMaterial({

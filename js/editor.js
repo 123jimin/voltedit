@@ -48,6 +48,8 @@ class VEditor {
 		for(let elem of this.elem.querySelectorAll(`.toolbar table.toolbar-edit-contexts button.btn-toolbar-context-${context.contextId}`)){
 			elem.classList.add('selected');
 		}
+
+		this.view.hideDrawing();
 	}
 	setInsertMode(insertMode) {
 		this.insertMode = insertMode;
@@ -55,6 +57,8 @@ class VEditor {
 			if(insertMode) elem.classList.add('selected');
 			else elem.classList.remove('selected');
 		}
+
+		this.view.hideDrawing();
 	}
 	setEditSnap(snap) {
 		const oldSnapBeat = this._editSnapBeat;
