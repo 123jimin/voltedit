@@ -16,6 +16,7 @@ class VNoteAddTask extends VTask {
 		this.len = len;
 	}
 	_validate() {
+		if(this.tick < 0) return false;
 		const noteData = this.chartData.getNoteData(this.type, this.lane);
 		if(!noteData) return true; // Since there were no note;
 		return !noteData.intersects(this.tick, this.len);

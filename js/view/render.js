@@ -30,11 +30,7 @@ class VViewRender {
 			const scale = this.view.scale;
 			RECT(points, [scale.cursorLeft, this.cursorStart.position.y], [scale.cursorRight, this.cursorEnd.position.y]);
 
-			const geometry = this.selection.geometry;
-			const geometry_position = geometry.attributes.position;
-			points.forEach((value, ind) => geometry_position.array[ind] = value);
-			geometry_position.needsUpdate = true;
-			geometry.computeBoundingSphere();
+			this._updateGeometry(this.selection, points);
 		}
 	}
 
@@ -72,7 +68,7 @@ class VViewRender {
 			note = this._addNote(this.btShorts, this.btShortTemplate, this.btShortSelectedTemplate, lane, pos);
 		} else {
 			note = this._addLongNote(this.btLongs, this.view.scale.noteWidth, 1,
-				this.view.color.btLong ,this.view.color.selected, lane, pos, len);
+				this.view.color.btLong, this.view.color.selected, lane, pos, len);
 		}
 		this.btNotesByY[lane][pos] = note;
 	}
@@ -82,7 +78,7 @@ class VViewRender {
 			note = this._addNote(this.fxShorts, this.fxShortTemplate, this.fxShortSelectedTemplate, lane*2, pos);
 		} else {
 			note = this._addLongNote(this.fxLongs, this.view.scale.noteWidth*2, 0,
-				this.view.color.fxLong ,this.view.color.selected, lane*2, pos, len);
+				this.view.color.fxLong, this.view.color.selected, lane*2, pos, len);
 		}
 		this.fxNotesByY[lane][pos] = note;
 	}
@@ -154,11 +150,41 @@ class VViewRender {
 
 	showBTDrawing(lane, pos) {
 		this.btShortDrawing.visible = true;
+		if(this.btLongDrawing) this.btLongDrawing.visible = false;
 		this.btShortDrawing.position.set((lane-2)*this.view.scale.noteWidth, RD(this.view.t2p(pos)), 0);
 	}
 	showFXDrawing(lane, pos) {
 		this.fxShortDrawing.visible = true;
+		if(this.fxLongDrawing) this.fxLongDrawing.visible = false;
 		this.fxShortDrawing.position.set((lane-1)*2*this.view.scale.noteWidth, RD(this.view.t2p(pos)), 0);
+	}
+	showBTLongDrawing(lane, pos, len) {
+		this.btShortDrawing.visible = false;
+		this.btLongDrawing = this._showLongNoteDrawing(
+			this.btLongDrawing, this.view.scale.noteWidth, 1,
+			this.view.color.btLong, lane, pos, len
+		);
+	}
+	showFXLongDrawing(lane, pos, len) {
+		this.fxShortDrawing.visible = false;
+		this.fxLongDrawing = this._showLongNoteDrawing(
+			this.fxLongDrawing, this.view.scale.noteWidth*2, 0,
+			this.view.color.fxLong, lane*2, pos, len
+		);
+	}
+	_showLongNoteDrawing(obj, noteWidth, padding, color, lane, pos, len) {
+		if(obj){
+			const points = [];
+			RECT(points, [padding, 0], [noteWidth-padding, this.view.t2p(len)]);
+			this._updateGeometry(obj, points);
+		}else{
+			const noteTemplate = this._createLongNoteTemplate(noteWidth, padding, color, len);
+			obj = noteTemplate.create();
+			this.noteDrawings.add(obj);
+		}
+		obj.position.set((lane-2)*this.view.scale.noteWidth, RD(this.view.t2p(pos)), 0);
+		obj.visible = true;
+		return obj;
 	}
 	hideDrawing() {
 		this.btShortDrawing.visible = false;
@@ -445,6 +471,15 @@ class VViewRender {
 		}
 
 		return new VModelTemplateCollection(templates);
+	}
+	_updateGeometry(obj, points) {
+		if(!obj.geometry && obj.children.length === 1)
+			return this._updateGeometry(obj.children[0], points);
+		const geometry = obj.geometry;
+		const geometry_position = geometry.attributes.position;
+		points.forEach((value, ind) => geometry_position.array[ind] = value);
+		geometry_position.needsUpdate = true;
+		geometry.computeBoundingSphere();
 	}
 	_clear(elem) {
 		for(let i=elem.children.length; i-->0;) {

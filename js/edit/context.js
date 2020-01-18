@@ -10,15 +10,15 @@ class VEditContext {
 
 		this.dragIntent = VEDIT_DRAG_INTENT.NONE;
 		this.startEvent = null;
-		this.startCreated = null;
 
 		this.selectedObjects = new Set();
 	}
 	/* Encouraged to override */
 	_showHoverDrawing(event) { return false; }
 	_showDragDrawing(event) {}
+	canMakeObjectAt(event) { return false; }
 	getObjectAt(event) { return null; }
-	createObjectAt(event) {}
+	createObjectAt(startEvent, endEvent) {}
 	selectRange(from, to) {}
 	areSamePos(e1, e2) { return e1.tick === e2.tick && e1.lane === e2.lane; }
 
@@ -29,7 +29,6 @@ class VEditContext {
 	onMouseDown(event) {
 		this._setDragStart(event);
 		this.view.setCursor();
-		this.view.hideDrawing();
 
 		const obj = this.getObjectAt(event);
 		if(obj) {
@@ -43,9 +42,9 @@ class VEditContext {
 			if(!event.shiftKey) this.clearSelection();
 			if(!obj && !event.shiftKey){
 				this.view.setCursor(event.tick);
-				if(event.tick >= 0 && this.addObjectEnabled() && this.editor.chartData){
-					this.startCreated = this.createObjectAt(event);
-					this.dragIntent = VEDIT_DRAG_INTENT.CREATE;
+				if(event.tick >= 0 && this.addObjectEnabled()
+					&& this.editor.chartData && this.canMakeObjectAt(event)){
+						this.dragIntent = VEDIT_DRAG_INTENT.CREATE;
 				}
 				return;
 			}
@@ -53,15 +52,16 @@ class VEditContext {
 			// object exists and already selected
 			if(event.shiftKey){
 				this.removeFromSelection(obj);
+				this.view.hideDrawing();
 				return;
 			}
 		}
 		this.addToSelection(obj);
+		this.view.hideDrawing();
 	}
 	_setDragStart(event) {
 		this.dragIntent = VEDIT_DRAG_INTENT.NONE;
 		this.startEvent = event;
-		this.startCreated = null;
 	}
 	onMouseDrag(event) {
 		switch(this.dragIntent) {
@@ -72,6 +72,9 @@ class VEditContext {
 				this.selectedObjects.forEach((obj) => {
 					obj.fakeMoveTo(this.view, this.startEvent, event);
 				});
+				break;
+			case VEDIT_DRAG_INTENT.CREATE:
+				this._showDragDrawing(event);
 				break;
 		}
 	}
@@ -89,6 +92,9 @@ class VEditContext {
 				break;
 			case VEDIT_DRAG_INTENT.MOVE:
 				this.moveSelection(this.startEvent, event);
+				break;
+			case VEDIT_DRAG_INTENT.CREATE:
+				this.createObjectAt(this.startEvent, event);
 				break;
 		}
 		this.dragIntent = VEDIT_DRAG_INTENT.NONE;
@@ -160,26 +166,33 @@ class VEditNoteContext extends VEditContext {
 		this.type = type;
 		this.draggingNote = false;
 	}
-	_getNoteData(type, eventLane) {
-		let lane = eventLane;
-		if(!this.editor.chartData || lane < 0) return null;
+	_getLane(type, lane) {
+		if(!this.editor.chartData || lane < 0) return -1;
 		if(type === 'fx') lane >>= 1;
-		if(lane >= this.editor.chartData.getLaneCount(type)) return;
-
-		return this.editor.chartData.getNoteData(type, lane);
+		if(lane >= this.editor.chartData.getLaneCount(type)) return -1;
+		return lane;
+	}
+	_getNoteData(type, eventLane) {
+		const lane = this._getLane(type, eventLane);
+		if(lane < 0) return null;
+		else return this.editor.chartData.getNoteData(type, lane);
 	}
 	_showHoverDrawing(event) {
 		if(event.tick < 0) return false;
-		let lane = event.lane;
-		if(!this.editor.chartData || lane < 0) return false;
-		if(this.type === 'fx') lane >>= 1;
-		if(lane >= this.editor.chartData.getLaneCount(this.type)) return false;
+		const lane = this._getLane(this.type, event.lane);
+		if(lane < 0) return false;
 
-		this.view.showNoteDrawing(this.type, lane, event.tick);
+		this.view.showNoteDrawing(this.type, lane, event.tick, 0);
 		return true;
 	}
 	_showDragDrawing(event) {
+		if(event.tick < 0 || this.startEvent.tick < 0) return false;
 
+		const lane = this._getLane(this.type, this.startEvent.lane);
+		if(lane < 0) return false;
+
+		this.view.showNoteDrawing(this.type, lane, this.startEvent.tick, event.tick-this.startEvent.tick);
+		return true;
 	}
 	getObjectAt(event) {
 		if(!this.editor.chartData) return null;
@@ -194,15 +207,22 @@ class VEditNoteContext extends VEditContext {
 
 		return note && note.data;
 	}
-	createObjectAt(event) {
-		let lane = event.lane;
+	canMakeObjectAt(event) {
+		return event.tick >= 0 && this._getLane(this.type, event.lane) >= 0;
+	}
+	createObjectAt(startEvent, endEvent) {
+		const lane = this._getLane(this.type, startEvent.lane);
 		if(lane < 0) return null;
-		if(this.type === 'fx') lane >>= 1;
-		if(lane >= this.editor.chartData.getLaneCount(this.type)) return;
 
-		const addTask = new VNoteAddTask(this.editor, this.type, lane, event.tick, 0);
+		let [startTick, len] = [startEvent.tick, endEvent.tick-startEvent.tick];
+		if(len < 0){
+			startTick += len;
+			len = -len;
+		}
+
+		const addTask = new VNoteAddTask(this.editor, this.type, lane, startTick, len);
 		if(this.editor.taskManager.do(`task-add-${this.type}`, addTask)) {
-			const created = this.getObjectAt(event);
+			const created = this.getObjectAt(startEvent);
 			if(created) this.addToSelection(created);
 
 			return created;

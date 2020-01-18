@@ -118,16 +118,23 @@ class VView {
 		this.refresh();
 	}
 
-	showNoteDrawing(type, lane, tick) {
+	showNoteDrawing(type, lane, tick, len) {
+		if(len < 0){
+			tick += len;
+			len = -len;
+		}
+		if(tick < 0) tick = 0;
 		switch(type){
 			case 'bt':
-				this.render.showBTDrawing(lane, tick);
+				if(len) this.render.showBTLongDrawing(lane, tick, len);
+				else this.render.showBTDrawing(lane, tick);
 				break;
 			case 'fx':
-				this.render.showFXDrawing(lane, tick);
+				if(len) this.render.showFXLongDrawing(lane, tick, len);
+				else this.render.showFXDrawing(lane, tick);
 				break;
 		}
-		this._checkRedrawMesaures(tick);
+		this._checkRedrawMesaures(tick+len);
 		this.refresh();
 	}
 	hideDrawing() {
