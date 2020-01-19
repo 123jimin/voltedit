@@ -136,7 +136,7 @@ class KSHExporter {
 	}
 	putMeasure(measureIndex, measureTick, measureLength) {
 		const chart = this.chart;
-		let tickSize = KSH_DEFAULT_MEASURE_TICK;
+		let tickSize = measureLength;
 		const measureEnd = measureTick+measureLength;
 
 		const getTrees = (arr, count) => {
