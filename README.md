@@ -12,7 +12,9 @@ Currently, these features are available.
 
 * **Reading and writing KSH and KSON files**
 	* Yes, basic KSH <-> KSON conversion is supported!
-		* Only supports notes, lasers, beat lines, and BPM changes are preserved for now.
+		* Notes and lasers
+		* Beat lines and BPM changes
+		* Stops and KSH `zoom_bottom`, `zoom_side`, `zoom_top`
 	* [Native file system](https://web.dev/native-file-system/) is supported (if enabled via `chrome://flags`)
 		* Ctrl+S actually updates the original ksh/kson file!
 		* Be careful that currently some informations such as camera zooms and FX effects are lost while done on KSH.
@@ -47,7 +49,8 @@ npm install -g uglify-es less less-plugin-clean-css
 Then use `make` to build the JS and CSS files.
 
 ## Planned Features
-These are planned features, as of 17 Jan 2020.
+These are planned features, as of 20 Jan 2020.
+Some of plans may be changed later.
 
 Also see the [milestones page](https://github.com/123jimin/voltedit/milestones).
 
@@ -59,32 +62,37 @@ Also see the [milestones page](https://github.com/123jimin/voltedit/milestones).
 * kson-centric, but can export to ksh with some degrade
 * Multilingual (en and ko during development)
 
-### Simple Chart Creator
-These features will be implemented by this weekend.
-* Creating and editing long notes
-* Reading/writing camera effects for KSON and KSH (read only for now)
-
-These features will be implemented by this month.
-* Ctrl+C/V
+### January: Simple Chart Creator
 * Adding lasers
 * Editing chart metadata
+* Reading/Writing slam rotation and tilt effects
 
-### Middle Priority
-These features will likely be implemented by Feburary.
-* Editing lasers with bezier curves
-* Audio Playback
-* Reading FX/laser filter/laser volume effects of a KSH file
+### February: KSH Compatibility
+* Reading/Writing all KSH-compatible data, but not editing yet
+	* FX/laser filter effects
+	* Laser volume effects
+	* Laser slam sound effects
+* Editing lasers, perhaps with curves
 
-These features are planned to be implemented by April.
-* Live chart viewer (!)
+### March: UX Improvement 1, Simple Playback
+* Ctrl+C/V
+* Improving note and laser editing
+* Audio playback
+* Live chart viewer (literally just showing charts at a different angle)
+
+### April: More KSH Editing
 * Displaying most of KSH contents
 * Editing simple camera effects
+* Improved live chart viewer (applying camera effects)
 
-These features are planned to be implemented by June.
+### May: KSH Editor Replacement
 * Simple audio effects (filters, gate)
-* Chart linter (detect illegals and semi-illegals)
-* Resolution adjustment
 * Be able to replace kshoot editor for non-effect charts
+
+### June: More Powerful KSON-to-KSH Converter
+* Resolution adjustment
+* Support for exporting curve lasers and camera effects to KSH
+* Chart linter (detect illegals and semi-illegals)
 
 ### Low Priority
 These features are planned to be implemented in this year.
