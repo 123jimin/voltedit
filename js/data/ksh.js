@@ -377,8 +377,8 @@ class KSHData extends VChartData {
 		};
 		const addLaserSegment = (lane, y, v) => {
 			if(laserSegments[lane] === null)
-				laserSegments[lane] = new VGraph(true, {'y': y, 'wide': laserWide[lane], 'collapseTick': KSH_LASER_SLAM_TICK});
-			laserSegments[lane].pushKSH(y, v);
+				laserSegments[lane] = new VGraph(true, {'y': y, 'wide': laserWide[lane]});
+			laserSegments[lane].pushKSH(y, v, true);
 		};
 
 		this._ksmMeasures.forEach((measure) => {

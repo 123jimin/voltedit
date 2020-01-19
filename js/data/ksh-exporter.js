@@ -152,13 +152,14 @@ class KSHExporter {
 		const updateTickSizeNote = (arr) => {
 			arr.forEach(updateTickSizeNodes);
 		};
-		const updateTickSizeGraphs = (arr) => {
-			arr.forEach((graphs) => {
-				graphs.forEach((graph) => {
-					const minResolution = graph.data.getMinResolution(measureTick, measureLength, true);
-					tickSize = GCD(tickSize, minResolution);
-				});
+		const updateTickSizeGraphs = (graphs, collapse) => {
+			graphs.forEach((graph) => {
+				const minResolution = graph.data.getMinResolution(measureTick, measureLength, collapse);
+				tickSize = GCD(tickSize, minResolution);
 			});
+		};
+		const updateTickSizeLasers = (arr) => {
+			arr.forEach((graphs) => updateTickSizeGraphs(graphs, true));
 		};
 
 		// ticks
@@ -169,11 +170,11 @@ class KSHExporter {
 		// Determine tick size
 		updateTickSizeNote(btNotes);
 		updateTickSizeNote(fxNotes);
-		updateTickSizeGraphs(lasers);
+		updateTickSizeLasers(lasers);
 
 		if(chart.beat){
 			chart.beat.bpm && updateTickSizeNodes(chart.beat.bpm.getAll(measureTick, measureLength));
-			chart.beat.scroll_speed && updateTickSizeGraphs([chart.beat.scroll_speed.getAll(measureTick, measureLength)]);
+			chart.beat.scroll_speed && updateTickSizeGraphs(chart.beat.scroll_speed.getAll(measureTick, measureLength));
 		}
 
 		if(chart.camera){
@@ -182,7 +183,7 @@ class KSHExporter {
 				if(cam.body){
 					for(let key in cam.body){
 						if(!cam.body[key]) continue;
-						tickSize = GCD(tickSize, cam.body[key].getMinResolution(measureTick, measureLength, true));
+						tickSize = GCD(tickSize, cam.body[key].getMinResolution(measureTick, measureLength));
 					}
 				}
 			}
@@ -286,7 +287,7 @@ class KSHExporter {
 
 
 		if(point.data.isSlam()){
-			nextLaserSlam[0] = tick + nextLaser.data.collapseTick;
+			nextLaserSlam[0] = tick+KSH_LASER_SLAM_TICK;
 			nextLaserSlam[1] = point.data.toKSH(true);
 		}
 		return point.data.toKSH(false);

@@ -30,15 +30,11 @@ class VGraph {
 	constructor(isRelative, options) {
 		this.isRelative = isRelative;
 		if(isRelative){
-			/// Used only for reading KSH charts
-			/// Slants not longer than this tick is regarded as slams
-			this.collapseTick = options.collapseTick || 0;
 			/// 2 for wide lasers
 			this.wide = options.wide || 1;
 			/// Start tick for the graph
 			this.iy = options.y || 0;
 		}else{
-			this.collapseTick = 0;
 			this.wide = 1;
 			this.iy = 0;
 		}
@@ -52,11 +48,12 @@ class VGraph {
 		begin -= this.iy;
 
 		let resolution = 0;
-		const points = this.points.getAll(begin-this.collapseTick, len+this.collapseTick);
+		const collapseTick = forKSH ? KSH_LASER_SLAM_TICK : 0;
+		const points = this.points.getAll(begin-collapseTick, len+collapseTick);
 		points.forEach((point) => {
 			if(point.y >= begin) resolution = GCD(resolution, point.y);
-			if(this.collapseTick && point.data.isSlam()) {
-				const slamY = point.y + this.collapseTick;
+			if(forKSH && point.data.isSlam()) {
+				const slamY = point.y + collapseTick;
 				if(slamY < begin+len) resolution = GCD(resolution, slamY);
 			}
 		});
@@ -74,14 +71,14 @@ class VGraph {
 		return obj;
 	}
 	/// Push points read from the KSH, in an increasing y order.
-	pushKSH(y, v) {
+	pushKSH(y, v, collapse) {
 		// For ksh charts, ticks are given in absolute values.
 		y -= this.iy;
 		if(this.points.size > 0){
 			const lastPoint = this.points.last();
 			if(y < lastPoint.y)
 				throw new Error("Invalid insertion order in VGraph.pushKSH!");
-			if(y <= lastPoint.y + this.collapseTick){
+			if(collapse && y <= lastPoint.y + KSH_LASER_SLAM_TICK){
 				lastPoint.data.vf = v;
 				return;
 			}
