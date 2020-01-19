@@ -146,26 +146,42 @@ class VEditContext {
 		// Just clicking at the same position should do nothing
 		if(this.areSamePos(startEvent, endEvent)) return;
 
-		const delTasks = [];
-		this.selectedObjects.forEach((obj) => delTasks.push(obj.delTask(this.editor)));
+		// Change this to > 1 and handle single object movement
+		if(this.selectedObjects.size >= 1){
+			this.moveSelectionByTick(endEvent.tick - startEvent.tick);
+			return;
+		}
 
-		const moveTasks = [];
-		this.selectedObjects.forEach((obj) => moveTasks.push(obj.moveTask(this.editor, startEvent, endEvent)));
+		let obj = null;
+		this.selectedObjects.forEach((o) => { obj = o; });
 
-		this.editor.taskManager.do('task-move-selection', VTask.join([VTask.join(delTasks), VTask.join(moveTasks)]));
+		const delTask = obj.delTask(this.editor);
+		const moveTask = obj.moveTask(this.editor, startEvent, endEvent);
 
-		const oldSelected = this.selectedObjects;
+		this.editor.taskManager.do('task-move-selection', VTask.join([delTask, moveTask]));
+
 		this.selectedObjects = new Set();
-		oldSelected.forEach((obj) => this.addToSelection(obj.getMoved(this.editor, startEvent, endEvent)));
+		this.addToSelection(obj.getMoved(this.editor, startEvent, endEvent));
 	}
 	moveSelectionByTick(tick) {
 		if(!this.hasSelection()) return;
 		if(tick === 0) return;
 
+		const delTasks = [];
+		this.selectedObjects.forEach((obj) => delTasks.push(obj.delTask(this.editor)));
 
+		const moveTasks = [];
+		this.selectedObjects.forEach((obj) => moveTasks.push(obj.moveTickTask(this.editor, tick)));
+
+		this.editor.taskManager.do('task-move-selection', VTask.join([VTask.join(delTasks), VTask.join(moveTasks)]));
+
+		const oldSelected = this.selectedObjects;
+		this.selectedObjects = new Set();
+		oldSelected.forEach((obj) => this.addToSelection(obj.getTickMoved(this.editor, tick)));
 	}
 	resizeSelectionByTick(tick) {
 		if(!this.hasSelection()) return;
+		if(tick === 0) return;
 	}
 }
 
