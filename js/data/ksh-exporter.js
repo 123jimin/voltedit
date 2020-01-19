@@ -212,6 +212,11 @@ class KSHExporter {
 	_putStopStr(tick) {
 		if(!this.nextScrollSpeed || tick < this.nextScrollSpeed.y) return;
 
+		if(tick >= this.nextScrollSpeed.y + this.nextScrollSpeed.l){
+			this.nextScrollSpeed = this.nextScrollSpeed.next();
+			if(!this.nextScrollSpeed) return;
+		}
+
 		const point = this.nextScrollSpeed.data.points.get(tick-this.nextScrollSpeed.data.iy);
 		if(!point) return;
 
@@ -234,7 +239,7 @@ class KSHExporter {
 			let nextNext = nextPoint.next();
 			if(!nextNext) break;
 			if(nextNext.data.v !== point.data.vf) break;
-			nextPoint = nextnext;
+			nextPoint = nextNext;
 		}
 
 		this.putProperty('stop', nextPoint.y - point.y);
