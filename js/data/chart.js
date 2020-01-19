@@ -242,9 +242,10 @@ class VChartData {
 					const graph = thisCam.body[type];
 					if(graph.points.size === 0) continue;
 
-					camInfo[type] = [];
+					if(!('body' in camInfo)) camInfo.body = {};
+					camInfo.body[type] = [];
 					graph.points.traverse((node) => {
-						camInfo[type].push(node.data.toKSON(graph, node.y));
+						camInfo.body[type].push(node.data.toKSON(graph, node.y));
 					});
 				}
 			}
