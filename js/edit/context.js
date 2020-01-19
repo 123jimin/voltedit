@@ -66,9 +66,6 @@ class VEditContext {
 			let [from, to] = [this.prevClick.tick, event.tick];
 			if(from > to) [from, to] = [to, from];
 			this.selectRange(from, to);
-			
-			this.startEvent = this.prevClick;
-			this.onMouseDrag(event);
 		}
 
 		this.prevClick = event;
@@ -157,13 +154,18 @@ class VEditContext {
 
 		this.editor.taskManager.do('task-move-selection', VTask.join([VTask.join(delTasks), VTask.join(moveTasks)]));
 
-		// TODO: retain selection
-		this.selectedObjects.clear();
+		const oldSelected = this.selectedObjects;
+		this.selectedObjects = new Set();
+		oldSelected.forEach((obj) => this.addToSelection(obj.getMoved(this.editor, startEvent, endEvent)));
 	}
 	moveSelectionByTick(tick) {
 		if(!this.hasSelection()) return;
+		if(tick === 0) return;
 
 
+	}
+	resizeSelectionByTick(tick) {
+		if(!this.hasSelection()) return;
 	}
 }
 

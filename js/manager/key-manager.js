@@ -94,6 +94,8 @@ class VKeyManager {
 
 		this._registerOp('cursor-forward', editor.moveCursor.bind(editor, +1));
 		this._registerOp('cursor-backward', editor.moveCursor.bind(editor, -1));
+		this._registerOp('resize-up-selected', editor.resizeSelected.bind(editor, +1));
+		this._registerOp('resize-down-selected', editor.resizeSelected.bind(editor, -1));
 		this._registerOp('decrease-edit-tick', () => editor.setEditSnap(editor._editSnapBeat-1));
 		this._registerOp('increase-edit-tick', () => editor.setEditSnap(editor._editSnapBeat+1));
 		this._registerOp('toggle-insert', () => editor.setInsertMode(!editor.insertMode));
@@ -134,6 +136,8 @@ class VKeyManager {
 
 		this.bind("Up", 'cursor-forward');
 		this.bind("Down", 'cursor-backward');
+		this.bind("Ctrl+Up", 'resize-up-selected');
+		this.bind("Ctrl+Down", 'resize-down-selected');
 		this.bind("A", 'decrease-edit-tick');
 		this.bind("D", 'increase-edit-tick');
 		

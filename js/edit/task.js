@@ -24,8 +24,6 @@ class VNoteAddTask extends VTask {
 	_commit() {
 		const result = this.chartData.addNote(this.type, this.lane, this.tick, this.len);
 		if(!result || result[0] === false) return false;
-
-		this.editor.view.setCursor(this.tick);
 		this.editor.view.addNote(this.type, this.lane, this.tick, this.len);
 
 		return true;
@@ -71,8 +69,6 @@ class VNoteDelTask extends VTask {
 	}
 	_commit() {
 		if(!this.chartData.delNote(this.type, this.lane, this.tick)) return false;
-
-		this.editor.view.setCursor(this.tick);
 		this.editor.view.delNote(this.type, this.lane, this.tick);
 		return true;
 	}

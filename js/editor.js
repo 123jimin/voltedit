@@ -110,9 +110,15 @@ class VEditor {
 	}
 	moveCursor(dir) {
 		if(this.context.hasSelection()){
+			this.context.moveSelectionByTick(dir*this._editSnapTick);
 			return;
 		}
 		this.view.setCursor(ALIGN_STEP(this._editSnapTick, this.view.cursorStartLoc, dir));
+	}
+	resizeSelected(dir) {
+		if(this.context.hasSelection()){
+			this.context.resizeSelectionByTick(dir*this._editSnapTick);
+		}
 	}
 
 	/* Editing File */
