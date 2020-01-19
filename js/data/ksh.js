@@ -331,15 +331,15 @@ class KSHData extends VChartData {
 			}
 		}
 	}
-	_addZoom(type, tick, values, measure_idx) {
+	_addZoom(type, tick, value, measure_idx) {
 		const zoom = this.getCamBodyData(type);
-		values.split(';').map(parseInt).forEach((value) => {
-			if(!isFinite(value))
-				throw new Error(L10N.t('ksh-import-error-value', 'zoom', measure_idx));
-			if(zoom.points.size === 0)
-				zoom.pushKSH(0, value);
-			zoom.pushKSH(tick, value);
-		});
+		value = parseInt(value);
+		if(!isFinite(value))
+			throw new Error(L10N.t('ksh-import-error-value', 'zoom', measure_idx));
+		value /= 100;
+		if(zoom.points.size === 0)
+			zoom.pushKSH(0, value);
+		zoom.pushKSH(tick, value);
 	}
 	/// Processes notes and lasers
 	_setKSONNoteInfo() {

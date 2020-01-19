@@ -109,6 +109,22 @@ class KSHExporter {
 		this.nextBPM = this.chart.beat && this.chart.beat.bpm ? this.chart.beat.bpm.first() : null;
 		this.nextScrollSpeed = this.chart.beat && this.chart.beat.scroll_speed ? this.chart.beat.scroll_speed.first() : null;
 
+		// TODO: currently for cameras, only `camera.cam.body.{zoom,shift_x,rotation_x}` are considered for now.
+		// `camra.cam.body.lane_*`, `camera.cam.body.jdgline_*`, and `camera.cam.pattern.*` should also be considered in future.
+		this.nextCamBodies = {};
+		
+		if(this.chart.camera){
+			if(this.chart.camera.cam){
+				const cam = this.chart.camera.cam;
+				if(cam.body){
+					for(let key in cam.body){
+						if(!cam.body[key]) continue;
+						this.nextCamBodies[key] = cam.body[key].points.first();
+					}
+				}
+			}
+		}
+
 		this.chart.iterMeasures((measureIndex, measureTick, n, d, measureLength) => {
 			// beat
 			if(n !== prevN || d !== prevD) {
@@ -160,13 +176,30 @@ class KSHExporter {
 			chart.beat.scroll_speed && updateTickSizeGraphs([chart.beat.scroll_speed.getAll(measureTick, measureLength)]);
 		}
 
+		if(chart.camera){
+			if(chart.camera.cam){
+				const cam = chart.camera.cam;
+				if(cam.body){
+					for(let key in cam.body){
+						if(!cam.body[key]) continue;
+						tickSize = GCD(tickSize, cam.body[key].getMinResolution(measureTick, measureLength, true));
+					}
+				}
+			}
+		}
+
 		// Print each line
 		for(let i=measureTick; i<measureEnd; i+=tickSize){
 			if(this.nextBPM && this.nextBPM.y == i){
 				this.putProperty('t', this.nextBPM.data);
 				this.nextBPM = this.nextBPM.next();
 			}
+
 			this._putStopStr(i);
+			
+			this._putZooms('zoom', 'zoom_bottom', i);
+			this._putZooms('shift_x', 'zoom_side', i);
+			this._putZooms('rotation_x', 'zoom_top', i);
 
 			const btStr = this._getNoteStr(i, btNotes, this.nextBtNotes, '1', '2');
 			const fxStr = this._getNoteStr(i, fxNotes, this.nextFxNotes, '2', '1');
@@ -205,6 +238,24 @@ class KSHExporter {
 		}
 
 		this.putProperty('stop', nextPoint.y - point.y);
+	}
+	_putZooms(from, to, tick) {
+		const point = this.nextCamBodies[from];
+		if(!point || tick < point.y) return;
+
+		const nextPoint = point.next();
+		// Do not include the trivial start point
+		if(point.y > 0 || point.data.isSlam() || !nextPoint || point.data.vf !== nextPoint.v){
+			const v = RD(point.data.v*100);
+			this.putProperty(to, v);
+			
+			if(point.data.isSlam()){
+				const vf = RD(point.data.vf*100);
+				this.putProperty(to, vf);
+			}
+		}
+
+		this.nextCamBodies[from] = nextPoint;
 	}
 	_getLaserStr(tick, lane) {
 		const nextLaserSlam = this.nextLaserSlams[lane];
@@ -255,9 +306,11 @@ class KSHExporter {
 	}
 	export() {
 		this.lines = [];
+		console.time("Computing KSH");
 		this.putHeader();
 		this.putLine('--');
 		this.putBody();
+		console.timeEnd("Computing KSH");
 		return '\uFEFF'+this.lines.join('\r\n');
 	}
 }

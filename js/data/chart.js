@@ -83,9 +83,11 @@ class VChartData {
 	}
 	getCamBodyData(type) {
 		if(!this.camera) this.camera = {};
-		if(!this.camera.body) this.camera.body = {};
-		if(!(type in this.camera.body)) this.camera.body[type] = new VGraph(false);
-		return this.camera.body[type];
+		if(!this.camera.cam) this.camera.cam = {};
+		if(!this.camera.cam.body) this.camera.cam.body = {};
+		const body = this.camera.cam.body;
+		if(!(type in body)) body[type] = new VGraph(false);
+		return body[type];
 	}
 
 	iterMeasures(iterator, customLastTick) {
