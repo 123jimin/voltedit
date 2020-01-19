@@ -109,6 +109,9 @@ class VEditor {
 		this.setEditSnap(this._editSnapBeat);
 	}
 	moveCursor(dir) {
+		if(this.context.hasSelection()){
+			return;
+		}
 		this.view.setCursor(ALIGN_STEP(this._editSnapTick, this.view.cursorStartLoc, dir));
 	}
 

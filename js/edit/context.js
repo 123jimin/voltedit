@@ -10,6 +10,7 @@ class VEditContext {
 
 		this.dragIntent = VEDIT_DRAG_INTENT.NONE;
 		this.startEvent = null;
+		this.prevClick = null;
 
 		this.selectedObjects = new Set();
 	}
@@ -32,25 +33,27 @@ class VEditContext {
 
 		const obj = this.getObjectAt(event);
 		if(obj) {
-			this.dragIntent = event.shiftKey ? VEDIT_DRAG_INTENT.SELECT : VEDIT_DRAG_INTENT.MOVE;
+			this.dragIntent = event.ctrlKey || event.shiftKey ? VEDIT_DRAG_INTENT.SELECT : VEDIT_DRAG_INTENT.MOVE;
 		} else {
 			// ... unless a new object is created later in this function.
 			this.dragIntent = VEDIT_DRAG_INTENT.SELECT;
 		}
 
 		if(!obj || !this.selectedObjects.has(obj)){
-			if(!event.shiftKey) this.clearSelection();
-			if(!obj && !event.shiftKey){
-				this.view.setCursor(event.tick);
-				if(event.tick >= 0 && this.addObjectEnabled()
-					&& this.editor.chartData && this.canMakeObjectAt(event)){
-						this.dragIntent = VEDIT_DRAG_INTENT.CREATE;
+			if(!(event.ctrlKey || event.shiftKey)){
+				this.clearSelection();
+				if(!obj){
+					this.view.setCursor(event.tick);
+					if(event.tick >= 0 && this.addObjectEnabled()
+						&& this.editor.chartData && this.canMakeObjectAt(event)){
+							this.dragIntent = VEDIT_DRAG_INTENT.CREATE;
+					}
+					return;
 				}
-				return;
 			}
 		}else{
 			// object exists and already selected
-			if(event.shiftKey){
+			if(event.ctrlKey){
 				this.removeFromSelection(obj);
 				this.view.hideDrawing();
 				return;
@@ -58,6 +61,17 @@ class VEditContext {
 		}
 		this.addToSelection(obj);
 		this.view.hideDrawing();
+
+		if(event.shiftKey && this.prevClick && this.hasSelection()){
+			let [from, to] = [this.prevClick.tick, event.tick];
+			if(from > to) [from, to] = [to, from];
+			this.selectRange(from, to);
+			
+			this.startEvent = this.prevClick;
+			this.onMouseDrag(event);
+		}
+
+		this.prevClick = event;
 	}
 	_setDragStart(event) {
 		this.dragIntent = VEDIT_DRAG_INTENT.NONE;
@@ -113,12 +127,15 @@ class VEditContext {
 		obj.resetFakeMoveTo(this.view);
 		this.selectedObjects.delete(obj);
 	}
+	hasSelection() {
+		return this.selectedObjects.size > 0;
+	}
 	clearSelection() {
 		this.selectedObjects.forEach((obj) => this.removeFromSelection(obj));
 		this.selectedObjects.clear();
 	}
 	deleteSelection() {
-		if(this.selectedObjects.size === 0) return;
+		if(!this.hasSelection()) return;
 
 		const delTasks = [];
 		this.selectedObjects.forEach((obj) => delTasks.push(obj.delTask(this.editor)));
@@ -128,7 +145,7 @@ class VEditContext {
 		this.selectedObjects.clear();
 	}
 	moveSelection(startEvent, endEvent) {
-		if(this.selectedObjects.size === 0) return;
+		if(!this.hasSelection()) return;
 		// Just clicking at the same position should do nothing
 		if(this.areSamePos(startEvent, endEvent)) return;
 
@@ -142,6 +159,11 @@ class VEditContext {
 
 		// TODO: retain selection
 		this.selectedObjects.clear();
+	}
+	moveSelectionByTick(tick) {
+		if(!this.hasSelection()) return;
+
+
 	}
 }
 

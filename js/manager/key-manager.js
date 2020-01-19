@@ -134,15 +134,15 @@ class VKeyManager {
 
 		this.bind("Up", 'cursor-forward');
 		this.bind("Down", 'cursor-backward');
-		this.bind("Left", 'decrease-edit-tick');
-		this.bind("Right", 'increase-edit-tick');
+		this.bind("A", 'decrease-edit-tick');
+		this.bind("D", 'increase-edit-tick');
 		
-		this.bind("E", 'toggle-insert');
+		this.bind("F", 'toggle-insert');
 		
-		this.bind("D", 'context-bt');
-		this.bind("F", 'context-fx');
+		this.bind("W", 'context-bt');
+		this.bind("S", 'context-fx');
 		this.bind("Q", 'context-laser-left');
-		this.bind("W", 'context-laser-right');
+		this.bind("E", 'context-laser-right');
 
 		this.bind("Backspace", 'delete-selection');
 		this.bind("Delete", 'delete-selection');
