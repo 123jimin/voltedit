@@ -81,6 +81,12 @@ class VChartData {
 	
 		return this.beat.scroll_speed.add(graph.iy, graph.getLength(), graph);
 	}
+	getCamBodyData(type) {
+		if(!this.camera) this.camera = {};
+		if(!this.camera.body) this.camera.body = {};
+		if(!(type in this.camera.body)) this.camera.body[type] = new VGraph(false);
+		return this.camera.body[type];
+	}
 
 	iterMeasures(iterator, customLastTick) {
 		if(!this.beat || !this.beat.time_sig) return 0;
@@ -154,18 +160,18 @@ class VChartData {
 		const kson = {
 			'version': this.version,
 			'meta': this.meta,
-			'beat': this._getBeatNode(),
+			'beat': this._getKSONBeat(),
 			'gauge': this.gauge,
 			'note': this._getKSONNote(),
 			'audio': this.audio,
-			'camera': this.camera,
+			'camera': this._getKSONCamera(),
 			'bg': this.bg,
 			'impl': this.impl
 		};
 
 		return JSON.stringify(kson);
 	}
-	_getBeatNode() {
+	_getKSONBeat() {
 		const beatNode = {
 			'bpm': []
 		};
@@ -215,6 +221,38 @@ class VChartData {
 		if(this.note.laser) obj.laser = this.note.laser.map(laser2arr);
 
 		return obj;
+	}
+	_getKSONCamera() {
+		const cameraInfo = {
+		};
+		if(!this.camera) return cameraInfo;
+
+		// TODO: translate this
+		if(this.camera.tilt) cameraInfo.tilt = this.camera.tilt;
+		
+		if(this.camera.cam){
+			const thisCam = this.camera.cam;
+			const camInfo = {};
+			cameraInfo.cam = camInfo;
+
+			if(thisCam.body){
+				for(let type in thisCam.body){
+					const graph = thisCam.body[type];
+					if(graph.points.size === 0) continue;
+
+					camInfo[type] = [];
+					graph.points.traverse((node) => {
+						camInfo[type].push(node.data.toKSON(graph, node.y));
+					});
+				}
+			}
+
+			// TODO: translate these
+			if(thisCam.tilt_assign) camInfo.tilt_assign = thisCam.tilt_assign;
+			if(thisCam.pattern) camInfo.pattern = thisCam.pattern;
+		}
+
+		return cameraInfo;
 	}
 
 	_initTreeArr(arr, size) {

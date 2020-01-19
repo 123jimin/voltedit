@@ -18,9 +18,9 @@ class KSHTimeSig {
 	constructor(str) {
 		const timeSig = this.timeSig = str.split('/').map((x) => parseInt(x));
 		if(timeSig.length != 2 || timeSig.some((x) => !isFinite(x) || x < 1))
-			throw new Error(L10N.t('ksh-import-error-value', 'beat'));
+			throw new Error(L10N.t('ksh-import-error-value', 'beat', -1));
 		if(KSH_DEFAULT_MEASURE_TICK % timeSig[1] != 0)
-			throw new Error(L10N.t('ksh-import-error-value', 'beat'));
+			throw new Error(L10N.t('ksh-import-error-value', 'beat', -1));
 	}
 	toKSON() {
 		return {'n': this.timeSig[0], 'd': this.timeSig[1]};
@@ -159,7 +159,7 @@ class KSHData extends VChartData {
 
 		if('total' in this._ksmMeta) {
 			let total = parseInt(this._ksmMeta.total);
-			if(!isFinite(total)) throw new Error(L10N.t('ksh-import-error-value', 'total'));
+			if(!isFinite(total)) throw new Error(L10N.t('ksh-import-error-value', 'total', -1));
 			if(total < 100) total = 100;
 			this.gauge = {'total': total};
 		}
@@ -188,7 +188,7 @@ class KSHData extends VChartData {
 		if('to' in ksmMeta) {
 			meta.std_bpm = parseFloat(ksmMeta.to);
 			if(!isFinite(meta.std_bpm) || meta.std_bpm <= 0)
-				throw new Error(L10N.t('ksh-import-error-value', 'to'));
+				throw new Error(L10N.t('ksh-import-error-value', 'to', -1));
 		}
 		if('jacket' in ksmMeta) meta.jacket_filename = ksmMeta.jacket;
 		if('illustrator' in ksmMeta) meta.jacket_author = ksmMeta.illustrator;
@@ -241,15 +241,9 @@ class KSHData extends VChartData {
 		const beatInfo = this.beat = {
 			'bpm': new AATree(),
 			'time_sig': [],
-			'scroll_speed': new AATree(),
 			'resolution': KSH_DEFAULT_MEASURE_TICK / 4
 		};
-		const tiltInfo = {};
-		const camInfo = {};
-		this.camera = {
-			'tilt': tiltInfo,
-			'cam': camInfo
-		};
+		this.camera = null;
 		
 		const ksmMeta = this._ksmMeta;
 
@@ -261,7 +255,8 @@ class KSHData extends VChartData {
 		let time_sig = [4, 4]; // Default time signature, which is the common time signature.
 
 		this._ksmMeasures.forEach((measure, measure_idx) => {
-			if(measure.length === 0) throw new Error(L10N.t('ksh-import-errir-malformed-measure'));
+			if(measure.length === 0)
+				throw new Error(L10N.t('ksh-import-error-malformed-measure', measure_idx));
 
 			// Check the timing signature of this measure.
 			measure[0].mods.forEach(([key, value]) => {
@@ -276,7 +271,7 @@ class KSHData extends VChartData {
 
 			const measure_len = (KSH_DEFAULT_MEASURE_TICK / time_sig[1]) * time_sig[0];
 			if(measure_len % measure.length != 0)
-				throw new Error(L10N.t('ksh-import-error-invalid-measure-line-count'));
+				throw new Error(L10N.t('ksh-import-error-invalid-measure-line-count', measure_idx));
 			const tick_per_line = measure_len / measure.length;
 
 			measure.forEach((kshLine, line_idx) => {
@@ -291,28 +286,32 @@ class KSHData extends VChartData {
 							// `beat`s are already processed above.
 							// If a `beat` is in the middle of a measure, then the chart is invalid.
 							if(line_idx > 0)
-								throw new Error(L10N.t('ksh-import-error-invalid-time-sig-location'));
+								throw new Error(L10N.t('ksh-import-error-invalid-time-sig-location', measure_idx));
 							break;
 						case 't':
 							if(tick > 0) this._tryAddBPMFromMeta();
 							if(floatValue <= 0 || !isFinite(floatValue))
-								throw new Error(L10N.t('ksh-import-error-value', 't(BPM)'));
+								throw new Error(L10N.t('ksh-import-error-value', 't(BPM)', measure_idx));
 							beatInfo.bpm.add(tick, 0, floatValue);
 							break;
 						case 'stop':
 							if(intValue <= 0 || !isFinite(intValue))
-								throw new Error(L10N.t('ksh-import-error-value', 'stop'));
+								throw new Error(L10N.t('ksh-import-error-value', 'stop', measure_idx));
 							const graph = new VGraph(true, {'y': tick});
 							graph.pushKSH(tick, 0);
 							graph.pushKSH(tick+intValue, 0);
 
 							const [result, hit] = this.addScrollSpeed(graph);
-							if(!result) throw new Error("Two overlapping stops are present!");
+							if(!result) throw new Error(L10N.t('ksh-import-error-invalid-stop', measure_idx));
 							break;
-							// TODO: process these events
-						case 'zoom_top':
 						case 'zoom_bottom':
+							this._addZoom('zoom', tick, value, measure_idx);
+							break;
 						case 'zoom_side':
+							this._addZoom('shift_x', tick, value, measure_idx);
+							break;
+						case 'zoom_top':
+							this._addZoom('rotation_x', tick, value, measure_idx);
 							break;
 					}
 				});
@@ -321,15 +320,26 @@ class KSHData extends VChartData {
 			measure_tick += measure_len;
 		});
 
+		// Add one to BPM if there's no BPM change
 		this._tryAddBPMFromMeta();
 	}
 	_tryAddBPMFromMeta() {
 		if(this.beat.bpm.size === 0 && 't' in this._ksmMeta){
 			const initBPM = this._ksmMeta.t;
 			if(initBPM.match(/^[\d.]+$/)) {
-				this.beat.bpm.add(0, 0, parseFloat(initBPM));
+				this.addBPM(0, parseFloat(initBPM));
 			}
 		}
+	}
+	_addZoom(type, tick, values, measure_idx) {
+		const zoom = this.getCamBodyData(type);
+		values.split(';').map(parseInt).forEach((value) => {
+			if(!isFinite(value))
+				throw new Error(L10N.t('ksh-import-error-value', 'zoom', measure_idx));
+			if(zoom.points.size === 0)
+				zoom.pushKSH(0, value);
+			zoom.pushKSH(tick, value);
+		});
 	}
 	/// Processes notes and lasers
 	_setKSONNoteInfo() {

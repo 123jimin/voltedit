@@ -181,8 +181,6 @@ error-reading-chart-data
 	en: Failed to read the chart data!
 	ko: 채보 데이터를 읽을 수 없습니다!
 
-
-
 ksh-import-warn-no-trailing-dashes
 	en: Processing a KSH file with no '--' at the end...
 	ko: 끝에 '--'가 지정되지 않은 KSH 파일을 처리하는 중...
@@ -190,17 +188,20 @@ ksh-import-error-invalid-header
 	en: Invalid KSH header
 	ko: 올바르지 않은 KSH 헤더
 ksh-import-error-value
-	en: Invalid KSH %1 value
-	ko: 올바르지 않은 KSH %1값
+	en: Invalid KSH %1 value (idx=%2)
+	ko: 올바르지 않은 KSH %1값 (idx=%2)
 ksh-import-error-malformed-measure
-	en: Malformed KSH measure
-	ko: 올바르지 않은 KSH 마디
+	en: Malformed KSH measure (idx=%1)
+	ko: 올바르지 않은 KSH 마디 (idx=%1)
 ksh-import-error-invalid-measure-line-count
-	en: Invalid KSH measure line count
-	ko: 올바르지 않은 KSH 마디 줄 수
+	en: Invalid KSH measure line count (idx=%1)
+	ko: 올바르지 않은 KSH 마디 줄 수 (idx=%1)
 ksh-import-error-invalid-time-sig-location
-	en: KSH time signature at invalid location
-	ko: 올바르지 않은 변박 지정 위치
+	en: KSH time signature at invalid location (idx=%1)
+	ko: 올바르지 않은 변박 지정 위치 (idx=%1)
+ksh-import-error-invalid-stop
+	en: Invalid KSH stop effect (idx=%1)
+	ko: 올바르지 않은 KSH stop 이펙트 (idx=%1)
 ksh-import-error-invalid-laser-pos
 	en: Invalid KSH laser position
 	ko: 올바르지 않은 KSH 레이저 위치

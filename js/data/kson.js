@@ -94,10 +94,30 @@ class KSONData extends VChartData {
 		this.audio = obj.audio;
 	}
 	_setCamera(obj) {
-		this.camera = {};
+		this.camera = null;
 		if(!obj.camera) return;
 
-		this.camera = obj.camera;
+		const objCamera = obj.camera;
+		
+		// TODO: translate this
+		if(objCamera.tilt) this.camera.tilt = objCamera.tilt;
+		
+		if(objCamera.cam){
+			if(objCamera.cam.body){
+				for(let type in objCamera.cam.body){
+					if(objCamera.cam.body[type].length === 0) continue;
+
+					const graph = this.getCamBodyData(type);
+					objCamera.cam.body[type].forEach((point) => {
+						graph.pushKSON(point);
+					});
+				}
+			}
+			
+			// TODO: translate these
+			if(objCamera.cam.tilt_assign) this.camera.cam.tilt_assign = objCamera.cam.tilt_assign;
+			if(objCamera.cam.pattern) this.camera.cam.pattern= objCamera.cam.pattern;
+		}
 	}
 	_setBG(obj) {
 		this.bg = {};
