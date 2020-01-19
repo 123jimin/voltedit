@@ -131,8 +131,11 @@ task-add-fx
 task-move-selection
 	en: moving selection
 	ko: 선택 영역 이동
-task-delete-selection
-	en: deleting selection
+task-resize-selected
+	en: resizing selected
+	ko: 선택 요소 크기 변경
+task-delete-selected
+	en: deleting selected
 	ko: 선택 요소 삭제
 
 task-commit-error

@@ -1,14 +1,28 @@
 class VEditObject {
 	constructor() {}
+
+	/// Display the selection of this object
 	sel(view, selected) {}
+	
+	/// Returns: the task for removing this object
 	delTask(editor) { return null; }
+	
+	/// Returns: the task for adding this object, translated by difference of given mouse events
 	moveTask(editor, startEvent, endEvent) { return this.moveTickTask(editor, endEvent.tick-startEvent.tick); }
+	/// Returns: the task for adding this object, translated by given tick
 	moveTickTask(editor, tick) { return null; }
+	
+	/// Returns: an object which is translated from this object by difference of given mouse events
 	getMoved(editor, startEvent, endEvent) { return this.getTickMoved(editor, endEvent.tick-startEvent.tick); }
+	/// Returns: an object which is translated from this object by given tick
 	getTickMoved(editor, tick) { return null; }
 
+	/// 'Fake' a movement of this object through view
 	fakeMoveTo(view, startEvent, event) {}
+	/// Reset the fake movement done by above function
 	resetFakeMoveTo(view) {}
+
+	resizeTask(editor, tick) { return null; }
 
 	serialize() { return []; }
 	unserialize(data) {}
@@ -29,7 +43,8 @@ class VNoteObject extends VEditObject {
 		return new VNoteDelTask(editor, this.type, this.lane, this.tick);
 	}
 	moveTickTask(editor, tick) {
-		return new VNoteMaybeAddTask(editor, this.type, this.lane, this.tick+tick, this.len);
+		// TODO: maybe remove all overlapping notes?
+		return new VMaybeTask(new VNoteAddTask(editor, this.type, this.lane, this.tick+tick, this.len));
 	}
 	getTickMoved(editor, tick) {
 		if(!editor.chartData) return null;
@@ -49,6 +64,12 @@ class VNoteObject extends VEditObject {
 	}
 	resetFakeMoveTo(view) {
 		view.fakeMoveNoteTo(this.type, this.lane, this.tick, this.lane, this.tick);
+	}
+
+	resizeTask(editor, tick) {
+		let newLen = this.len+tick;
+		if(newLen < 0) newLen = 0;
+		return new VMaybeTask(new VNoteResizeTask(editor, this.type, this.lane, this.tick, this.len, newLen));
 	}
 
 	serialize() { return [this.type, this.lane, this.tick, this.len]; }

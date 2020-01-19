@@ -6,6 +6,27 @@ class VEmptyTask extends VTask {
 	_makeInverse() { return this; }
 }
 
+/// A task that mayb be failed silently
+class VMaybeTask extends VTask {
+	constructor(task) {
+		super(task.editor);
+		this.task = task;
+		this.no_op = false;
+	}
+	_validate() {
+		this.no_op = !this.task._validate();
+		return true;
+	}
+	_commit() {
+		if(this.no_op) return true;
+		return this.task._commit();
+	}
+	_makeInverse() {
+		if(this.no_op) return new VEmptyTask(this.editor);
+		else return this.task._makeInverse();
+	}
+}
+
 /// Creates a note (fails if there's an overlapping note)
 class VNoteAddTask extends VTask {
 	constructor(editor, type, lane, tick, len) {
@@ -33,23 +54,47 @@ class VNoteAddTask extends VTask {
 	}
 }
 
-/// Creates a note (and becomes no-op if there's an overlapping note)
-class VNoteMaybeAddTask extends VNoteAddTask {
-	constructor(editor, type, lane, tick, len) {
-		super(editor, type, lane, tick, len);
-		this.no_op = false;
+class VNoteResizeTask extends VTask {
+	constructor(editor, type, lane, tick, oldLen, newLen) {
+		super(editor);
+		this.type = type;
+		this.lane = lane;
+		this.tick = tick;
+		this.oldLen = oldLen;
+		this.newLen = newLen;
 	}
 	_validate() {
-		this.no_op = !super._validate();
+		if(this.tick < 0 || this.newLen < 0) return false;
+		const noteData = this.chartData.getNoteData(this.type, this.lane);
+		if(!noteData) return false;
+		
+		// Assure that there's no overlapping note except the one we're editing.
+		const notes = noteData.getAll(this.tick, this.newLen+1);
+		if(notes.length !== 1) return false;
+		if(notes[0].y !== this.tick) return false;
+		if(notes[0].l !== this.oldLen) return false;
+
 		return true;
 	}
 	_commit() {
-		if(this.no_op) return true;
-		return super._commit();
+		// Get the note we're editing
+		const noteData = this.chartData.getNoteData(this.type, this.lane);
+		if(!noteData) return false;
+
+		const note = noteData.get(this.tick);
+		if(!note) return false;
+
+		// Edit the DS and object in-place
+		note.l = note.data.len = this.newLen;
+
+		// Redraw this note
+		this.editor.view.delNote(this.type, this.lane, this.tick);
+		this.editor.view.addNote(this.type, this.lane, this.tick, this.newLen);
+
+		return true;
 	}
 	_makeInverse() {
-		if(this.no_op) return new VEmptyTask(this.editor);
-		else return super._makeInverse();
+		return new VNoteResizeTask(this.editor, this.type, this.lane, this.tick, this.newLen, this.oldLen);
 	}
 }
 

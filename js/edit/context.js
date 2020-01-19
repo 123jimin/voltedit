@@ -137,17 +137,17 @@ class VEditContext {
 		const delTasks = [];
 		this.selectedObjects.forEach((obj) => delTasks.push(obj.delTask(this.editor)));
 
-		this.editor.taskManager.do('task-delete-selection', VTask.join(delTasks));
+		this.editor.taskManager.do('task-delete-selected', VTask.join(delTasks));
 
 		this.selectedObjects.clear();
 	}
 	moveSelection(startEvent, endEvent) {
 		if(!this.hasSelection()) return;
-		// Just clicking at the same position should do nothing
+		// Just clicking at the same position should do nothing.
 		if(this.areSamePos(startEvent, endEvent)) return;
 
-		// Change this to > 1 and handle single object movement
-		if(this.selectedObjects.size >= 1){
+		// For multiple objects, horizontal movement is not permitted.
+		if(this.selectedObjects.size > 1){
 			this.moveSelectionByTick(endEvent.tick - startEvent.tick);
 			return;
 		}
@@ -182,6 +182,13 @@ class VEditContext {
 	resizeSelectionByTick(tick) {
 		if(!this.hasSelection()) return;
 		if(tick === 0) return;
+
+		const resizeTasks = [];
+		this.selectedObjects.forEach((obj) => resizeTasks.push(obj.resizeTask(this.editor, tick)));
+
+		this.editor.taskManager.do('task-resize-selected', VTask.join(resizeTasks));
+
+		this.selectedObjects.forEach((obj) => obj.sel(this.view, true));
 	}
 }
 
