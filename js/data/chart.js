@@ -203,7 +203,27 @@ class VChartData {
 		return beatNode;
 	}
 	_getKSONNote() {
-		const note2arr = (tree) => {
+		const compact_note2arr = (tree) => {
+			const arr = [];
+			let last = 0;
+			let lastDiff = 0;
+			tree.traverse((node) => {
+				const diff = node.y - last;
+				if(diff === lastDiff){
+					arr.push(0);
+				}else{
+					arr.push(diff);
+					lastDiff = diff;
+				}
+				last = node.y;
+				if(node.l){
+					arr.push(-node.l);
+					last += node.l;
+				}
+			});
+			return arr;
+		};
+		const verbose_note2arr = (tree) => {
 			const arr = [];
 			tree.traverse((node) => {
 				const obj = {'y': node.y};
@@ -212,13 +232,15 @@ class VChartData {
 			});
 			return arr;
 		};
-		const laser2arr = (tree) => {
+		const note2arr = window.TEST_COMPACT ? compact_note2arr : verbose_note2arr;
+		const verbose_laser2arr = (tree) => {
 			const arr = [];
 			tree.traverse((node) => {
 				arr.push(node.data.toKSON());
 			});
 			return arr;
 		};
+		const laser2arr = verbose_laser2arr;
 		const obj = {};
 		if(this.note.bt) obj.bt = this.note.bt.map(note2arr);
 		if(this.note.fx) obj.fx = this.note.fx.map(note2arr);

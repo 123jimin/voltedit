@@ -64,20 +64,38 @@ class KSONData extends VChartData {
 
 		// TODO: validate the values (gracefully)
 		if(!obj.gauge.total) return;
-		this.gauge.total = obj.guage.total;
+		this.gauge.total = obj.gauge.total;
 	}
 	_setNote(obj) {
 		this._initNote();
-
 		if(!obj.note) return;
 
-		if(obj.note.bt) obj.note.bt.forEach((notes, lane) => notes.forEach((note) => {
-			this.addNote('bt', lane, note.y, note.l || 0);
-		}));
+		const compact_arr2note = (type, lane, arr) => {
+			let y = 0;
+			let diff = 0;
+			for(let i=0; i<arr.length; ++i){
+				if(arr[i] > 0){
+					diff = arr[i];
+				}
+				y += diff;
+				let l = 0;
+				if(i+1 < arr.length && arr[i+1] < 0){
+					l = -arr[i+1];
+					++i;
+				}
+				this.addNote(type, lane, y, l);
+				y += l;
+			}
+		};
+		const verbose_arr2note = (type, lane, arr) => {
+			arr.forEach((note) => {
+				this.addNote(type, lane, note.y, note.l || 0);
+			});
+		};
+		const arr2note = window.TEST_COMPACT ? compact_arr2note : verbose_arr2note;
 
-		if(obj.note.fx) obj.note.fx.forEach((notes, lane) => notes.forEach((note) => {
-			this.addNote('fx', lane, note.y, note.l || 0);
-		}));
+		if(obj.note.bt) obj.note.bt.forEach((notes, lane) => arr2note('bt', lane, notes));
+		if(obj.note.fx) obj.note.fx.forEach((notes, lane) => arr2note('fx', lane, notes));
 
 		if(obj.note.laser) obj.note.laser.forEach((lasers, lane) => lasers.forEach((data) => {
 			const graph = new VGraph(true, {'wide': data.wide || 1, 'y': data.y});
@@ -98,10 +116,10 @@ class KSONData extends VChartData {
 		if(!obj.camera) return;
 
 		const objCamera = obj.camera;
-		
+
 		// TODO: translate this
 		if(objCamera.tilt) this.camera.tilt = objCamera.tilt;
-		
+
 		if(objCamera.cam){
 			if(objCamera.cam.body){
 				for(let type in objCamera.cam.body){
@@ -113,7 +131,7 @@ class KSONData extends VChartData {
 					});
 				}
 			}
-			
+
 			// TODO: translate these
 			if(objCamera.cam.tilt_assign) this.camera.cam.tilt_assign = objCamera.cam.tilt_assign;
 			if(objCamera.cam.pattern) this.camera.cam.pattern= objCamera.cam.pattern;

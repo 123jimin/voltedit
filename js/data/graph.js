@@ -67,7 +67,6 @@ class VGraph {
 		});
 
 		if(this.wide !== 1) obj.wide = this.wide;
-
 		return obj;
 	}
 	/// Push points read from the KSH, in an increasing y order.
