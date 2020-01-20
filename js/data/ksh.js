@@ -6,6 +6,15 @@ const KSH_LASER_LOOKUP = Object.freeze(((str) => {
 	for(let i=0; i<str.length; ++i) dict[str[i]] = i;
 	return dict;
 })(KSH_LASER_VALUES));
+const KSH_VERSIONS = Object.freeze({
+	"": 0,
+	"120": 120,
+	"120b": 120,
+	"121": 121,
+	"130": 130,
+	"166": 166,
+	"167": 167,
+});
 
 const KSH_LINE_TYPE = Object.freeze({'HEADER': 0, 'BODY': 1});
 const KSH_REGEX = Object.freeze({
@@ -118,7 +127,7 @@ class KSHData extends VChartData {
 
 		const parser = new KSHParser(this);
 		this._ksmMeta = {
-			'version': "ksh",
+			'version': "",
 		};
 		this._ksmMeasures = [];
 
@@ -170,8 +179,7 @@ class KSHData extends VChartData {
 		this._setKSONNoteInfo();
 	}
 	_setKSONVersion() {
-		const ver = (this._ksmMeta.ver || "").trim();
-		this.version = ver ? `ksh ${ver}` : "ksh";
+		this.version = CURR_KSON_VERSION;
 	}
 	_setKSONMeta() {
 		const meta = this.meta = {};
@@ -244,7 +252,7 @@ class KSHData extends VChartData {
 			'resolution': KSH_DEFAULT_MEASURE_TICK / 4
 		};
 		this.camera = null;
-		
+
 		const ksmMeta = this._ksmMeta;
 
 		if('beat' in ksmMeta) {

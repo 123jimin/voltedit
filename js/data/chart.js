@@ -1,8 +1,10 @@
+const CURR_KSON_VERSION = "0.0.0";
+
 /// KSON-based chart data structure with some modifications.
 /// Most noticeably, many arrays with {'y': ..., 'v': ...} are replaced by AATrees.
 class VChartData {
 	constructor() {
-		this.version = "Unknown VOLTEdit chart data";
+		this.version = CURR_KSON_VERSION;
 		this.meta = {
 			'title': "", 'artist': "", 'chart_author': "",
 			'difficulty': {'idx': 0},
@@ -78,7 +80,7 @@ class VChartData {
 	addScrollSpeed(graph) {
 		if(!this.beat.scroll_speed)
 			this.beat.scroll_speed = new AATree();
-	
+
 		return this.beat.scroll_speed.add(graph.iy, graph.getLength(), graph);
 	}
 	getCamBodyData(type) {
@@ -231,7 +233,7 @@ class VChartData {
 
 		// TODO: translate this
 		if(this.camera.tilt) cameraInfo.tilt = this.camera.tilt;
-		
+
 		if(this.camera.cam){
 			const thisCam = this.camera.cam;
 			const camInfo = {};

@@ -1,5 +1,4 @@
 /// Util class for managing exporting to KSH
-const KSH_VERSIONS = new Set(" 120 120b 121 130 166 167".split(' '));
 class KSHExporter {
 	constructor(chart) {
 		this.chart = chart;
@@ -73,7 +72,7 @@ class KSHExporter {
 	}
 	getVersion() {
 		const version = this.chart.version;
-		if(KSH_VERSIONS.has(version)) return version;
+		if(version in KSH_VERSIONS) return version;
 		return "167";
 	}
 	getBPM() {
@@ -112,7 +111,7 @@ class KSHExporter {
 		// TODO: currently for cameras, only `camera.cam.body.{zoom,shift_x,rotation_x}` are considered for now.
 		// `camra.cam.body.lane_*`, `camera.cam.body.jdgline_*`, and `camera.cam.pattern.*` should also be considered in future.
 		this.nextCamBodies = {};
-		
+
 		if(this.chart.camera){
 			if(this.chart.camera.cam){
 				const cam = this.chart.camera.cam;
@@ -197,7 +196,7 @@ class KSHExporter {
 			}
 
 			this._putStopStr(i);
-			
+
 			this._putZooms('zoom', 'zoom_bottom', i);
 			this._putZooms('shift_x', 'zoom_side', i);
 			this._putZooms('rotation_x', 'zoom_top', i);
@@ -254,7 +253,7 @@ class KSHExporter {
 		if(point.y > 0 || point.data.isSlam() || !nextPoint || point.data.vf !== nextPoint.v){
 			const v = RD(point.data.v*100);
 			this.putProperty(to, v);
-			
+
 			if(point.data.isSlam()){
 				const vf = RD(point.data.vf*100);
 				this.putProperty(to, vf);
