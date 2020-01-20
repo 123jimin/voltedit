@@ -70,29 +70,7 @@ class KSONData extends VChartData {
 		this._initNote();
 		if(!obj.note) return;
 
-		const compact_arr2note = (type, lane, arr) => {
-			let y = 0;
-			let diff = 0;
-			for(let i=0; i<arr.length; ++i){
-				if(arr[i] > 0){
-					diff = arr[i];
-				}
-				y += diff;
-				let l = 0;
-				if(i+1 < arr.length && arr[i+1] < 0){
-					l = -arr[i+1];
-					++i;
-				}
-				this.addNote(type, lane, y, l);
-				y += l;
-			}
-		};
-		const verbose_arr2note = (type, lane, arr) => {
-			arr.forEach((note) => {
-				this.addNote(type, lane, note.y, note.l || 0);
-			});
-		};
-		const arr2note = window.TEST_COMPACT ? compact_arr2note : verbose_arr2note;
+		const arr2note = (type, lane, arr) => READ_INTERVAL_ARR(arr, (y, l) => this.addNote(type, lane, y, l));
 
 		if(obj.note.bt) obj.note.bt.forEach((notes, lane) => arr2note('bt', lane, notes));
 		if(obj.note.fx) obj.note.fx.forEach((notes, lane) => arr2note('fx', lane, notes));

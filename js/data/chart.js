@@ -1,5 +1,3 @@
-const CURR_KSON_VERSION = "0.0.0";
-
 /// KSON-based chart data structure with some modifications.
 /// Most noticeably, many arrays with {'y': ..., 'v': ...} are replaced by AATrees.
 class VChartData {
@@ -203,48 +201,17 @@ class VChartData {
 		return beatNode;
 	}
 	_getKSONNote() {
-		const compact_note2arr = (tree) => {
-			const arr = [];
-			let last = 0;
-			let lastDiff = 0;
-			tree.traverse((node) => {
-				const diff = node.y - last;
-				if(diff === lastDiff){
-					arr.push(0);
-				}else{
-					arr.push(diff);
-					lastDiff = diff;
-				}
-				last = node.y;
-				if(node.l){
-					arr.push(-node.l);
-					last += node.l;
-				}
-			});
-			return arr;
-		};
-		const verbose_note2arr = (tree) => {
-			const arr = [];
-			tree.traverse((node) => {
-				const obj = {'y': node.y};
-				if(node.l) obj.l = node.l;
-				arr.push(obj);
-			});
-			return arr;
-		};
-		const note2arr = window.TEST_COMPACT ? compact_note2arr : verbose_note2arr;
-		const verbose_laser2arr = (tree) => {
+		const obj = {};
+
+		if(this.note.bt) obj.bt = this.note.bt.map(WRITE_INTERVAL_ARR);
+		if(this.note.fx) obj.fx = this.note.fx.map(WRITE_INTERVAL_ARR);
+		if(this.note.laser) obj.laser = this.note.laser.map((tree) => {
 			const arr = [];
 			tree.traverse((node) => {
 				arr.push(node.data.toKSON());
 			});
 			return arr;
-		};
-		const laser2arr = verbose_laser2arr;
-		const obj = {};
-		if(this.note.bt) obj.bt = this.note.bt.map(note2arr);
-		if(this.note.fx) obj.fx = this.note.fx.map(note2arr);
-		if(this.note.laser) obj.laser = this.note.laser.map(laser2arr);
+		});
 
 		return obj;
 	}

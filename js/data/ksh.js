@@ -1,21 +1,3 @@
-const KSH_DEFAULT_MEASURE_TICK = 192;
-const KSH_LASER_SLAM_TICK = KSH_DEFAULT_MEASURE_TICK / 32;
-const KSH_LASER_VALUES = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmno";
-const KSH_LASER_LOOKUP = Object.freeze(((str) => {
-	const dict = {};
-	for(let i=0; i<str.length; ++i) dict[str[i]] = i;
-	return dict;
-})(KSH_LASER_VALUES));
-const KSH_VERSIONS = Object.freeze({
-	"": 0,
-	"120": 120,
-	"120b": 120,
-	"121": 121,
-	"130": 130,
-	"166": 166,
-	"167": 167,
-});
-
 const KSH_LINE_TYPE = Object.freeze({'HEADER': 0, 'BODY': 1});
 const KSH_REGEX = Object.freeze({
 	'OPTION': /^([^=]+)=(.*)$/,
