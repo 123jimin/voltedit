@@ -27,7 +27,7 @@ class VFileManager {
 	async showOpenChartDialog() {
 		let resultFile = null;
 		if(this.useNativeFS) resultFile = await this._showOpenChartDialogFS();
-		else resultFile = this._showOpenChartDialogHTML();
+		else resultFile = await this._showOpenChartDialogHTML();
 
 		if(!resultFile) return;
 		await this.openChartFile(resultFile);
