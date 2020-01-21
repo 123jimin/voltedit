@@ -30,11 +30,6 @@ This is where the JS source codes resides.
 		* I first tried SVG for rendering, but it has issues with multi-column view.
 			* `<use/>` turned out to be horrible and severely broken for the task, and manually duplicating elements is tedious.
 		* Separating `VView` and `VViewRender` can be seen as unnecessary, but I like what they are now.
-	* `render-components.js` contains various components of the renderer.
-		* `VViewColumn` for representing a single column view
-			* Each column is a camera, just in different y-positions.
-		* `VTickPropText` and `VTickProp` for displaying properties of a single tick (a single KSH line)
-		* `VModelTemplate` and `VModelTemplateCollection` for managing object templates
 * `js/manager` contains various sub-components of the editor.
 	* `file-manager.js` managing reading and writing files
 	* `key-manager.js` managing keybindings
