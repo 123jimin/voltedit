@@ -58,9 +58,8 @@ class VViewRender {
 		this._clear(this.fxShorts);
 		this._clear(this.btShorts);
 
-		// [note, noteSelected]
-		this.fxNotesByY = [{}, {}];
-		this.btNotesByY = [{}, {}, {}, {}];
+		this.fxNotesByY = [];
+		this.btNotesByY = [];
 	}
 	addBtNote(lane, pos, len) {
 		let note = null;
@@ -70,6 +69,7 @@ class VViewRender {
 			note = this._addLongNote(this.btLongs, this.view.scale.noteWidth, 1,
 				this.view.color.btLong, this.view.color.selected, lane, pos, len);
 		}
+		while(lane >= this.btNotesByY.length) this.btNotesByY.push({});
 		this.btNotesByY[lane][pos] = note;
 	}
 	addFxNote(lane, pos, len) {
@@ -80,6 +80,7 @@ class VViewRender {
 			note = this._addLongNote(this.fxLongs, this.view.scale.noteWidth*2, 0,
 				this.view.color.fxLong, this.view.color.selected, lane*2, pos, len);
 		}
+		while(lane >= this.fxNotesByY.length) this.fxNotesByY.push({});
 		this.fxNotesByY[lane][pos] = note;
 	}
 	_addLongNote(noteCollection, noteWidth, padding, color, selectedColor, lane, pos, len) {
@@ -117,6 +118,7 @@ class VViewRender {
 		this._selNote(this.fxNotesByY, lane, pos, selected);
 	}
 	_selNote(notesByY, lane, pos, selected) {
+		if(lane >= notesByY.length) return;
 		if(!(pos in notesByY[lane])) return;
 		const [_, noteSelected] = notesByY[lane][pos];
 		noteSelected.visible = selected;
@@ -195,70 +197,12 @@ class VViewRender {
 	clearLasers() {
 		this._clear(this.lasers);
 	}
-	addLaser(index, graph) {
-		const laserObject = new THREE.Group();
-		const scale = this.view.scale;
-		const WIDE = graph.wide;
-		const HALF_LASER = scale.noteWidth/2-0.5;
+	addLaser(lane, graph) {
+		const laserSegment = new VLaserSegment(this, lane, graph);
+		this.lasers.add(laserSegment.object);
 
-		const X = (v) => WIDE*(v-0.5)*scale.laserPosWidth;
-		const Y = (ry) => this.view.t2p(ry);
-
-		laserObject.position.y = Y(graph.iy);
-
-		if(graph.points.size > 0){
-			const points = [];
-			let prevX = 0, prevY = 0;
-			let isFirstNode = true;
-
-			// TODO: make each GraphSectionPoint a separate object
-			graph.points.traverse((node) => {
-				const gp = node.data;
-				const x = X(gp.v), y = Y(node.y);
-				if(isFirstNode){
-					isFirstNode = false;
-				}else{
-					QUAD(points,
-						[prevX-HALF_LASER, prevY], [prevX+HALF_LASER, prevY],
-						[x+HALF_LASER, y], [x-HALF_LASER, y]
-					);
-				}
-				if(gp.isSlam()){
-					const xf = X(gp.vf);
-					const yf = y+scale.laserSlamHeight;
-					let [xmin, xmax] = [x, xf];
-					if(x > xf) [xmin, xmax] = [xf, x];
-
-					QUAD(points,
-						[xmin-HALF_LASER, y], [xmax+HALF_LASER, y],
-						[xmax+HALF_LASER, yf], [xmin-HALF_LASER, yf]
-					);
-
-					[prevX, prevY] = [xf, yf];
-				}else{
-					[prevX, prevY] = [x, y];
-				}
-			});
-
-			if(points.length === 0){
-				return;
-			}
-
-			// Draw end for last slam
-			if(graph.points.last().data.isSlam()){
-				points.push(prevX-HALF_LASER, prevY, 0, prevX+HALF_LASER, prevY, 0, prevX, prevY+HALF_LASER*2, 0);
-			}
-
-			const geometry = new THREE.BufferGeometry();
-			geometry.setAttribute('position', new THREE.Float32BufferAttribute(points, 3));
-			geometry.computeBoundingSphere();
-
-			const material = this.laserBodyMaterials[index];
-			const laserBody = new THREE.Mesh(geometry, material);
-
-			laserObject.add(laserBody);
-		}
-		this.lasers.add(laserObject);
+		while(lane >= this.lasersByY.length) this.lasersByY.push({});
+		this.lasersByY[lane][graph.iy] = laserSegment;
 	}
 
 	/** Drawing tick props **/
@@ -350,9 +294,9 @@ class VViewRender {
 		this.btShorts = this._createGroup(0);
 		this.noteDrawings = this._createGroup(0);
 
-		// TODO: let's support more than 4 columns, because why not
-		this.btNotesByY = [{}, {}, {}, {}];
-		this.fxNotesByY = [{}, {}];
+		// [note, noteSelected] = this.btNotesByY[lane][y]
+		this.btNotesByY = [];
+		this.fxNotesByY = [];
 
 		this.btShortTemplate = this._createRectangleTemplate(0, 0, scale.noteWidth, scale.btNoteHeight, color.btFill, color.btBorder);
 		this.fxShortTemplate = this._createRectangleTemplate(0, 0, scale.noteWidth*2, scale.fxNoteHeight, color.fxFill, color.fxBorder);
@@ -377,6 +321,7 @@ class VViewRender {
 
 	_initLaserDrawData() {
 		this.lasers = this._createGroup(CLIP(this.view.scale.laserFloat, 1, VVIEW_EDITOR_UI_Z));
+		this.lasersByY = [];
 
 		this.laserBodyMaterials = [];
 		this.view.color.hueLasers.forEach((hue) => this.laserBodyMaterials.push(this._createLaserBodyMaterial(hue)));
