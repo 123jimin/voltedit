@@ -8,7 +8,7 @@ SRC_UTIL := shim.js aa-tree.js misc.js logger.js l10n.js settings.js
 SRC_DATA := common.js graph.js chart.js ksh.js ksh-exporter.js kson.js
 SRC_VIEW := settings.js render-components.js render-tick-prop.js render-laser.js render.js view-components.js view.js
 SRC_MANAGER := key-manager.js task-manager.js file-manager.js
-SRC_EDIT := task.js object.js context.js
+SRC_EDIT := task.js object.js context.js context-note.js context-graph.js
 SRC_UI := toolbar.js message.js
 SRC_EDITOR := editor.js
 
@@ -25,7 +25,7 @@ JS_TARGET_MAP := $(JS_TARGET).map
 
 JS_COMPRESSOR := uglifyjs
 JS_COMPRESSOR_SOURCE_MAP_OPTIONS = "filename='$(JS_TARGET_MAP)',url='$(notdir ${JS_TARGET_MAP})',root='..'"
-JS_COMPRESSOR_OPTIONS := --compress --warn --source-map $(JS_COMPRESSOR_SOURCE_MAP_OPTIONS)
+JS_COMPRESSOR_OPTIONS := --compress --mangle --keep-classnames --warn --source-map $(JS_COMPRESSOR_SOURCE_MAP_OPTIONS)
 
 CSS_SOURCE := css/main.less
 CSS_TARGET := css/main.css

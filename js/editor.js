@@ -7,8 +7,10 @@ class VEditor {
 		this.settings = new VSettings();
 		L10N.l(this.settings.get('ui:language'));
 
-		this._editSnapBeat = 16; /// unit: 4th, 8th, 12th, ... beat (not tick)
-		this._editSnapTick = 1; /// unit: tick
+		this.editSnapBeat = 16; /// unit: 4th, 8th, 12th, ... beat (not tick)
+		this.editSnapTick = 1; /// unit: tick
+
+		this.laserSnap = 10; /// Edit by 1/laserSnap
 
 		this.view = new VView(this);
 		this.toolbar = new VToolbar(this);
@@ -61,21 +63,21 @@ class VEditor {
 		this.view.hideDrawing();
 	}
 	setEditSnap(snap) {
-		const oldSnapBeat = this._editSnapBeat;
+		const oldSnapBeat = this.editSnapBeat;
 		this._setEditSnap(snap);
 		const resolution = this.getTicksPerWholeNote();
-		if(resolution && resolution%this._editSnapBeat === 0)
-			this._editSnapTick = resolution/this._editSnapBeat;
+		if(resolution && resolution%this.editSnapBeat === 0)
+			this.editSnapTick = resolution/this.editSnapBeat;
 		else
-			this._editSnapTick = 1;
+			this.editSnapTick = 1;
 
-		if(oldSnapBeat !== this._editSnapBeat || this._editSnapBeat !== snap){
+		if(oldSnapBeat !== this.editSnapBeat || this.editSnapBeat !== snap){
 			let postfix = 'th';
-			if(this._editSnapBeat % 10 < 4 && this._editSnapBeat % 10 > 0 && (this._editSnapBeat < 10 || this._editSnapBeat > 20)){
-				postfix = ['', 'st', 'nd', 'rd'][this._editSnapBeat % 10];
+			if(this.editSnapBeat % 10 < 4 && this.editSnapBeat % 10 > 0 && (this.editSnapBeat < 10 || this.editSnapBeat > 20)){
+				postfix = ['', 'st', 'nd', 'rd'][this.editSnapBeat % 10];
 			}
 			for(let elem of this.elem.querySelectorAll(".toolbar span.toolbar-edit-tick-disp .beat")){
-				elem.innerText = `${this._editSnapBeat}`;
+				elem.innerText = `${this.editSnapBeat}`;
 			}
 			for(let elem of this.elem.querySelectorAll(".toolbar span.toolbar-edit-tick-disp .ord")){
 				elem.innerText = postfix;
@@ -84,40 +86,40 @@ class VEditor {
 	}
 	_setEditSnap(snap) {
 		if(!this.chartData){
-			this._editSnapBeat = CLIP(Math.round(snap), 1, 64);
+			this.editSnapBeat = CLIP(Math.round(snap), 1, 64);
 			return;
 		}
 		if(snap>0 && isFinite(snap) && snap === 0|snap && this.chartData){
 			const resolution = this.getTicksPerWholeNote();
-			const dir = snap < this._editSnapBeat ? -1 : +1;
+			const dir = snap < this.editSnapBeat ? -1 : +1;
 			if(snap > resolution) snap = resolution;
 			if(resolution % snap === 0){
-				this._editSnapBeat = snap;
+				this.editSnapBeat = snap;
 				return;
 			}
-			for(let i=snap-dir; i!=this._editSnapBeat; i-=dir) if(resolution%i === 0){
-				this._editSnapBeat = i;
+			for(let i=snap-dir; i!=this.editSnapBeat; i-=dir) if(resolution%i === 0){
+				this.editSnapBeat = i;
 				return;
 			}
 			for(let i=snap+dir; i>0 && i<=resolution; i+=dir) if(resolution%i === 0){
-				this._editSnapBeat = i;
+				this.editSnapBeat = i;
 				return;
 			}
 		}
 	}
 	updateEditSnap() {
-		this.setEditSnap(this._editSnapBeat);
+		this.setEditSnap(this.editSnapBeat);
 	}
 	moveCursor(dir) {
 		if(this.context.hasSelection()){
-			this.context.moveSelectionByTick(dir*this._editSnapTick);
+			this.context.moveSelectionByTick(dir*this.editSnapTick);
 			return;
 		}
-		this.view.setCursor(ALIGN_STEP(this._editSnapTick, this.view.cursorStartLoc, dir));
+		this.view.setCursor(ALIGN_STEP(this.editSnapTick, this.view.cursorStartLoc, dir));
 	}
 	resizeSelected(dir) {
 		if(this.context.hasSelection()){
-			this.context.resizeSelectionByTick(dir*this._editSnapTick);
+			this.context.resizeSelectionByTick(dir*this.editSnapTick);
 		}
 	}
 

@@ -96,8 +96,8 @@ class VKeyManager {
 		this._registerOp('cursor-backward', editor.moveCursor.bind(editor, -1));
 		this._registerOp('resize-up-selected', editor.resizeSelected.bind(editor, +1));
 		this._registerOp('resize-down-selected', editor.resizeSelected.bind(editor, -1));
-		this._registerOp('decrease-edit-tick', () => editor.setEditSnap(editor._editSnapBeat-1));
-		this._registerOp('increase-edit-tick', () => editor.setEditSnap(editor._editSnapBeat+1));
+		this._registerOp('decrease-edit-tick', () => editor.setEditSnap(editor.editSnapBeat-1));
+		this._registerOp('increase-edit-tick', () => editor.setEditSnap(editor.editSnapBeat+1));
 		this._registerOp('toggle-insert', () => editor.setInsertMode(!editor.insertMode));
 
 		this._registerOp('context-chart', () => editor.setContext(new VEditChartContext(editor)));
@@ -140,9 +140,9 @@ class VKeyManager {
 		this.bind("Ctrl+Down", 'resize-down-selected');
 		this.bind("A", 'decrease-edit-tick');
 		this.bind("D", 'increase-edit-tick');
-		
+
 		this.bind("F", 'toggle-insert');
-		
+
 		this.bind("W", 'context-bt');
 		this.bind("S", 'context-fx');
 		this.bind("Q", 'context-laser-left');

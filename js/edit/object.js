@@ -3,15 +3,15 @@ class VEditObject {
 
 	/// Display the selection of this object
 	sel(view, selected) {}
-	
+
 	/// Returns: the task for removing this object
 	delTask(editor) { return null; }
-	
+
 	/// Returns: the task for adding this object, translated by difference of given mouse events
 	moveTask(editor, startEvent, endEvent) { return this.moveTickTask(editor, endEvent.tick-startEvent.tick); }
 	/// Returns: the task for adding this object, translated by given tick
 	moveTickTask(editor, tick) { return null; }
-	
+
 	/// Returns: an object which is translated from this object by difference of given mouse events
 	getMoved(editor, startEvent, endEvent) { return this.getTickMoved(editor, endEvent.tick-startEvent.tick); }
 	/// Returns: an object which is translated from this object by given tick
@@ -74,4 +74,8 @@ class VNoteObject extends VEditObject {
 
 	serialize() { return [this.type, this.lane, this.tick, this.len]; }
 	unserialize(data) { [this.type, this.lane, this.tick, this.len] = data; }
+}
+
+class VLaserGraphPointObject extends VEditObject {
+	
 }

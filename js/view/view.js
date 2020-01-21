@@ -344,7 +344,7 @@ class VView {
 	toChartViewEvent(event) {
 		const coord = this.getClickCoord(event.offsetX, event.offsetY);
 		return {
-			'tick': ALIGN(this.editor._editSnapTick, coord[0]), 'lane': coord[1], 'v': coord[2], 'which': event.which,
+			'tick': ALIGN(this.editor.editSnapTick, coord[0]), 'lane': coord[1], 'v': coord[2], 'which': event.which,
 			'ctrlKey': event.ctrlKey, 'altKey': event.altKey, 'shiftKey': event.shiftKey,
 		};
 	}
