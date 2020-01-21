@@ -9,6 +9,9 @@ not-yet-implemented
 tab-home
 	en: Home
 	ko: 홈
+tab-chart
+	en: Chart
+	ko: 채보
 tab-notes-and-lasers
 	en: Notes & Lasers
 	ko: 노트 및 레이저
