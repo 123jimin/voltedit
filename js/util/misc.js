@@ -31,6 +31,38 @@ const QUAD = (points, [ax, ay], [bx, by], [cx, cy], [dx, dy]) => points.push(
 
 const RECT = (points, [ax, ay], [bx, by]) => QUAD(points, [ax, ay], [bx, ay], [bx, by], [ax, by]);
 
+const RenderHelper = Object.freeze({
+	'dispose': (elem) => {
+		elem.parent.remove(elem);
+
+		if(elem.userData){
+			const disposeGeometry = !!(elem.userData._disposeGeometry);
+			const disposeMaterial = !!(elem.userData._disposeMaterial);
+			const checkDispose = (elem) => {
+				elem.children.forEach(checkDispose);
+				if('geometry' in elem && disposeGeometry) elem.geometry.dispose();
+				if('material' in elem && disposeMaterial) elem.material.dispose();
+			};
+
+			checkDispose(elem);
+		}
+	},
+	'clear': (elem) => {
+		for(let i=elem.children.length; i-->0;) {
+			RenderHelper.dispose(elem.children[i]);
+		}
+	},
+	'updateGeometry': (obj, points) => {
+		if(!obj.geometry && obj.children.length === 1)
+			return RenderHelper.updateGeometry(obj.children[0], points);
+		const geometry = obj.geometry;
+		const geometry_position = geometry.attributes.position;
+		points.forEach((value, ind) => geometry_position.array[ind] = value);
+		geometry_position.needsUpdate = true;
+		geometry.computeBoundingSphere();
+	}
+});
+
 const TOUCH = (func) => (event) => {
 	const changedTouches = event.changedTouches;
 	if(!changedTouches || changedTouches.length < 1) return;

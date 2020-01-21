@@ -30,13 +30,13 @@ class VViewRender {
 			const scale = this.view.scale;
 			RECT(points, [scale.cursorLeft, this.cursorStart.position.y], [scale.cursorRight, this.cursorEnd.position.y]);
 
-			this._updateGeometry(this.selection, points);
+			RenderHelper.updateGeometry(this.selection, points);
 		}
 	}
 
 	/** Drawing measure data **/
 	clearMeasures() {
-		this._clear(this.measureLines);
+		RenderHelper.clear(this.measureLines);
 	}
 	addMeasureLine(pos) {
 		const measureLine = this.measureLineTemplate.create();
@@ -53,10 +53,10 @@ class VViewRender {
 
 	/** Drawing note data **/
 	clearNotes() {
-		this._clear(this.fxLongs);
-		this._clear(this.btLongs);
-		this._clear(this.fxShorts);
-		this._clear(this.btShorts);
+		RenderHelper.clear(this.fxLongs);
+		RenderHelper.clear(this.btLongs);
+		RenderHelper.clear(this.fxShorts);
+		RenderHelper.clear(this.btShorts);
 
 		this.fxNotesByY = [];
 		this.btNotesByY = [];
@@ -132,8 +132,8 @@ class VViewRender {
 	_delNote(notesByY, lane, pos){
 		const [note, noteSelected] = notesByY[lane][pos];
 
-		this._remove(noteSelected);
-		this._remove(note);
+		RenderHelper.dispose(noteSelected);
+		RenderHelper.dispose(note);
 		delete notesByY[lane][pos];
 	}
 
@@ -178,7 +178,7 @@ class VViewRender {
 		if(obj){
 			const points = [];
 			RECT(points, [padding, 0], [noteWidth-padding, this.view.t2p(len)]);
-			this._updateGeometry(obj, points);
+			RenderHelper.updateGeometry(obj, points);
 		}else{
 			const noteTemplate = this._createLongNoteTemplate(noteWidth, padding, color, len);
 			obj = noteTemplate.create();
@@ -195,19 +195,20 @@ class VViewRender {
 
 	/** Drawing laser data **/
 	clearLasers() {
-		this._clear(this.lasers);
+		RenderHelper.clear(this.lasers);
+		this.lasersByY = [];
 	}
-	addLaser(lane, graph) {
-		const laserSegment = new VLaserSegment(this, lane, graph);
-		this.lasers.add(laserSegment.object);
+	addLaser(lane, iy, wide, currNode, nextNode) {
+		const laserGraphPoint = new VLaserGraphPoint(this, lane, iy, wide, currNode, nextNode);
+		this.lasers.add(laserGraphPoint.object);
 
 		while(lane >= this.lasersByY.length) this.lasersByY.push({});
-		this.lasersByY[lane][graph.iy] = laserSegment;
+		this.lasersByY[lane][laserGraphPoint.y] = laserGraphPoint;
 	}
 
 	/** Drawing tick props **/
 	clearTickProps() {
-		this._clear(this.tickProps);
+		RenderHelper.clear(this.tickProps);
 		this.tickPropsByY = {};
 	}
 	addBPMChanges(pos, bpm) {
@@ -416,33 +417,5 @@ class VViewRender {
 		}
 
 		return new VModelTemplateCollection(templates);
-	}
-	_updateGeometry(obj, points) {
-		if(!obj.geometry && obj.children.length === 1)
-			return this._updateGeometry(obj.children[0], points);
-		const geometry = obj.geometry;
-		const geometry_position = geometry.attributes.position;
-		points.forEach((value, ind) => geometry_position.array[ind] = value);
-		geometry_position.needsUpdate = true;
-		geometry.computeBoundingSphere();
-	}
-	_clear(elem) {
-		for(let i=elem.children.length; i-->0;) {
-			this._remove(elem.children[i]);
-		}
-	}
-	_remove(elem) {
-		elem.parent.remove(elem);
-		if(elem.userData){
-			const disposeGeometry = !!(elem.userData._disposeGeometry);
-			const disposeMaterial = !!(elem.userData._disposeMaterial);
-			const checkDispose = (elem) => {
-				if('geometry' in elem && disposeGeometry) elem.geometry.dispose();
-				if('material' in elem && disposeMaterial) elem.material.dispose();
-			};
-
-			elem.children.forEach(checkDispose);
-			checkDispose(elem);
-		}
 	}
 }
