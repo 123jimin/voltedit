@@ -205,6 +205,11 @@ class VViewRender {
 		while(lane >= this.lasersByY.length) this.lasersByY.push({});
 		this.lasersByY[lane][laserGraphPoint.y] = laserGraphPoint;
 	}
+	selLaser(lane, pos, selected) {
+		if(lane >= this.lasersByY.length) return;
+		if(!(pos in this.lasersByY[lane])) return;
+		this.lasersByY[lane][pos].sel(selected);
+	}
 
 	/** Drawing tick props **/
 	clearTickProps() {
@@ -262,6 +267,7 @@ class VViewRender {
 			new THREE.Vector3(scale.cursorLeft, 0, 0),
 			new THREE.Vector3(scale.cursorRight, 0, 0),
 		);
+		this.selectedMaterial = new THREE.MeshBasicMaterial({'color': this.view.color.selected});
 		// Note that the groups are created in a specific order.
 		this._initMeasureDrawData();
 		this._initNoteDrawData();

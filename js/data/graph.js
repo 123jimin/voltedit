@@ -5,6 +5,9 @@
 		this.vf = (vf == null) ? v : vf;
 		this.a = a || 0;
 		this.b = b || 0;
+
+		/// This will be filled with one of `VEditObject`s when this is edited on the first time.
+		this.edit = null;
 	}
 	isSlam() {
 		return this.vf !== this.v;

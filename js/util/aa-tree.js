@@ -34,6 +34,12 @@ class AATree {
 		if(this.root) this.root._getAll(arr, y, l);
 		return arr;
 	}
+	getLE(y) {
+		return this.root ? this.root._getLE(y) : null;
+	}
+	getGE(y) {
+		return this.root ? this.root._getGE(y) : null;
+	}
 	intersects(y, l) {
 		return this.root ? this.root._intersects(y, l) : false;
 	}
@@ -156,6 +162,28 @@ class AATreeNode {
 			return this._left ? this._left._get(y) : null;
 		} else if(y > this.y+this.l) {
 			return this._right ? this._right._get(y) : null;
+		}
+		return this;
+	}
+	_getLE(y) {
+		if(y < this.y) {
+			return this._left ? this._left._getLE(y) : null;
+		} else if(y > this.y + this.l) {
+			if(this._right) {
+				const le = this._right._getLE(y);
+				if(le) return le;
+			}
+		}
+		return this;
+	}
+	_getGE(y) {
+		if(y > this.y+this.l) {
+			return this._right ? this._right._getGE(y) : null;
+		} else if(y < this.y) {
+			if(this._left) {
+				const ge = this._left._getGE(y);
+				if(ge) return ge;
+			}
 		}
 		return this;
 	}

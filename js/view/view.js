@@ -105,6 +105,10 @@ class VView {
 		}
 		this.refresh();
 	}
+	selLaser(lane, tick, selected) {
+		this.render.selLaser(lane, tick, selected);
+		this.refresh();
+	}
 	fakeMoveNoteTo(type, lane, tick, newLane, newTick) {
 		switch(type){
 			case 'bt':
@@ -343,9 +347,13 @@ class VView {
 	}
 	toChartViewEvent(event) {
 		const coord = this.getClickCoord(event.offsetX, event.offsetY);
+		let v = coord[2];
+		if(this.editor.laserSnap > 0){
+			if(v !== 0 && v !== 1 && v !== -1) v = ALIGN(1/this.editor.laserSnap, v);
+		}
 		return {
-			'tick': ALIGN(this.editor.editSnapTick, coord[0]), 'lane': coord[1], 'v': coord[2], 'which': event.which,
-			'ctrlKey': event.ctrlKey, 'altKey': event.altKey, 'shiftKey': event.shiftKey,
+			'tick': ALIGN(this.editor.editSnapTick, coord[0]), 'lane': coord[1], 'v': v,
+			'which': event.which, 'ctrlKey': event.ctrlKey, 'altKey': event.altKey, 'shiftKey': event.shiftKey,
 		};
 	}
 	_updateLocation() {

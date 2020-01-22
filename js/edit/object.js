@@ -77,5 +77,17 @@ class VNoteObject extends VEditObject {
 }
 
 class VLaserGraphPointObject extends VEditObject {
-	
+	constructor(lane, tick, point) {
+		super();
+		this.lane = lane;
+		this.tick = tick;
+		this.point = point;
+	}
+
+	sel(view, selected) {
+		view.selLaser(this.lane, this.tick, selected);
+	}
+
+	serialize() {}
+	unserialize() {}
 }
