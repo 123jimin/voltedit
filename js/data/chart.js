@@ -38,6 +38,18 @@ class VChartData {
 		if(!(type in this.note)) return null;
 		return this.note[type][lane];
 	}
+	getLaserPointNode(lane, tick) {
+		const laserData = this.getNoteData('laser', lane);
+		if(!laserData) return [null, null];
+
+		const graph = laserData.get(tick);
+		if(!graph) return [null, null];
+
+		const graphPoint = graph.data.points.get(tick - graph.data.iy);
+		if(!graphPoint) return [null, null];
+		
+		return [graph, graphPoint];
+	}
 	forAllNotesInRange(type, from, to, callBack) {
 		// All notes are range-selectable while in any EditNoteContext.
 		this.note[type].forEach((noteData) => {
