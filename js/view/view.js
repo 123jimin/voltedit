@@ -191,18 +191,14 @@ class VView {
 		const laserData = noteData.laser;
 		if(!laserData) return;
 
-		laserData.forEach((tree, ind) => {
-			tree.traverse((node) => this._addLaserGraph(ind, node.data));
+		laserData.forEach((tree, lane) => {
+			let prevNode = null;
+			tree.traverse((node) => {
+				if(prevNode) this.render.addLaser(lane, prevNode, prevNode.data.connected ? node : null);
+				prevNode = node;
+			});
+			if(prevNode) this.render.addLaser(lane, prevNode, null);
 		});
-	}
-	_addLaserGraph(lane, graph) {
-		let prevNode = null;
-		graph.points.traverse((node) => {
-			if(prevNode) this.render.addLaser(lane, graph.iy, graph.wide, prevNode, node);
-			prevNode = node;
-		});
-
-		this.render.addLaser(lane, graph.iy, graph.wide, prevNode, null);
 	}
 	_checkRedrawMesaures(tick) {
 		const newLastTick = Math.max(tick || 0, this.editor.chartData ? this.editor.chartData.getLastTick() : 0);

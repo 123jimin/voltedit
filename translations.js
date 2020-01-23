@@ -205,9 +205,6 @@ ksh-import-error-invalid-measure-line-count
 ksh-import-error-invalid-time-sig-location
 	en: KSH time signature at invalid location (idx=%1)
 	ko: 올바르지 않은 변박 지정 위치 (idx=%1)
-ksh-import-error-invalid-stop
-	en: Invalid KSH stop effect (idx=%1)
-	ko: 올바르지 않은 KSH stop 이펙트 (idx=%1)
 ksh-import-error-invalid-laser-pos
 	en: Invalid KSH laser position
 	ko: 올바르지 않은 KSH 레이저 위치

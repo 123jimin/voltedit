@@ -45,7 +45,7 @@ class KSONData extends VChartData {
 			objBeat.scroll_speed.forEach((data) => {
 				const graph = new VGraph(true, {'y': data.y});
 				data.v.forEach((point) => graph.pushKSON(point));
-				this.addScrollSpeed(graph);
+				this.addScrollSpeedSegment(graph);
 			});
 		}
 
@@ -76,9 +76,9 @@ class KSONData extends VChartData {
 		if(obj.note.fx) obj.note.fx.forEach((notes, lane) => arr2note('fx', lane, notes));
 
 		if(obj.note.laser) obj.note.laser.forEach((lasers, lane) => lasers.forEach((data) => {
-			const graph = new VGraph(true, {'wide': data.wide || 1, 'y': data.y});
+			const graph = new VGraphSegment(true, {'wide': data.wide || 1, 'y': data.y});
 			data.v.forEach((point) => graph.pushKSON(point));
-			this.addLaser(lane, graph);
+			this.addLaserSegment(lane, graph);
 		}));
 	}
 
@@ -103,9 +103,10 @@ class KSONData extends VChartData {
 				for(let type in objCamera.cam.body){
 					if(objCamera.cam.body[type].length === 0) continue;
 
-					const graph = this.getCamBodyData(type);
-					objCamera.cam.body[type].forEach((point) => {
-						graph.pushKSON(point);
+					const tree = this.getCamBodyData(type);
+					objCamera.cam.body[type].forEach((data) => {
+						const point = new VGraphPoint({'v': data.v, 'vf': data.vf, 'connected': true, 'a': data.a, 'b': data.b});
+						tree.add(data.y, 0, point);
 					});
 				}
 			}

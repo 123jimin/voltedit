@@ -38,17 +38,14 @@ class VChartData {
 		if(!(type in this.note)) return null;
 		return this.note[type][lane];
 	}
-	getLaserPointNode(lane, tick) {
+	getLaserNode(lane, tick) {
 		const laserData = this.getNoteData('laser', lane);
-		if(!laserData) return [null, null];
+		if(!laserData) return null;
 
-		const graph = laserData.get(tick);
-		if(!graph) return [null, null];
+		const node = laserData.get(tick);
+		if(!node) return null;
 
-		const graphPoint = graph.data.points.get(tick - graph.data.iy);
-		if(!graphPoint) return [null, null];
-		
-		return [graph, graphPoint];
+		return node;
 	}
 	forAllNotesInRange(type, from, to, callBack) {
 		// All notes are range-selectable while in any EditNoteContext.
@@ -76,29 +73,39 @@ class VChartData {
 		node.remove();
 		return true;
 	}
-	addLaser(lane, graph) {
+	addLaser(lane, y, point) {
 		if(!this.note) this.note = {};
 		if(!this.note.laser) this.note.laser = [];
 		this._initTreeArr(this.note.laser, lane+1);
 
-		return this.note.laser[lane].add(graph.iy, graph.getLength(), graph);
+		return this.note.laser[lane].add(y, 0, point);
+	}
+	addLaserSegment(lane, graph) {
+		graph.points.traverse((node) => {
+			this.addLaser(lane, node.y, node.data);
+		});
 	}
 
 	addBPM(tick, value) {
 		return this.beat.bpm.add(tick, 0, value);
 	}
-	addScrollSpeed(graph) {
+	addScrollSpeed(y, point) {
 		if(!this.beat.scroll_speed)
 			this.beat.scroll_speed = new AATree();
 
-		return this.beat.scroll_speed.add(graph.iy, graph.getLength(), graph);
+		return this.beat.scroll_speed.add(y, 0, point);
+	}
+	addScrollSpeedSegment(graph) {
+		graph.points.traverse((node) => {
+			this.addScrollSpeed(node.y, node.data);
+		});
 	}
 	getCamBodyData(type) {
 		if(!this.camera) this.camera = {};
 		if(!this.camera.cam) this.camera.cam = {};
 		if(!this.camera.cam.body) this.camera.cam.body = {};
 		const body = this.camera.cam.body;
-		if(!(type in body)) body[type] = new VGraph(false);
+		if(!(type in body)) body[type] = new AATree();
 		return body[type];
 	}
 
@@ -199,11 +206,7 @@ class VChartData {
 		}
 
 		if(this.beat.scroll_speed && this.beat.scroll_speed.size > 0){
-			const arr = [];
-			this.beat.scroll_speed.traverse((node) => {
-				arr.push(node.data.toKSON());
-			});
-			beatNode.scroll_speed = arr;
+			beatNode.scroll_speed = VGraphSegment.fromPoints(this.beat.scroll_speed, true);
 		}
 
 		if(this.beat.resolution && this.beat.resolution !== 240){
@@ -217,13 +220,7 @@ class VChartData {
 
 		if(this.note.bt) obj.bt = this.note.bt.map(WRITE_INTERVAL_ARR);
 		if(this.note.fx) obj.fx = this.note.fx.map(WRITE_INTERVAL_ARR);
-		if(this.note.laser) obj.laser = this.note.laser.map((tree) => {
-			const arr = [];
-			tree.traverse((node) => {
-				arr.push(node.data.toKSON());
-			});
-			return arr;
-		});
+		if(this.note.laser) obj.laser = this.note.laser.map((tree) => VGraphSegment.fromPoints(tree, true));
 
 		return obj;
 	}
@@ -242,14 +239,11 @@ class VChartData {
 
 			if(thisCam.body){
 				for(let type in thisCam.body){
-					const graph = thisCam.body[type];
-					if(graph.points.size === 0) continue;
+					const tree = thisCam.body[type];
+					if(tree.size === 0) continue;
 
 					if(!('body' in camInfo)) camInfo.body = {};
-					camInfo.body[type] = [];
-					graph.points.traverse((node) => {
-						camInfo.body[type].push(node.data.toKSON(graph, node.y));
-					});
+					camInfo.body[type] = VGraphSegment.fromPoints(tree, false);
 				}
 			}
 

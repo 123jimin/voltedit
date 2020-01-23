@@ -198,12 +198,12 @@ class VViewRender {
 		RenderHelper.clear(this.lasers);
 		this.lasersByY = [];
 	}
-	addLaser(lane, iy, wide, currNode, nextNode) {
-		const laserGraphPoint = new VLaserGraphPoint(this, lane, iy, wide, currNode, nextNode);
+	addLaser(lane, currNode, nextNode) {
+		const laserGraphPoint = new VLaserRenderPoint(this, lane, currNode, nextNode);
 		this.lasers.add(laserGraphPoint.object);
 
 		while(lane >= this.lasersByY.length) this.lasersByY.push({});
-		this.lasersByY[lane][laserGraphPoint.y] = laserGraphPoint;
+		this.lasersByY[lane][currNode.y] = laserGraphPoint;
 	}
 	selLaser(lane, pos, selected) {
 		if(lane >= this.lasersByY.length) return;

@@ -287,12 +287,11 @@ class KSHData extends VChartData {
 						case 'stop':
 							if(intValue <= 0 || !isFinite(intValue))
 								throw new Error(L10N.t('ksh-import-error-value', 'stop', measure_idx));
-							const graph = new VGraph(true, {'y': tick});
+							const graph = new VGraphSegment(true, {'y': tick});
 							graph.pushKSH(tick, 0);
 							graph.pushKSH(tick+intValue, 0);
 
-							const [result, hit] = this.addScrollSpeed(graph);
-							if(!result) throw new Error(L10N.t('ksh-import-error-invalid-stop', measure_idx));
+							this.addScrollSpeedSegment(graph);
 							break;
 						case 'zoom_bottom':
 							this._addZoom('zoom', tick, value, measure_idx);
@@ -322,14 +321,21 @@ class KSHData extends VChartData {
 		}
 	}
 	_addZoom(type, tick, value, measure_idx) {
-		const zoom = this.getCamBodyData(type);
 		value = parseInt(value);
 		if(!isFinite(value))
 			throw new Error(L10N.t('ksh-import-error-value', 'zoom', measure_idx));
 		value /= 100;
-		if(zoom.points.size === 0)
-			zoom.pushKSH(0, value);
-		zoom.pushKSH(tick, value);
+
+		const zoom = this.getCamBodyData(type);
+		if(zoom.size > 0){
+			const lastPoint = zoom.last();
+			if(lastPoint.y === tick){
+				lastPoint.data.vf = value;
+				return;
+			}
+		}
+		const point = new VGraphPoint({'v': value, 'connected': true});
+		zoom.add(tick, 0, point);
 	}
 	/// Processes notes and lasers
 	_setKSONNoteInfo() {
@@ -361,13 +367,13 @@ class KSHData extends VChartData {
 		const cutLaserSegment = (lane) => {
 			if(laserSegments[lane] === null) return;
 
-			this.addLaser(lane, laserSegments[lane]);
+			this.addLaserSegment(lane, laserSegments[lane]);
 			laserSegments[lane] = null;
 			laserWide[lane] = 1;
 		};
 		const addLaserSegment = (lane, y, v) => {
 			if(laserSegments[lane] === null)
-				laserSegments[lane] = new VGraph(true, {'y': y, 'wide': laserWide[lane]});
+				laserSegments[lane] = new VGraphSegment(true, {'y': y, 'wide': laserWide[lane]});
 			laserSegments[lane].pushKSH(y, v, true);
 		};
 
