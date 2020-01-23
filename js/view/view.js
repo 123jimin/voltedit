@@ -109,6 +109,24 @@ class VView {
 		this.render.selLaser(lane, tick, selected);
 		this.refresh();
 	}
+	updateLaser(lane, point) {
+		if(!point) return;
+
+		const prev = point.prev();
+		if(prev && prev.data.connected)
+			this.render.updateLaser(lane, prev, point);
+		
+		this.render.updateLaser(lane, point, point.data.connected ? point.next() : null);
+	}
+	/// Updates connected lasers
+	updateConnectedLasers(lane, points) {
+		let nextPoint = null;
+		for(let i=points.length; i--;){
+			const currPoint = points[i];
+			this.render.updateLaser(lane, currPoint, nextPoint);
+			nextPoint = currPoint;
+		}
+	}
 	fakeMoveNoteTo(type, lane, tick, newLane, newTick) {
 		switch(type){
 			case 'bt':

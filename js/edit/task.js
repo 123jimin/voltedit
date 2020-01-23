@@ -17,8 +17,10 @@ class VTask {
 	commit() {
 		if(this._commonValidate() && this._validate()){
 			// Creates an inverse job and commit it.
-			this._inverse = this._makeInverse();
-			this._inverse._inverse = this;
+			if(!this._inverse){
+				this._inverse = this._makeInverse();
+				this._inverse._inverse = this;
+			}
 
 			if(this._commit()) return true;
 			this.editor.error(L10N.t('task-commit-error', this.constructor.name));

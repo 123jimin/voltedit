@@ -151,6 +151,8 @@ class VEditor {
 	setChartData(chartData) {
 		if(chartData) this.chartData = chartData;
 
+		this.taskManager.clear();
+
 		const trimmedChartName = this.chartData.meta.title.trim();
 		const chartDifficulty = ['NOV','ADV','EXH','INF'][this.chartData.meta.difficulty.idx];
 

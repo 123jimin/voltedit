@@ -210,6 +210,11 @@ class VViewRender {
 		if(!(pos in this.lasersByY[lane])) return;
 		this.lasersByY[lane][pos].sel(selected);
 	}
+	updateLaser(lane, currNode, nextNode) {
+		if(lane >= this.lasersByY.length) return;
+		if(!(currNode.y in this.lasersByY[lane])) return;
+		this.lasersByY[lane][currNode.y].update(currNode, nextNode);
+	}
 
 	/** Drawing tick props **/
 	clearTickProps() {
