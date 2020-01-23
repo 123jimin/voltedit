@@ -67,7 +67,7 @@ class VNoteResizeTask extends VTask {
 		if(this.tick < 0 || this.newLen < 0) return false;
 		const noteData = this.chartData.getNoteData(this.type, this.lane);
 		if(!noteData) return false;
-		
+
 		// Assure that there's no overlapping note except the one we're editing.
 		const notes = noteData.getAll(this.tick, this.newLen+1);
 		if(notes.length !== 1) return false;
@@ -125,51 +125,4 @@ class VNoteDelTask extends VTask {
 	}
 }
 
-/// Connects two laser segments
-class VLaserConnectTask extends VTask {
-	constructor(editor, lane, fromTick, toTick) {
-		super(editor);
-		this.lane = lane;
-		this.fromTick = fromTick;
-		this.toTick = toTick;
-	}
-}
-
-/// Changes the VF value of a point
-class VLaserSetVFTask extends VTask {
-	constructor(editor, lane, tick, vf) {
-		super(editor);
-		this.lane = lane;
-		this.tick = tick;
-		this.vf = vf;
-	}
-	_validate() {
-		const [graph, graphPoint] = this.chartData.getLaserPointNode(this.lane, this.tick);
-		if(!graphPoint || graphPoint.y !== this.tick-graph.data.iy) return false;
-		
-		this._prevVF = graphPoint.data.vf;
-		return true;
-	}
-	_commit() {
-	}
-	_makeInverse() {
-		return new VLaserSetVFTask(this.editor, this.lane, this.tick, this._prevVF);
-	}
-}
-
-/// Removes a point and (up to) two edges connecting it
-class VLaserDelPointTask extends VTask {
-}
-
-/// Removes an edge
-class VLaserDelEdgeTask extends VTask {
-	constructor(editor, lane, tick) {
-		super(editor);
-		this.lane = lane;
-		this.tick = tick;
-	}
-	_validate() {
-		const [graph, graphPoint] = this.chartData.getLaserPointNode(this.lane, this.tick);
-		if(!graphPoint || graphPoint.y !== this.tick) return false;
-	}
-}
+/// TODO: create a list of graph-related tasks
