@@ -76,12 +76,18 @@ class VNoteObject extends VEditObject {
 	unserialize(data) { [this.type, this.lane, this.tick, this.len] = data; }
 }
 
-class VLaserGraphPointObject extends VEditObject {
-	constructor(lane, tick, point) {
+class VGraphPointObject extends VEditObject {
+	constructor(point) {
 		super();
+		this.point = point || null;
+	}
+}
+
+class VLaserGraphPointObject extends VGraphPointObject {
+	constructor(lane, tick, point) {
+		super(point);
 		this.lane = lane;
 		this.tick = tick;
-		this.point = point;
 	}
 
 	sel(view, selected) {
