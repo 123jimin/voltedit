@@ -1,3 +1,93 @@
+class VTask {
+	constructor(editor) {
+		this.editor = editor;
+		this.chartData = editor && editor.chartData;
+		this._inverse = null;
+	}
+	// Things to override
+	_validate() { return false; }
+	_commit() { TODO(); }
+	_makeInverse() { return null; }
+
+	// Things provided
+	inverse() {
+		if(this._inverse) return this._inverse;
+		throw new Error(L10N.t('task-undo-invalid'));
+	}
+	commit() {
+		if(this._commonValidate() && this._validate()){
+			// Creates an inverse job and commit it.
+			this._inverse = this._makeInverse();
+			this._inverse._inverse = this;
+
+			if(this._commit()) return true;
+			this.editor.error(L10N.t('task-commit-error', this.constructor.name));
+			console.error(this);
+			return false;
+		}
+		return false;
+	}
+	_commonValidate() { return !!(this.editor && this.chartData && this.editor.chartData === this.chartData); }
+}
+
+class VTaskCollection extends VTask {
+	constructor(editor, tasks) {
+		super(editor);
+		this.tasks = tasks;
+		this.disposed = false;
+	}
+	commit() {
+		if(this.disposed){
+			throw new Error(L10N.t('task-collection-commit-disposed-error'));
+		}
+
+		const committed = [];
+		let success = true;
+		for(let i=0; i<this.tasks.length; ++i){
+			const task = this.tasks[i];
+			if(task.commit()){
+				committed.push(task);
+			}else{
+				success = false;
+				break;
+			}
+		}
+		if(success){
+			const reverses = [];
+			for(let i=committed.length-1; i>=0; i--){
+				reverses.push(committed[i].inverse());
+			}
+			this._inverse = new VTaskCollection(this.editor, reverses);
+			return true;
+		}
+		for(let i=committed.length-1; i>=0; i--){
+			if(!committed[i].inverse().commit()){
+				throw new Error(L10N.t('task-collection-commit-revert-error'));
+			}
+		}
+	}
+}
+
+VTask.join = function VTask$merge(tasks) {
+	if(tasks.length === 0) return null;
+	if(tasks.length === 1) return tasks[0];
+
+	const arr = [];
+	const traverse = (tasks) => {
+		tasks.forEach((task) => {
+			if(task instanceof VTaskCollection){
+				task.disposed = true;
+				traverse(task.tasks);
+			}else{
+				arr.push(task);
+			}
+		});
+	};
+	traverse(tasks);
+
+	return new VTaskCollection(tasks[0].editor, arr);
+};
+
 /// A no-op task
 class VEmptyTask extends VTask {
 	constructor(editor) { super(editor); }
@@ -24,162 +114,5 @@ class VMaybeTask extends VTask {
 	_makeInverse() {
 		if(this.no_op) return new VEmptyTask(this.editor);
 		else return this.task._makeInverse();
-	}
-}
-
-/// Creates a note (fails if there's an overlapping note)
-class VNoteAddTask extends VTask {
-	constructor(editor, type, lane, tick, len) {
-		super(editor);
-		this.type = type;
-		this.lane = lane;
-		this.tick = tick;
-		this.len = len;
-	}
-	_validate() {
-		if(this.tick < 0) return false;
-		const noteData = this.chartData.getNoteData(this.type, this.lane);
-		if(!noteData) return true; // Since there were no note;
-		return !noteData.intersects(this.tick, this.len);
-	}
-	_commit() {
-		const result = this.chartData.addNote(this.type, this.lane, this.tick, this.len);
-		if(!result || result[0] === false) return false;
-		this.editor.view.addNote(this.type, this.lane, this.tick, this.len);
-
-		return true;
-	}
-	_makeInverse() {
-		return new VNoteDelTask(this.editor, this.type, this.lane, this.tick);
-	}
-}
-
-class VNoteResizeTask extends VTask {
-	constructor(editor, type, lane, tick, oldLen, newLen) {
-		super(editor);
-		this.type = type;
-		this.lane = lane;
-		this.tick = tick;
-		this.oldLen = oldLen;
-		this.newLen = newLen;
-	}
-	_validate() {
-		if(this.tick < 0 || this.newLen < 0) return false;
-		const noteData = this.chartData.getNoteData(this.type, this.lane);
-		if(!noteData) return false;
-
-		// Assure that there's no overlapping note except the one we're editing.
-		const notes = noteData.getAll(this.tick, this.newLen+1);
-		if(notes.length !== 1) return false;
-		if(notes[0].y !== this.tick) return false;
-		if(notes[0].l !== this.oldLen) return false;
-
-		return true;
-	}
-	_commit() {
-		// Get the note we're editing
-		const noteData = this.chartData.getNoteData(this.type, this.lane);
-		if(!noteData) return false;
-
-		const note = noteData.get(this.tick);
-		if(!note) return false;
-
-		// Edit the DS and object in-place
-		note.l = note.data.len = this.newLen;
-
-		// Redraw this note
-		this.editor.view.delNote(this.type, this.lane, this.tick);
-		this.editor.view.addNote(this.type, this.lane, this.tick, this.newLen);
-
-		return true;
-	}
-	_makeInverse() {
-		return new VNoteResizeTask(this.editor, this.type, this.lane, this.tick, this.newLen, this.oldLen);
-	}
-}
-
-class VNoteDelTask extends VTask {
-	constructor(editor, type, lane, tick) {
-		super(editor);
-		this.type = type;
-		this.lane = lane;
-		this.tick = tick;
-	}
-	_validate() {
-		const noteData = this.chartData.getNoteData(this.type, this.lane);
-		if(!noteData) return false;
-		const node = noteData.get(this.tick);
-		if(!node) return false;
-		return node.y === this.tick;
-	}
-	_commit() {
-		if(!this.chartData.delNote(this.type, this.lane, this.tick)) return false;
-		this.editor.view.delNote(this.type, this.lane, this.tick);
-		return true;
-	}
-	_makeInverse() {
-		const noteData = this.chartData.getNoteData(this.type, this.lane);
-		const node = noteData.get(this.tick);
-
-		return new VNoteAddTask(this.editor, this.type, this.lane, this.tick, node.l);
-	}
-}
-
-class VGraphPointTask extends VTask {
-	constructor(editor, points, tick) {
-		super(editor);
-		this.points = points;
-		this.tick = tick;
-	}
-}
-
-/// Create a new point, with optional flags for connectedness of the previous point
-class VGraphPointAddTask extends VGraphPointTask {
-	constructor(editor, points, tick, newPoint, connectPrev) {
-		super(editor, points, tick);
-		this.newPoint = newPoint;
-		this.connectPrev = connectPrev;
-	}
-}
-
-/// Remove the current point, with an optional flag for connectedness of the previous point
-class VGraphPointDelTask extends VGraphPointTask {
-	constructor(editor, points, tick, connectPrev) {
-		super(editor, points, tick);
-		this.connectPrev = connectPrev;
-	}
-}
-
-/// Change v and vf of a point
-class VGraphPointChangeSlamTask extends VGraphPointTask {
-	constructor(editor, points, tick, v, vf) {
-		super(editor, points, tick);
-		this.v = v;
-		this.vf = vf;
-	}
-}
-
-/// Change wide of a point
-class VGraphPointChangeWideTask extends VGraphPointTask {
-	constructor(editor, points, tick, wide) {
-		super(editor, points, tick);
-		this.wide = wide;
-	}
-}
-
-/// Change `connected` value of a point (connect/disconnect an edge)
-class VGraphPointChangeConnectedTask extends VGraphPointTask {
-	constructor(editor, points, tick, connected) {
-		super(editor, points, tick);
-		this.connected = connected;
-	}
-}
-
-/// Change a and b of a point (implement it later)
-class VGraphPointChangeSlamTask extends VGraphPointTask {
-	constructor(editor, points, tick, a, b) {
-		super(editor, points, tick);
-		this.a = a;
-		this.b = b;
 	}
 }

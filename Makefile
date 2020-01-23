@@ -8,7 +8,7 @@ SRC_UTIL := shim.js aa-tree.js misc.js logger.js l10n.js settings.js
 SRC_DATA := common.js graph.js chart.js ksh.js ksh-exporter.js kson.js
 SRC_VIEW := settings.js render-components.js render-tick-prop.js render-laser.js render.js view-components.js view.js
 SRC_MANAGER := key-manager.js task-manager.js file-manager.js
-SRC_EDIT := task.js object.js context.js context-note.js context-graph.js
+SRC_EDIT := task.js task-note.js task-graph.js object.js context.js context-note.js context-graph.js
 SRC_UI := toolbar.js message.js
 SRC_EDITOR := editor.js
 

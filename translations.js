@@ -163,6 +163,9 @@ task-warn-clear-history
 	en: Clearing history due to an undoable task "%1"
 	ko: 되돌리기 불가능한 %1 작업으로 인해 작업 내역이 삭제되었습니다.
 
+task-collection-commit-disposed-error
+	en: Committing a collection of tasks failed because it was already disposed.
+	ko: 여러 작업을 한 번에 실행하는 중 오류가 발생했습니다! (유효하지 않은 모임)
 task-collection-commit-revert-error
 	en: Revert failed while tryping to commit multiple tasks at once!
 	ko: 여러 작업을 한 번에 되돌리는 중 오류가 발생했습니다!
