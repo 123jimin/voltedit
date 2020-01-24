@@ -8,6 +8,8 @@ class VEditGraphContext extends VEditContext {
 	getObjectAt(event) {
 		return this.getObjectByTick(event.tick);
 	}
+	createObjectAt(startEvent, endEvent) {
+	}
 	getObjectByTick(tick) {
 		const points = this.getPoints();
 		if(!points) return null;
@@ -43,7 +45,8 @@ class VEditLaserContext extends VEditGraphContext {
 		this.wide = false;
 	}
 	canMakeObjectAt(event) {
-		return event.tick >= 0 && event.v >= 0 && event.v <= 1;
+		const aligned = ALIGN(this.editor.laserSnap, event.v);
+		return event.tick >= 0 && aligned >= 0 && aligned <= 1;
 	}
 	areSamePos(e1, e2) {
 		return e1.tick === e2.tick &&

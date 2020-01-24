@@ -83,6 +83,10 @@ class VView {
 		this._checkRedrawMesaures(tick);
 		this.refresh();
 	}
+	addLaser(lane, point) {
+		this.render.addLaser(lane, point, point.data.connected ? point.next() : null);
+		this.refresh();
+	}
 	delNote(type, lane, tick) {
 		switch(type){
 			case 'bt':
@@ -92,6 +96,11 @@ class VView {
 				this.render.delFxNote(lane, tick);
 				break;
 		}
+		this.refresh();
+	}
+	delLaser(lane, tick) {
+		if(tick < 0) return;
+		this.render.delLaser(lane, tick);
 		this.refresh();
 	}
 	selNote(type, lane, tick, selected) {
@@ -109,13 +118,16 @@ class VView {
 		this.render.selLaser(lane, tick, selected);
 		this.refresh();
 	}
+	
+	getLaserCallbacks(lane) {
+		return (add, update, delTick) => {
+			if(add) this.addLaser(lane, add);
+			if(update) this.updateLaser(lane, update);
+			if(delTick >= 0) this.delLaser(lane, delTick);
+		};
+	}
 	updateLaser(lane, point) {
 		if(!point) return;
-
-		const prev = point.prev();
-		if(prev && prev.data.connected)
-			this.render.updateLaser(lane, prev, point);
-		
 		this.render.updateLaser(lane, point, point.data.connected ? point.next() : null);
 	}
 	/// Updates connected lasers

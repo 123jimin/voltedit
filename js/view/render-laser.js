@@ -97,13 +97,22 @@ class VLaserRenderPoint {
 			this.tail[1].visible = false;
 			return;
 		}
-		if(!currNode.data.isSlam()){
+
+		/*
+		const editor = this.view.editor;
+		const isLaserEditMode = editor.context instanceof VEditLaserContext;
+
+		if(!currNode.data.isSlam() && !isLaserEditMode){
 			this.tail[0].visible = false;
 			this.tail[1].visible = false;
 			return;
 		}
+		*/
+
+		const tailY = currNode.data.isSlam() ? this.view.scale.laserSlamHeight : 0;
+
 		this.tail[0].visible = true;
-		this.tail[0].position.set(this._xf, this.view.scale.laserSlamHeight, 0);
+		this.tail[0].position.set(this._xf, tailY, 0);
 		this.tail[1].position.copy(this.tail[0].position);
 	}
 	_createMesh(points) {
@@ -128,4 +137,8 @@ class VLaserRenderPoint {
 
 		return this._createMesh(points);
 	}
+
+	dispose() {
+		RenderHelper.dispose(this.object);
+	};
 }

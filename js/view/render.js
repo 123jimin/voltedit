@@ -210,6 +210,12 @@ class VViewRender {
 		if(!(pos in this.lasersByY[lane])) return;
 		this.lasersByY[lane][pos].sel(selected);
 	}
+	delLaser(lane, pos) {
+		if(lane >= this.lasersByY.length) return;
+		if(!(pos in this.lasersByY[lane])) return;
+		this.lasersByY[lane][pos].dispose();
+		delete this.lasersByY[lane][pos];
+	}
 	updateLaser(lane, currNode, nextNode) {
 		if(lane >= this.lasersByY.length) return;
 		if(!(currNode.y in this.lasersByY[lane])) return;

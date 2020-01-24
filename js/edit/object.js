@@ -90,8 +90,17 @@ class VLaserGraphPointObject extends VGraphPointObject {
 		this.tick = tick;
 	}
 
+	_getPoints(editor) {
+		return editor.chartData.getNoteData('laser', this.lane);
+	}
+
 	sel(view, selected) {
 		view.selLaser(this.lane, this.tick, selected);
+	}
+
+	delTask(editor) {
+		return new VGraphPointDelTask(editor, this._getPoints(editor),
+			editor.view.getLaserCallbacks(this.lane), this.tick, false);
 	}
 
 	serialize() {}

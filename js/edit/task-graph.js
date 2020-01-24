@@ -12,7 +12,8 @@ class VGraphPointTask extends VTask {
 	}
 }
 
-/// Create a new point, with optional flags for connectedness of the previous point | callback: (addNode, removeTick or -1)
+/// Create a new point, with optional flags for connectedness of the previous point
+/// Callback: (created, updated, deletedTick (if >= 0))
 class VGraphPointAddTask extends VGraphPointTask {
 	constructor(editor, points, callback, tick, newPoint, connectPrev) {
 		super(editor, points, callback, tick);
@@ -43,7 +44,7 @@ class VGraphPointAddTask extends VGraphPointTask {
 		const prevPoint = point.prev();
 		if(prevPoint) prevPoint.data.connected = this.connectPrev;
 
-		this.callback(point, -1);
+		this.callback(point, prevPoint, -1);
 		return true;
 	}
 	_makeInverse() {
@@ -55,7 +56,7 @@ class VGraphPointAddTask extends VGraphPointTask {
 	}
 }
 
-/// Remove the current point, with an optional flag for connectedness of the previous point | callback: see VGraphPointAddTask
+/// Remove the current point, with an optional flag for connectedness of the previous point
 class VGraphPointDelTask extends VGraphPointTask {
 	constructor(editor, points, callback, tick, connectPrev) {
 		super(editor, points, callback, tick);
@@ -65,12 +66,17 @@ class VGraphPointDelTask extends VGraphPointTask {
 		return !!this._getPoint();
 	}
 	_commit() {
-		const prevPoint = this._point.prev();
+		let prevPoint = this._point.prev();
 		this._point.remove();
+		this._point = null;
 
+		// prevPoint must be reobtained, since it was invalidated because of `remove`.
+		if(prevPoint) prevPoint = this.points.get(prevPoint.y);
 		if(prevPoint) prevPoint.data.connected = this.connectPrev;
 
-		this.callback(prevPoint, this.tick);
+		this.callback(null, prevPoint, this.tick);
+
+		return true;
 	}
 	_makeInverse() {
 		let oldConnectPrev = false;
@@ -78,12 +84,12 @@ class VGraphPointDelTask extends VGraphPointTask {
 		if(prevPoint) oldConnectPrev = prevPoint.data.connected;
 		
 		const pointCopy = new VGraphPoint({
-			'v': this._point.v,
-			'vf': this._point.vf,
-			'connected': this._point.connected,
-			'wide': this._point.wide,
-			'a': this._point.a,
-			'b': this._point.b,
+			'v': this._point.data.v,
+			'vf': this._point.data.vf,
+			'connected': this._point.data.connected,
+			'wide': this._point.data.wide,
+			'a': this._point.data.a,
+			'b': this._point.data.b,
 		});
 
 		return new VGraphPointAddTask(this.editor, this.points, this.callback, this.tick, pointCopy, oldConnectPrev);
