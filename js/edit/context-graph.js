@@ -59,23 +59,16 @@ class VEditLaserContext extends VEditGraphContext {
 	}
 	getPoints() { return this.editor.chartData.getNoteData('laser', this.lane); }
 	getGraphPointEdits(point) {
-		return [this._getSlamEdit(point), this._getEdgeEdit(point)];
+		this._makeEdits(point);
+		if(point.data.isSlam()) return [point.data.editV, point.data.editVF];
+		else return [point.data.editV];
 	}
 	getGraphPointEditByTick(point, tick) {
-		if(tick === point.y) return this._getSlamEdit(point);
-		if(tick > point.y) return this._getEdgeEdit(point);
 		return null;
 	}
-
-	_getSlamEdit(point) {
-		const edit = new VLaserSlamObject(this.lane, point);
-		point.data.setSlamEdit(edit);
-		return edit;
-	}
-	_getEdgeEdit(point) {
-		const edit = new VLaserEdgeObject(this.lane, point);
-		point.data.setEdgeEdit(edit);
-		return edit;
+	_makeEdits(point) {
+		if(!point.data.editV) point.data.setEditV(new VLaserEditPoint(this.lane, point, false));
+		if(point.data.isSlam() && !point.data.editVF) point.data.setEditVF(new VLaserEditPoint(this.lane, point, true));
 	}
 	createObjectAt(startEvent, endEvent) {
 

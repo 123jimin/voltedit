@@ -11,16 +11,14 @@ class VGraphPoint {
 		this.a = params.a || 0;
 		this.b = params.b || 0;
 
-		this.slamEdit = null;
-		this.edgeEdit = null;
+		this.editV = null;
+		this.editVF = null;
 	}
-	setSlamEdit(slam) {
-		this.slamEdit = slam;
-		slam.point = this;
+	setEditV(edit) {
+		this.editV = edit;
 	}
-	setEdgeEdit(edge) {
-		this.edgeEdit = edge;
-		edge.point = this;
+	setEditVF(edit) {
+		this.editVF = edit;
 	}
 	isSlam() {
 		return this.vf !== this.v;

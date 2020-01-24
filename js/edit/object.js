@@ -79,7 +79,9 @@ class VNoteObject extends VEditObject {
 class VGraphEditObject extends VEditObject {
 	constructor(point) {
 		super();
-		this.point = point || null;
+		this.tick = point.y;
+
+		// Do not store nodes in an edit object, since it can be invalidated by other edits.
 	}
 }
 
@@ -87,21 +89,18 @@ class VLaserEditObject extends VGraphEditObject {
 	constructor(lane, point) {
 		super(point);
 		this.lane = lane;
-		this.tick = point.y;
 	}
 	getPoints(editor) {
 		return editor.chartData.getNoteData('laser', this.lane);
 	}
 }
 
-class VLaserSlamObject extends VLaserEditObject {
-	sel(view, selected) {
-		view.selLaserSlam(this.lane, this.tick, selected);
+class VLaserEditPoint extends VLaserEditObject {
+	constructor(lane, point, isVF) {
+		super(lane, point);
+		this.isVF = isVF;
 	}
-}
-
-class VLaserEdgeObject extends VLaserEditObject {
 	sel(view, selected) {
-		view.selLaserEdge(this.lane, this.tick, selected);
+		// TODO: how?
 	}
 }
