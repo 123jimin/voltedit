@@ -124,22 +124,35 @@ class VGraphPointChangePropTask extends VGraphPointTask {
 
 /// Change v and vf of a point
 class VGraphPointChangeSlamTask extends VGraphPointChangePropTask {
-	constructor(editor, points, callback, tick, v, vf) {
-		super(editor, points, tick);
+	constructor(editor, points, callback, tick, v, vf, retainVF) {
+		super(editor, points, callback, tick);
 		this.v = v;
 		this.vf = vf;
+		this.retainVF = retainVF;
 	}
 	_commit() {
 		const point = this._point;
 		point.data.v = this.v;
 		point.data.vf = this.vf;
+		if(this.v === this.vf){
+			if(this.retainVF) point.data.editV = point.data.editVF;
+			point.data.editVF = null;
+			point.data.editV.isVF = false;
+		}else{
+			if(this.retainVF){
+				point.data.editVF = point.data.editV;
+				point.data.editVF.isVF = true;
+				point.data.editV = null;
+			}
+		}
+
 		this._afterCommit();
 		return true;
 	}
 	_makeInverse() {
 		const point = this._point;
 		return new VGraphPointChangeSlamTask(this.editor, this.points, this.callback, this.tick,
-			point.data.v, point.data.vf);
+			point.data.v, point.data.vf, this.retainVF);
 	}
 }
 

@@ -83,6 +83,14 @@ class VGraphEditObject extends VEditObject {
 
 		// Do not store nodes in an edit object, since it can be invalidated by other edits.
 	}
+	getGraphPoints(editor) {
+		return null;
+	}
+
+	getGraphPoint(editor) {
+		const points = this.getGraphPoints(editor);
+		return points && points.get(this.tick);
+	}
 }
 
 class VLaserEditObject extends VGraphEditObject {
@@ -90,8 +98,11 @@ class VLaserEditObject extends VGraphEditObject {
 		super(point);
 		this.lane = lane;
 	}
-	getPoints(editor) {
+	getGraphPoints(editor) {
 		return editor.chartData.getNoteData('laser', this.lane);
+	}
+	getCallbacks(editor) {
+		return editor.view.getLaserCallbacks(this.lane);
 	}
 }
 
@@ -102,6 +113,51 @@ class VLaserEditPoint extends VLaserEditObject {
 	}
 	sel(view, selected) {
 		view.selLaserEditPoint(this.lane, this.tick, this.isVF, selected);
+	}
+	delTask(editor) {
+		const point = this.getGraphPoint(editor);
+		if(!point) return null;
+			
+		const prevPoint = point.prev();
+		const prevConnected = prevPoint && prevPoint.data.connected;
+		const nextPoint = point.next();
+		const nextConnected = nextPoint && point.data.connected;
+
+		if(point.data.isSlam()){
+			if(prevConnected || nextConnected){
+				const newV = this.isVF ? point.data.v : point.data.vf;
+				return new VGraphPointChangeSlamTask(editor, this.getGraphPoints(editor),
+					(point) => {
+						const prevPoint = point.prev();
+						if(prevPoint && prevPoint.data.connected)
+							editor.view.updateLaser(this.lane, prevPoint);
+						editor.view.updateLaser(this.lane, point);
+						editor.view.selLaserEditPoint(this.lane, this.tick, true, false);
+						editor.view.selLaserEditPoint(this.lane, this.tick, false, false);
+					}, this.tick,
+					newV, newV, !this.isVF);
+			}else{
+				// The result will be just a single edit point, so just delete the whole graph point.
+				return new VGraphPointDelTask(editor, this.getGraphPoints(editor), this.getCallbacks(editor),
+					this.tick, false);
+			}
+		}
+
+		// Would want to be able to customize this
+		let stayConnected = true;
+		const pointsToRemove = [this.tick];
+
+		if(prevConnected && !prevPoint.data.isSlam()){
+			const prevPrevPoint = prevPoint.prev();
+			if(!prevPrevPoint && !prevPrevPoint.data.connected) pointsToRemove.push(prevPoint.y);
+		}
+
+		if(nextConnected && !nextPoint.data.isSlam()){
+			if(!nextPoint.data.connected || !nextPoint.next()) pointsToRemove.push(nextPoint.y);
+		}
+
+		return VTask.join(pointsToRemove.map((tick) => new VGraphPointDelTask(editor, this.getGraphPoints(editor),
+			this.getCallbacks(editor), tick, stayConnected && nextConnected)));
 	}
 }
 

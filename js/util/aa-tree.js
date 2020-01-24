@@ -88,7 +88,7 @@ class AATreeNode {
 		return this._right ? this._right.last() : this;
 	}
 	prev() {
-		if(this._left) return this._left.first();
+		if(this._left) return this._left.last();
 		let node = this;
 		while(!node._parent.root && node === node._parent._left) node = node._parent;
 		if(node._parent.root) return null;

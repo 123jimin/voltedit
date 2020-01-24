@@ -137,6 +137,7 @@ class VView {
 	updateLaser(lane, point) {
 		if(!point) return;
 		this.render.updateLaser(lane, point, point.data.connected ? point.next() : null);
+		this.refresh();
 	}
 	/// Updates connected lasers
 	updateConnectedLasers(lane, points) {
