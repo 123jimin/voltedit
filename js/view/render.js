@@ -205,10 +205,15 @@ class VViewRender {
 		while(lane >= this.lasersByY.length) this.lasersByY.push({});
 		this.lasersByY[lane][currNode.y] = laserGraphPoint;
 	}
-	selLaser(lane, pos, selected) {
+	selLaserSlam(lane, pos, slam) {
 		if(lane >= this.lasersByY.length) return;
 		if(!(pos in this.lasersByY[lane])) return;
-		this.lasersByY[lane][pos].sel(selected);
+		this.lasersByY[lane][pos].selSlam(slam);
+	}
+	selLaserEdge(lane, pos, edge) {
+		if(lane >= this.lasersByY.length) return;
+		if(!(pos in this.lasersByY[lane])) return;
+		this.lasersByY[lane][pos].selEdge(edge);
 	}
 	delLaser(lane, pos) {
 		if(lane >= this.lasersByY.length) return;

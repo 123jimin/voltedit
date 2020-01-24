@@ -24,6 +24,14 @@ const ALIGN = (a, x) => x%a === 0 ? x : RD(x/a)*a;
 /// Change the value, based on desired direction
 const ALIGN_STEP = (a, orig, dir) => ALIGN(a, orig+dir*a);
 
+const BoolMod = Object.freeze({
+	'UNCHANGE': (v) => !!v,
+	'FALSE': (v) => false,
+	'TRUE': (v) => true,
+	'VALUE': (x) => (y) => !!x,
+	'TOGGLE': (v) => !v,
+});
+
 /// Create a quad from 2D coordinates
 const QUAD = (points, [ax, ay], [bx, by], [cx, cy], [dx, dy]) => points.push(
 	ax, ay, 0, bx, by, 0, cx, cy, 0, ax, ay, 0, cx, cy, 0, dx, dy, 0

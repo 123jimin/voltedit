@@ -1,5 +1,5 @@
 class VGraphPoint {
-	constructor(params, edit) {
+	constructor(params) {
 		/// Slam start point and end point
 		this.v = params.v;
 		this.vf = (params.vf == null) ? params.v : params.vf;
@@ -11,11 +11,16 @@ class VGraphPoint {
 		this.a = params.a || 0;
 		this.b = params.b || 0;
 
-		if(edit) this.setEdit(edit);
+		this.slamEdit = null;
+		this.edgeEdit = null;
 	}
-	setEdit(edit) {
-		this.edit = edit;
-		edit.point = this;
+	setSlamEdit(slam) {
+		this.slamEdit = slam;
+		slam.point = this;
+	}
+	setEdgeEdit(edge) {
+		this.edgeEdit = edge;
+		edge.point = this;
 	}
 	isSlam() {
 		return this.vf !== this.v;

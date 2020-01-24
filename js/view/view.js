@@ -114,8 +114,12 @@ class VView {
 		}
 		this.refresh();
 	}
-	selLaser(lane, tick, selected) {
-		this.render.selLaser(lane, tick, selected);
+	selLaserSlam(lane, tick, slam) {
+		this.render.selLaserSlam(lane, tick, slam);
+		this.refresh();
+	}
+	selLaserEdge(lane, tick, edge) {
+		this.render.selLaserEdge(lane, tick, edge);
 		this.refresh();
 	}
 	

@@ -19,7 +19,8 @@ class VLaserRenderPoint {
 		]);
 
 		this.update(currNode, nextNode);
-		this.sel(false);
+		this.selSlam(false);
+		this.selEdge(false);
 	}
 	getMaterial() {
 		return this.render.laserBodyMaterials[this.lane];
@@ -41,10 +42,13 @@ class VLaserRenderPoint {
 		this._updateEdge(currNode, nextNode);
 		this._updateTail(currNode, nextNode);
 	}
-	sel(selected) {
-		this.slam[1].visible = this.slam[0].visible && selected;
-		this.edge[1].visible = this.edge[0].visible && selected;
-		this.tail[1].visible = this.tail[0].visible && selected;
+	selSlam(slam) {
+		this.slam[1].visible = this.slam[0].visible && slam;
+		if(!this.edge[0].visible) this.tail[1].visible = this.tail[0].visible && slam;
+	}
+	selEdge(edge) {
+		this.edge[1].visible = this.edge[0].visible && edge;
+		if(this.edge[0].visible) this.tail[1].visible = this.tail[0].visible && edge;
 	}
 	_updateSlam(node) {
 		if(!node.data.isSlam()){

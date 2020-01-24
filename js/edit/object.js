@@ -76,33 +76,32 @@ class VNoteObject extends VEditObject {
 	unserialize(data) { [this.type, this.lane, this.tick, this.len] = data; }
 }
 
-class VGraphPointObject extends VEditObject {
+class VGraphEditObject extends VEditObject {
 	constructor(point) {
 		super();
 		this.point = point || null;
 	}
 }
 
-class VLaserGraphPointObject extends VGraphPointObject {
-	constructor(lane, tick, point) {
+class VLaserEditObject extends VGraphEditObject {
+	constructor(lane, point) {
 		super(point);
 		this.lane = lane;
-		this.tick = tick;
+		this.tick = point.y;
 	}
-
-	_getPoints(editor) {
+	getPoints(editor) {
 		return editor.chartData.getNoteData('laser', this.lane);
 	}
+}
 
+class VLaserSlamObject extends VLaserEditObject {
 	sel(view, selected) {
-		view.selLaser(this.lane, this.tick, selected);
+		view.selLaserSlam(this.lane, this.tick, selected);
 	}
+}
 
-	delTask(editor) {
-		return new VGraphPointDelTask(editor, this._getPoints(editor),
-			editor.view.getLaserCallbacks(this.lane), this.tick, false);
+class VLaserEdgeObject extends VLaserEditObject {
+	sel(view, selected) {
+		view.selLaserEdge(this.lane, this.tick, selected);
 	}
-
-	serialize() {}
-	unserialize() {}
 }
