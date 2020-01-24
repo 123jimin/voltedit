@@ -135,7 +135,7 @@ class VEditContext {
 		if(!this.hasSelection()) return;
 
 		const delTasks = [];
-		this.selectedObjects.forEach((obj) => delTasks.push(obj.delTask(this.editor)));
+		this.selectedObjects.forEach((obj) => delTasks.push(new VLazyTask(this.editor, () => obj.delTask(this.editor))));
 
 		this.editor.taskManager.do('task-delete-selected', VTask.join(delTasks));
 

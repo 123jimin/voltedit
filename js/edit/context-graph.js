@@ -1,37 +1,32 @@
 class VEditGraphContext extends VEditContext {
 	getPoints() { return null; }
-	getGraphPointEdits(point) { return []; }
-	getGraphPointEditByTick(point, tick) { return null; }
+	makeEdits(point) {}
 	createGraphPointObject(tick, event) { return null; }
+	createObjectAt(startEvent, endEvent) { return null; }
 	areSamePos(e1, e2) {
 		return e1.tick === e2.tick && e1.v === e2.v;
 	}
 	
 	getObjectAt(event) {
-		return this.getObjectByTick(event.tick);
-	}
-	createObjectAt(startEvent, endEvent) {
-	}
-	getObjectByTick(tick) {
 		const points = this.getPoints();
 		if(!points) return null;
 
-		const point = points.getLE(tick);
+		const point = points.get(event.tick);
 		if(!point) return null;
 
-		const nextPoint = point.next();
-		if(!point.data.connected || !nextPoint){
-			if(tick !== point.y) return null;
-		}
+		this.makeEdits(point);
 
-		return this.getGraphPointEditByTick(point, tick);
+		if(!point.data.editVF) return point.data.editV;
 
-		/*
-		if(!point.data.edit)
-			point.data.setEdit(this.createGraphPointObject(point.y, point));
+		const vDist = Math.abs(event.v - point.data.v);
+		const vfDist = Math.abs(event.v - point.data.vf);
 
-		return point.data.edit;
-		*/
+		return vDist < vfDist ? point.data.editV : point.data.editVF;
+	}
+	getGraphPointEdits(point) {
+		this.makeEdits(point);
+		if(point.data.isSlam()) return [point.data.editV, point.data.editVF];
+		else return [point.data.editV];
 	}
 	selectRange(from, to) {
 		const points = this.getPoints();
@@ -50,23 +45,15 @@ class VEditLaserContext extends VEditGraphContext {
 		this.wide = false;
 	}
 	canMakeObjectAt(event) {
-		const aligned = ALIGN(this.editor.laserSnap, event.v);
-		return event.tick >= 0 && aligned >= 0 && aligned <= 1;
-	}
-	areSamePos(e1, e2) {
-		return e1.tick === e2.tick &&
-			ALIGN(this.editor.laserSnap, e1.v) === ALIGN(this.editor.laserSnap, e2.v);
+		return event.tick >= 0 && event.v >= 0 && event.v <= 1;
 	}
 	getPoints() { return this.editor.chartData.getNoteData('laser', this.lane); }
 	getGraphPointEdits(point) {
-		this._makeEdits(point);
+		this.makeEdits(point);
 		if(point.data.isSlam()) return [point.data.editV, point.data.editVF];
 		else return [point.data.editV];
 	}
-	getGraphPointEditByTick(point, tick) {
-		return null;
-	}
-	_makeEdits(point) {
+	makeEdits(point) {
 		if(!point.data.editV) point.data.setEditV(new VLaserEditPoint(this.lane, point, false));
 		if(point.data.isSlam() && !point.data.editVF) point.data.setEditVF(new VLaserEditPoint(this.lane, point, true));
 	}

@@ -101,6 +101,9 @@ class VLaserEditPoint extends VLaserEditObject {
 		this.isVF = isVF;
 	}
 	sel(view, selected) {
-		// TODO: how?
+		view.selLaserEditPoint(this.lane, this.tick, this.isVF, selected);
 	}
+}
+
+class VLaserEditEdge extends VLaserEditObject {
 }

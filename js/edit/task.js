@@ -118,3 +118,22 @@ class VMaybeTask extends VTask {
 		else return this.task._makeInverse();
 	}
 }
+
+/// A task which will be created just before being validated
+class VLazyTask extends VTask {
+	constructor(editor, taskGen) {
+		super(editor);
+		this.taskGen = taskGen;
+		this.task = null;
+	}
+	_validate() {
+		this.task = this.taskGen(this.editor);
+		return this.task && this.task._validate();
+	}
+	_commit() {
+		return this.task && this.task._commit();
+	}
+	_makeInverse() {
+		return this.task._makeInverse();
+	}
+}

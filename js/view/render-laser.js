@@ -18,9 +18,14 @@ class VLaserRenderPoint {
 			0, HALF_LASER*2, 0,
 		]);
 
+		this.editV = this._createEdit();
+		this.editVF = this._createEdit();
+
 		this.update(currNode, nextNode);
 		this.selSlam(false);
 		this.selEdge(false);
+		this.selEditPoint(false, false);
+		this.selEditPoint(true, false);
 	}
 	getMaterial() {
 		return this.render.laserBodyMaterials[this.lane];
@@ -41,6 +46,7 @@ class VLaserRenderPoint {
 		this._updateSlam(currNode);
 		this._updateEdge(currNode, nextNode);
 		this._updateTail(currNode, nextNode);
+		this._updateEdit(currNode);
 	}
 	selSlam(slam) {
 		this.slam[1].visible = this.slam[0].visible && slam;
@@ -49,6 +55,10 @@ class VLaserRenderPoint {
 	selEdge(edge) {
 		this.edge[1].visible = this.edge[0].visible && edge;
 		if(this.edge[0].visible) this.tail[1].visible = this.tail[0].visible && edge;
+	}
+	selEditPoint(isVF, selected) {
+		if(isVF) this.editVF.visible = this.slam[0].visible && selected;
+		else this.editV.visible = selected;
 	}
 	_updateSlam(node) {
 		if(!node.data.isSlam()){
@@ -102,22 +112,25 @@ class VLaserRenderPoint {
 			return;
 		}
 
-		/*
-		const editor = this.view.editor;
-		const isLaserEditMode = editor.context instanceof VEditLaserContext;
-
-		if(!currNode.data.isSlam() && !isLaserEditMode){
+		if(!currNode.data.isSlam()){
 			this.tail[0].visible = false;
 			this.tail[1].visible = false;
 			return;
 		}
-		*/
 
 		const tailY = currNode.data.isSlam() ? this.view.scale.laserSlamHeight : 0;
 
 		this.tail[0].visible = true;
 		this.tail[0].position.set(this._xf, tailY, 0);
 		this.tail[1].position.copy(this.tail[0].position);
+	}
+	_updateEdit(currNode) {
+		this.editV.position.x = this._x;
+		if(currNode.data.isSlam()){
+			this.editVF.position.x = this._xf;
+		}else{
+			this.editVF.visible = false;
+		}
 	}
 	_createMesh(points) {
 		const geometry = new THREE.BufferGeometry();
@@ -140,6 +153,11 @@ class VLaserRenderPoint {
 		QUAD(points, p1, p2, p3, p4);
 
 		return this._createMesh(points);
+	}
+	_createEdit() {
+		const obj = this.render.laserEditPointTemplate.create();
+		this.object.add(obj);
+		return obj;
 	}
 
 	dispose() {

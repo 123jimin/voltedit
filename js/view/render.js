@@ -215,6 +215,11 @@ class VViewRender {
 		if(!(pos in this.lasersByY[lane])) return;
 		this.lasersByY[lane][pos].selEdge(edge);
 	}
+	selLaserEditPoint(lane, pos, isVF, selected) {
+		if(lane >= this.lasersByY.length) return;
+		if(!(pos in this.lasersByY[lane])) return;
+		this.lasersByY[lane][pos].selEditPoint(isVF, selected);
+	}
 	delLaser(lane, pos) {
 		if(lane >= this.lasersByY.length) return;
 		if(!(pos in this.lasersByY[lane])) return;
@@ -348,6 +353,12 @@ class VViewRender {
 
 		this.laserBodyMaterials = [];
 		this.view.color.hueLasers.forEach((hue) => this.laserBodyMaterials.push(this._createLaserBodyMaterial(hue)));
+
+		this.laserEditPointTemplate = new VModelTemplate(
+			THREE.Mesh,
+			this._createPlaneGeometry(-4, -4, 8, 8),
+			new THREE.MeshBasicMaterial({'color': this.view.color.selected, 'opacity': 0.7, 'transparent': true})
+		);
 	}
 	_createLaserBodyMaterial(hue) {
 		const color = new THREE.Color();

@@ -122,6 +122,10 @@ class VView {
 		this.render.selLaserEdge(lane, tick, edge);
 		this.refresh();
 	}
+	selLaserEditPoint(lane, tick, isVF, selected) {
+		this.render.selLaserEditPoint(lane, tick, isVF, selected);
+		this.refresh();
+	}
 	
 	getLaserCallbacks(lane) {
 		return (add, update, delTick) => {
@@ -371,7 +375,7 @@ class VView {
 		const laneCount = (this.editor.chartData && this.editor.chartData.getLaneCount('bt')) || 4;
 		let lane = Math.floor(offsetX);
 		lane = CLIP(lane+2, -1, laneCount);
-		const laser = (offsetX+(laneCount+0.5))/(laneCount+1);
+		const laser = 0.5 + offsetX/(laneCount+1);
 
 		return [tick, lane, laser];
 	}
