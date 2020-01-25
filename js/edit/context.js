@@ -13,6 +13,7 @@ class VEditContext {
 		this.prevClick = null;
 
 		this.selectedObjects = new Set();
+		this.prevSelected = null;
 	}
 	/* Encouraged to override */
 	_showHoverDrawing(event) { return false; }
@@ -30,6 +31,12 @@ class VEditContext {
 	onMouseDown(event) {
 		this._setDragStart(event);
 		this.view.setCursor();
+
+		if(this.selectedObjects.size === 1){
+			this.selectedObjects.forEach((obj) => this.prevSelected = obj);
+		}else{
+			this.prevSelected = null;
+		}
 
 		const obj = this.getObjectAt(event);
 		if(obj) {
@@ -168,7 +175,7 @@ class VEditContext {
 		if(tick === 0) return;
 
 		const delTasks = [];
-		this.selectedObjects.forEach((obj) => delTasks.push(obj.delTask(this.editor)));
+		this.selectedObjects.forEach((obj) => delTasks.push(new VLazyTask(this.editor, () => obj.delTask(this.editor))));
 
 		const moveTasks = [];
 		this.selectedObjects.forEach((obj) => moveTasks.push(obj.moveTickTask(this.editor, tick)));

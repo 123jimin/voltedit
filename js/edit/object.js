@@ -159,6 +159,14 @@ class VLaserEditPoint extends VLaserEditObject {
 		return VTask.join(pointsToRemove.map((tick) => new VGraphPointDelTask(editor, this.getGraphPoints(editor),
 			this.getCallbacks(editor), tick, stayConnected && nextConnected)));
 	}
+	moveTask(editor, startEvent, endEvent) {
+		if(startEvent.tick === endEvent.tick) {
+		}
+	}
+	moveTickTask(editor, tick) {
+	}
+	getTickMoved(editor, tick) {
+	}
 }
 
 class VLaserEditEdge extends VLaserEditObject {

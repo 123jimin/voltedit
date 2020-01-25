@@ -17,7 +17,7 @@ class VGraphPointTask extends VTask {
 class VGraphPointAddTask extends VGraphPointTask {
 	constructor(editor, points, callback, tick, newPoint, connectPrev) {
 		super(editor, points, callback, tick);
-		this.newPoint = newPoint;
+		this.newPoint = new VGraphPoint(newPoint);
 		this.connectPrev = connectPrev;
 	}
 	_validate() {

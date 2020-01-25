@@ -58,6 +58,48 @@ class VEditLaserContext extends VEditGraphContext {
 		if(point.data.isSlam() && !point.data.editVF) point.data.setEditVF(new VLaserEditPoint(this.lane, point, true));
 	}
 	createObjectAt(startEvent, endEvent) {
+		// TODO: the UX must be improved significantly
+		const newPoint = {
+			'v': startEvent.v,
+			'vf': endEvent.v,
+			'connected': false,
+			'wide': 1,
+			'a': 0, 'b': 0,
+		};
 
+		const points = this.getPoints();
+		if(!points) return null;
+
+		let prevPoint = null;
+		// Check that whether `startEvent` can be connected to `prevPoint`
+		if(this.prevSelected && (this.prevSelected instanceof VLaserEditPoint)){
+			prevPoint = this.prevSelected.getGraphPoint(this.editor);
+			if(prevPoint && !prevPoint.data.connected){
+				const prevNextPoint = prevPoint.next();
+				if(prevNextPoint && prevNextPoint.y < startEvent.tick){
+					prevPoint = null;
+				}
+			}
+		}
+
+		let connectPrev = false;
+		if(prevPoint){
+			newPoint.connected = prevPoint.connected;
+			newPoint.wide = prevPoint.wide;
+			connectPrev = true;
+		}
+		
+		const addTask = new VGraphPointAddTask(this.editor, points, this.view.getLaserCallbacks(this.lane),
+			startEvent.tick, newPoint, connectPrev);
+
+		if(!addTask) return null;
+		if(!this.editor.taskManager.do(`task-add-laser-point`, addTask)) return null;
+
+		const origV = startEvent.v; startEvent.v = endEvent.v;
+		const created = this.getObjectAt(startEvent);
+		startEvent.v = origV;
+
+		if(created) this.addToSelection(created);
+		return created;
 	}
 }
