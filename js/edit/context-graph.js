@@ -73,20 +73,26 @@ class VEditLaserContext extends VEditGraphContext {
 		let prevPoint = null;
 		// Check that whether `startEvent` can be connected to `prevPoint`
 		if(this.prevSelected && (this.prevSelected instanceof VLaserEditPoint)){
-			prevPoint = this.prevSelected.getGraphPoint(this.editor);
-			if(prevPoint && !prevPoint.data.connected){
-				const prevNextPoint = prevPoint.next();
-				if(prevNextPoint && prevNextPoint.y < startEvent.tick){
-					prevPoint = null;
+			if(this.prevSelected.tick < startEvent.tick){
+				prevPoint = this.prevSelected.getGraphPoint(this.editor);
+				if(prevPoint && !prevPoint.data.connected){
+					const prevNextPoint = prevPoint.next();
+					if(prevNextPoint && prevNextPoint.y < startEvent.tick){
+						prevPoint = null;
+					}
 				}
 			}
 		}
 
-		let connectPrev = false;
+		let connectPrev = true;
+		if(!prevPoint){
+			prevPoint = points.getLE(startEvent.tick);
+			connectPrev = prevPoint ? prevPoint.data.connected : false;
+		}
+
 		if(prevPoint){
-			newPoint.connected = prevPoint.connected;
-			newPoint.wide = prevPoint.wide;
-			connectPrev = true;
+			newPoint.connected = prevPoint.data.connected;
+			newPoint.wide = prevPoint.data.wide;
 		}
 		
 		const addTask = new VGraphPointAddTask(this.editor, points, this.view.getLaserCallbacks(this.lane),
