@@ -131,6 +131,9 @@ task-add-bt
 task-add-fx
 	en: adding an FX note
 	ko: FX 노트 추가
+task-add-laser-point
+	en: adding a laser point
+	ko: 레이저 점 추가
 task-move-selection
 	en: moving selection
 	ko: 선택 영역 이동
