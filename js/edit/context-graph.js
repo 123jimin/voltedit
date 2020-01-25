@@ -70,29 +70,29 @@ class VEditLaserContext extends VEditGraphContext {
 		const points = this.getPoints();
 		if(!points) return null;
 
-		let prevPoint = null;
-		// Check that whether `startEvent` can be connected to `prevPoint`
-		if(this.prevSelected && (this.prevSelected instanceof VLaserEditPoint)){
-			if(this.prevSelected.tick < startEvent.tick){
-				prevPoint = this.prevSelected.getGraphPoint(this.editor);
-				if(prevPoint && !prevPoint.data.connected){
-					const prevNextPoint = prevPoint.next();
-					if(prevNextPoint && prevNextPoint.y < startEvent.tick){
-						prevPoint = null;
-					}
+		let forceConnect = false;
+		const prevPoint = points.getLE(startEvent.tick);
+		const nextPoint = points.getGE(startEvent.tick);
+
+		// When the area between the sole selected point and its next point is dragged:
+		if(this.prevSelected && prevPoint && prevPoint.data.getEndEdit() === this.prevSelected){
+			if(!nextPoint || startEvent.tick < nextPoint.y){
+				forceConnect = true;
+				// If the start tick is less than end tick, then a slant, connected to the selected point will be added.
+				// Otherwise, a slam, connected to the selected point will be added.
+				if(startEvent.tick < endEvent.tick){
+					// TODO
+				}else{
+					// TODO
 				}
 			}
 		}
 
-		let connectPrev = true;
-		if(!prevPoint){
-			prevPoint = points.getLE(startEvent.tick);
-			connectPrev = prevPoint ? prevPoint.data.connected : false;
-		}
-
+		let connectPrev = false;
 		if(prevPoint){
 			newPoint.connected = prevPoint.data.connected;
 			newPoint.wide = prevPoint.data.wide;
+			connectPrev = forceConnect || prevPoint.data.connected;
 		}
 		
 		const addTask = new VGraphPointAddTask(this.editor, points, this.view.getLaserCallbacks(this.lane),

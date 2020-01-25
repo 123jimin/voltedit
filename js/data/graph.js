@@ -20,6 +20,12 @@ class VGraphPoint {
 	setEditVF(edit) {
 		this.editVF = edit;
 	}
+	getBeginEdit() {
+		return this.editV;
+	}
+	getEndEdit() {
+		return this.editVF || this.editV;
+	}
 	isSlam() {
 		return this.vf !== this.v;
 	}

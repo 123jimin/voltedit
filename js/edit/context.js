@@ -51,7 +51,7 @@ class VEditContext {
 				this.clearSelection();
 				if(!obj){
 					this.view.setCursor(event.tick);
-					if(event.tick >= 0 && this.addObjectEnabled()
+					if(event.tick >= 0 && event.which === 1 && this.addObjectEnabled()
 						&& this.editor.chartData && this.canMakeObjectAt(event)){
 							this.dragIntent = VEDIT_DRAG_INTENT.CREATE;
 					}

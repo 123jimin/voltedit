@@ -29,6 +29,7 @@ class VView {
 
 		this.elem.addEventListener('wheel', this.onWheel.bind(this), {'passive': true});
 		this.elem.addEventListener('mousedown', this.onMouseDown.bind(this));
+		this.elem.addEventListener('contextmenu', (e) => e.preventDefault());
 
 		document.addEventListener('mousemove', this.onMouseMove.bind(this), {'passive': true});
 		document.addEventListener('mouseup', this.onMouseUp.bind(this), {'passive': true});
