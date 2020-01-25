@@ -60,8 +60,8 @@ class VEditLaserContext extends VEditGraphContext {
 	createObjectAt(startEvent, endEvent) {
 		// TODO: the UX must be improved significantly
 		const newPoint = {
-			'v': startEvent.v,
-			'vf': endEvent.v,
+			'v': CLIP(startEvent.v, 0, 1),
+			'vf': CLIP(endEvent.v, 0, 1),
 			'connected': false,
 			'wide': 1,
 			'a': 0, 'b': 0,
@@ -101,7 +101,7 @@ class VEditLaserContext extends VEditGraphContext {
 		if(!addTask) return null;
 		if(!this.editor.taskManager.do(`task-add-laser-point`, addTask)) return null;
 
-		const origV = startEvent.v; startEvent.v = endEvent.v;
+		const origV = startEvent.v; startEvent.v = newPoint.vf;
 		const created = this.getObjectAt(startEvent);
 		startEvent.v = origV;
 
