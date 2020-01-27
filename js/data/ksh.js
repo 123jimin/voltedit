@@ -1,7 +1,7 @@
 const KSH_LINE_TYPE = Object.freeze({'HEADER': 0, 'BODY': 1});
 const KSH_REGEX = Object.freeze({
 	'OPTION': /^([^=]+)=(.*)$/,
-	'LINE': /^([012]{4})\|(.{2})\|([0-9A-Za-o\-:]{2})(?:(@\(|@\)|@<|@>|S<|S>)([0-9;]+))?$/
+	'LINE': /^([012]{4})\|(.{2})\|([0-9A-Za-o\-:]{2})((?:@\(|@\)|@<|@>|S<|S>)[0-9;]+)?$/
 });
 
 /// Just a data class representing time signatures
@@ -143,6 +143,7 @@ class KSHData extends VChartData {
 
 	/// Fills VChartData data
 	_setKSONData() {
+		this._initNote();
 		this._setKSONVersion();
 		this._setKSONMeta();
 		this._setKSONBgmInfo();
@@ -155,10 +156,11 @@ class KSHData extends VChartData {
 			this.gauge = {'total': total};
 		}
 
-		// Yes, KSM file is read three time (once for splitting, twice here)
+		// Yes, KSM file is read multiple times.
 		// But currently reading time is dominated by rendering time, so let's ignore this problem for now.
 		this._setKSONFromKSHLineOps();
 		this._setKSONNoteInfo();
+		this._setKSONRotationInfo();
 	}
 	_setKSONVersion() {
 		this.version = CURR_KSON_VERSION;
@@ -267,7 +269,6 @@ class KSHData extends VChartData {
 			measure.forEach((kshLine, line_idx) => {
 				let tick = kshLine.tick = measure_tick + tick_per_line * line_idx;
 				kshLine.len = tick_per_line;
-
 				kshLine.mods.forEach(([key, value]) => {
 					const intValue = parseInt(value);
 					const floatValue = parseFloat(value);
@@ -337,10 +338,9 @@ class KSHData extends VChartData {
 		const point = new VGraphPoint({'v': value, 'connected': true});
 		zoom.add(tick, 0, point);
 	}
+	
 	/// Processes notes and lasers
 	_setKSONNoteInfo() {
-		this._initNote();
-
 		// Stores [start, len] long note infos
 		let longInfo = {'bt': [null, null, null, null], 'fx': [null, null]};
 		const cutLongNote = (type, lane) => {
@@ -433,6 +433,36 @@ class KSHData extends VChartData {
 		for(let i=0; i<4; ++i) cutLongNote('bt', i);
 		for(let i=0; i<2; ++i) cutLongNote('fx', i);
 		for(let i=0; i<2; ++i) cutLaserSegment(i);
+	}
+	
+	_setKSONRotationInfo() {
+		this._ksmMeasures.forEach((measure, measure_idx) => {
+			measure.forEach((kshLine) => {
+				if(!kshLine.rot) return;
+				this._addRotation(kshLine.tick, kshLine.rot, measure_idx);
+			});
+		});
+	}
+	_addRotation(tick, mod, measure_idx) {
+		const type = mod.slice(0, 2);
+		const args = mod.slice(2).split(';').map((x) => parseInt(x));
+
+		let invokeName = '', invokeScale = 1;
+		switch(type){
+			case '@(': [invokeName, invokeScale] = ['spin', -1]; break;
+			case '@)': [invokeName, invokeScale] = ['spin', +1]; break;
+			case '@<': [invokeName, invokeScale] = ['half_spin', -1]; break;
+			case '@>': [invokeName, invokeScale] = ['half_spin', +1]; break;
+			case 'S<': [invokeName, invokeScale] = ['swing', -1]; break;
+			case 'S>': [invokeName, invokeScale] = ['swing', +1]; break;
+			default: return;
+		}
+
+		for(let lane of [0, 1]){
+			const laser = this.getLaserNode(lane, tick);
+		}
+		
+		// TODO: which lane?
 	}
 }
 

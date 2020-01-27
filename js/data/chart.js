@@ -109,6 +109,26 @@ class VChartData {
 		return body[type];
 	}
 
+	getCamPattern() {
+		if(!this.camera) this.camera = {};
+		if(!this.camera.cam) this.camera.cam = {};
+		if(!this.camera.cam.pattern) this.camera.cam.pattern = {};
+		return this.camera.cam.pattern;
+	}
+	addCamPulseInvocation() {
+		// TODO
+	}
+	addCamNoteInvocation(type, lane, invocation, data) {
+		const pattern = this.getCamPattern();
+		if(!pattern.note_event) pattern.note_event = {};
+		if(!(type in pattern.note_event)) pattern.note_event[type] = {};
+		
+		const noteInvocations = pattern.note_event[type];
+		this._initTreeArr(noteInvocations, lane+1);
+
+
+	}
+
 	iterMeasures(iterator, customLastTick) {
 		if(!this.beat || !this.beat.time_sig) return 0;
 
