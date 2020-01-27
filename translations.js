@@ -34,6 +34,21 @@ tab-panel-edit
 tab-panel-display
 	en: Display
 	ko: 표시
+tab-panel-basic-info
+	en: Basic Information
+	ko: 기본 정보
+tab-panel-difficulty
+	en: Difficulty
+	ko: 난이도
+tab-panel-music
+	en: Music
+	ko: 음악
+tab-panel-jacket
+	en: Jacket
+	ko: 자켓 이미지
+tab-panel-misc
+	en: Miscellaneous
+	ko: 기타
 tab-panel-chart-display-details
 	en: Chart Display Details
 	ko: 채보 표시 세부 사항
@@ -109,6 +124,25 @@ toolbar-measure-scale
 toolbar-columns
 	en: Columns:
 	ko: 행 수:
+
+toolbar-song-title
+	en: Title:
+	ko: 제목:
+toolbar-song-subtitle
+	en: Subtitle/Genre:
+	ko: 부제목/장르:
+toolbar-difficulty
+	en: Difficulty:
+	ko: 난이도:
+toolbar-artist
+	en: Song by:
+	ko: 작곡가:
+toolbar-charter
+	en: Charted by:
+	ko: 채보 제작자:
+toolbar-jacket-author
+	en: Jacket by:
+	ko: 자켓 제작자:
 
 toolbar-margin-side
 	en: Side margin:
