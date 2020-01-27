@@ -82,7 +82,6 @@ Also see the [milestones page](https://github.com/123jimin/voltedit/milestones).
 ### January: Simple Chart Creator
 * Adding lasers
 * Editing chart metadata
-* Reading/Writing slam rotation and tilt effects
 
 ### February: KSH Compatibility
 * Reading/Writing all KSH-compatible data, but not editing yet
@@ -90,6 +89,9 @@ Also see the [milestones page](https://github.com/123jimin/voltedit/milestones).
 	* Laser volume effects
 	* Laser slam sound effects
 * Editing lasers, perhaps with curves
+* Reading/Writing slam rotation and tilt effects
+	* Note: the current KSON spec is not concrete enough for implementing these.
+	* Implementing these would be delayed until a concrete spec is made.
 
 ### March: UX Improvement 1, Simple Playback
 * Ctrl+C/V
