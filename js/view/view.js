@@ -86,6 +86,8 @@ class VView {
 	}
 	addLaser(lane, point) {
 		this.render.addLaser(lane, point, point.data.connected ? point.next() : null);
+
+		this._checkRedrawMesaures(point.y);
 		this.refresh();
 	}
 	delNote(type, lane, tick) {
@@ -127,7 +129,7 @@ class VView {
 		this.render.selLaserEditPoint(lane, tick, isVF, selected);
 		this.refresh();
 	}
-	
+
 	getLaserCallbacks(lane) {
 		return (add, update, delTick) => {
 			if(add) this.addLaser(lane, add);
@@ -179,6 +181,18 @@ class VView {
 				break;
 		}
 		this._checkRedrawMesaures(tick+len);
+		this.refresh();
+	}
+	showLaserDrawing(lane, tick, point) {
+		const laserData = this.editor.chartData && this.editor.chartData.getNoteData('laser', lane);
+		if(!laserData) return;
+
+		const prevNode = laserData.getLE(tick);
+		const nextNode = laserData.getGE(tick);
+
+		// TODO
+
+		this._checkRedrawMesaures(tick);
 		this.refresh();
 	}
 	hideDrawing() {
