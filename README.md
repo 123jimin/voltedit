@@ -66,7 +66,7 @@ npm install -g uglify-es less less-plugin-clean-css
 Then use `make` to build the JS and CSS files.
 
 ## Planned Features
-These are planned features, as of 25 Jan 2020.
+These are planned features as of 29 Jan 2020.
 Some of plans may be changed later.
 
 Also see the [milestones page](https://github.com/123jimin/voltedit/milestones).
@@ -79,15 +79,12 @@ Also see the [milestones page](https://github.com/123jimin/voltedit/milestones).
 * kson-centric, but can export to ksh with some degrade
 * Multilingual (en and ko during development)
 
-### January: Simple Chart Creator
-* Adding lasers
-* Editing chart metadata
-
 ### February: KSH Compatibility
 * Reading/Writing all KSH-compatible data, but not editing yet
 	* FX/laser filter effects
 	* Laser volume effects
 	* Laser slam sound effects
+* Enable adding laser points in a segment, by clicking.
 * Editing lasers, perhaps with curves
 * Reading/Writing slam rotation and tilt effects
 	* Note: the current KSON spec is not concrete enough for implementing these.
@@ -127,3 +124,24 @@ I hope to be able to implement these features in this year, but not sure whether
 * Editing/previewing KSON chart layers
 * Advanced chart linter (measures ballpark difficulty)
 * Multiple game support, including Pop'n Music, DDR, PIU, WACCA, RB, ...
+
+## Problems in KSON Spec
+These are problems in [the current KSON spec](https://gist.github.com/m4saka/a89594a17dc9422d75e01998bcfd2722), discovered during developing this editor.
+Refer to the spec and [the discussion thread](https://github.com/m4saka/kshootmania-v2/issues/1) for the up-to-date status of these issues.
+
+### Major Problems
+These are problems which prevent implementing the related functionalities.
+* `CamInfo.tilt_assign`: It is unclear how NORMAL/BIGGER/BIGGEST tilts can be translated. The note below is unhelpful.
+* It is unclear how `CameraInfo.tilt` and `CamGraphs.rotation_z` interacts.
+* KSH slam rotations can't be translated to KSON easily.
+	* It seems that `CamPatternInfo.note_event` should be used.
+	* However, it is unclear what to do when there are two identical slams at the same time.
+	* The only feasible answer is to randomly pick one laser, but it's unsatisfactory.
+
+### Minor Problems
+These are small issues, which does not prevent implementating the related functionalities, but still needs to be addressed.
+* -1.0 - +1.0 range of `TiltInfo.manual` seems to translate to -100 - +100 of that of KSH, but it's not explicitly specified.
+* `GraphPoint.a` and `GraphPoint.b` are ambiguous.
+	* Currently, using 2nd order bezier curve is almost certain, but it's not explicitly specified.
+	* It is ambiguous that whether the curve after or before the point will be controlled with the control point.
+		* Currently "after" is the preferred answer for me, due to how `js/view/render-laser.js` is structured.
