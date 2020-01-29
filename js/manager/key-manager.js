@@ -105,6 +105,8 @@ class VKeyManager {
 		this._registerOp('context-fx', () => editor.setContext(new VEditNoteContext(editor, 'fx')));
 		this._registerOp('context-laser-left', () => editor.setContext(new VEditLaserContext(editor, 0)));
 		this._registerOp('context-laser-right', () => editor.setContext(new VEditLaserContext(editor, 1)));
+		this._registerOp('context-laser-3', () => editor.setContext(new VEditLaserContext(editor, 2)));
+		this._registerOp('context-laser-4', () => editor.setContext(new VEditLaserContext(editor, 3)));
 
 		this._registerOp('add-bt-a', editor.addNote.bind(editor, 'bt', 0));
 		this._registerOp('add-bt-b', editor.addNote.bind(editor, 'bt', 1));
@@ -147,6 +149,8 @@ class VKeyManager {
 		this.bind("S", 'context-fx');
 		this.bind("Q", 'context-laser-left');
 		this.bind("E", 'context-laser-right');
+		this.bind("Alt+Q", 'context-laser-3');
+		this.bind("Alt+E", 'context-laser-4');
 
 		this.bind("Backspace", 'delete-selection');
 		this.bind("Delete", 'delete-selection');

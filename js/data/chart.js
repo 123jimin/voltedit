@@ -36,6 +36,8 @@ class VChartData {
 	getNoteData(type, lane) {
 		if(!this.note) return null;
 		if(!(type in this.note)) return null;
+
+		this._initTreeArr(this.note[type], lane+1);
 		return this.note[type][lane];
 	}
 	getLaserNode(lane, tick) {
@@ -122,7 +124,7 @@ class VChartData {
 		const pattern = this.getCamPattern();
 		if(!pattern.note_event) pattern.note_event = {};
 		if(!(type in pattern.note_event)) pattern.note_event[type] = {};
-		
+
 		const noteInvocations = pattern.note_event[type];
 		this._initTreeArr(noteInvocations, lane+1);
 

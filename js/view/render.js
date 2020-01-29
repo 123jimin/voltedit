@@ -188,10 +188,6 @@ class VViewRender {
 		obj.visible = true;
 		return obj;
 	}
-	hideDrawing() {
-		this.btShortDrawing.visible = false;
-		this.fxShortDrawing.visible = false;
-	}
 
 	/** Drawing laser data **/
 	clearLasers() {
@@ -237,6 +233,16 @@ class VViewRender {
 		if(prevNode && !(prevNode.y in this.lasersByY[lane])) return;
 
 		this.laserDrawingPoints[lane].update(tick, point, nextNode);
+	}
+
+	hideDrawing() {
+		this.btShortDrawing.visible = false;
+		this.fxShortDrawing.visible = false;
+
+		this.btLongDrawing && (this.btLongDrawing.visible = false);
+		this.fxLongDrawing && (this.fxLongDrawing.visible = false);
+
+		this.laserDrawingPoints.forEach((point) => point.object.visible = false);
 	}
 
 	/** Drawing tick props **/
