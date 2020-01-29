@@ -21,6 +21,7 @@ class VToolbar {
 		});
 
 		this._setupHome();
+		this._setupChart();
 		this._setupOptions();
 	}
 
@@ -36,6 +37,10 @@ class VToolbar {
 
 		this.tabs[ind].classList.add('active');
 		this.panels[ind].classList.add('active');
+	}
+
+	setValue(className, value) {
+		for(let elem of this.elem.querySelectorAll(`.${className}`)) elem.value = value;
 	}
 
 	_setupHome() {
@@ -58,7 +63,18 @@ class VToolbar {
 		this._bind('toolbar-note-width', 'editor:note:width', (v) => this.editor.view.scale.setNoteWidth(+v));
 		this._bind('toolbar-measure-scale', 'editor:measure:scale', (v) => this.editor.view.scale.setMeasureScale(+v));
 		this._bind('toolbar-columns', 'editor:columns', (v) => this.editor.view.scale.setColumns(+v),
-			(v) => isFinite(+v) && +v >= 1 && +v <= 8 && +v === Math.round(+v));
+			(v) => +v >= 1 && +v <= 8 && Number.isInteger(+v));
+	}
+
+	_setupChart() {
+		this._bind('toolbar-song-title', null, (v) => this.editor.setSongTitle(v));
+		this._bind('toolbar-song-subtitle', null, (v) => this.editor.setSongSubtitle(v));
+		this._bind('toolbar-charter', null, (v) => this.editor.setCharter(v));
+		this._bind('toolbar-artist', null, (v) => this.editor.setArtist(v));
+		this._bind('toolbar-jacket-author', null, (v) => this.editor.setJacketAuthor(v));
+
+		this._bind('toolbar-difficulty', null, (v) => this.editor.setChartDifficulty(+v), (v) => +v >= 0 && +v <= 4 && Number.isInteger(+v));
+		this._bind('toolbar-level', null, (v) => this.editor.setChartLevel(+v), (v) => +v >= 1 && +v <= 20 && Number.isInteger(+v));
 	}
 
 	_setupOptions() {

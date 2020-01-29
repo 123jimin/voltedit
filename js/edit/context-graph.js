@@ -40,7 +40,7 @@ class VEditGraphContext extends VEditContext {
 
 class VEditLaserContext extends VEditGraphContext {
 	constructor(editor, lane) {
-		super(editor, `laser-${lane < 2 ? ['left','right'][lane] : lane.toString()}`);
+		super(editor, `laser-${lane < 2 ? ['left','right'][lane] : (lane+1).toString()}`);
 		this.lane = lane;
 		this.wide = false;
 	}

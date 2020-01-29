@@ -156,18 +156,58 @@ class VEditor {
 		const trimmedChartName = this.chartData.meta.title.trim();
 		const chartDifficulty = ['NOV','ADV','EXH','INF'][this.chartData.meta.difficulty.idx];
 
-		this.setChartTitle(`${trimmedChartName} [${chartDifficulty}]`);
+		this.toolbar.setValue('toolbar-song-title', chartData.meta.title || "");
+		this.toolbar.setValue('toolbar-song-subtitle', chartData.meta.subtitle || "");
+		this.toolbar.setValue('toolbar-charter', chartData.meta.chart_author || "");
+		this.toolbar.setValue('toolbar-artist', chartData.meta.artist || "");
+		this.toolbar.setValue('toolbar-jacket-author', chartData.meta.jacket_author || "");
+
+		this.toolbar.setValue('toolbar-difficulty', chartData.meta.difficulty && chartData.meta.difficulty.idx || 0);
+		this.toolbar.setValue('toolbar-level', chartData.meta.level || 1);
+
+		this.setWindowTitle(`${trimmedChartName} [${chartDifficulty}]`);
 		this.updateEditSnap();
 
 		this.view.setLocation(0);
 		this.view.redraw();
 	}
-	setChartTitle(title) {
+	setWindowTitle(title) {
 		if(title === ""){
 			document.title = "VOLTEdit";
 		}else{
 			document.title = `${title} - VOLTEdit`;
 		}
+	}
+
+	_setMeta(className, fieldName, value) {
+		if(!this.chartData || this.chartData.meta[fieldName] === value) return;
+		this.chartData.meta[fieldName] = value;
+		this.toolbar.setValue(className, value);
+	}
+	setSongTitle(title) {
+		this._setMeta('toolbar-song-title', 'title', title);
+	}
+	setSongSubtitle(subtitle) {
+		this._setMeta('toolbar-song-subtitle', 'subtitle', subtitle);
+	}
+	setCharter(charter) {
+		this._setMeta('toolbar-charter', 'chart_author', charter);
+	}
+	setArtist(artist) {
+		this._setMeta('toolbar-artist', 'artist', artist);
+	}
+	setJacketAuthor(jacketAuthor) {
+		this._setMeta('toolbar-jacket-author', 'jacket_author', jacketAuthor);
+	}
+	setChartDifficulty(difficulty) {
+		if(!this.chartData) return;
+		if(this.chartData.meta.difficulty && this.chartData.meta.difficulty.idx === +difficulty) return;
+		if(!this.chartData.meta.difficulty) this.chartData.meta.difficulty = {};
+		this.chartData.meta.difficulty.idx = +difficulty;
+		this.toolbar.setValue('toolbar-difficulty', difficulty);
+	}
+	setChartLevel(level) {
+		this._setMeta('toolbar-level', 'level', +level);
 	}
 
 	/* Drag Events */

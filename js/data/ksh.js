@@ -137,7 +137,7 @@ class KSHData extends VChartData {
 			case 'challenge': return 1;
 			case 'extended': return 2;
 			case 'infinite': return 3;
-			default: return 3;
+			default: return 4;
 		}
 	}
 
@@ -172,7 +172,7 @@ class KSHData extends VChartData {
 		meta.title = ksmMeta.title || "";
 		meta.artist = ksmMeta.artist || "";
 		meta.chart_author = ksmMeta.effect || "";
-		meta.level = ((level) => !isFinite(level) || level < 1 ? 1 : level > 20 ? 20 : level)(parseInt(ksmMeta.level || 1));
+		meta.level = CLIP(parseInt(ksmMeta.level || 1), 1, 20);
 		meta.difficulty = {'idx': this._getDiffIdx()};
 
 		if('difficulty' in ksmMeta) meta.difficulty.name = ksmMeta.difficulty;
@@ -338,7 +338,7 @@ class KSHData extends VChartData {
 		const point = new VGraphPoint({'v': value, 'connected': true});
 		zoom.add(tick, 0, point);
 	}
-	
+
 	/// Processes notes and lasers
 	_setKSONNoteInfo() {
 		// Stores [start, len] long note infos
@@ -434,7 +434,7 @@ class KSHData extends VChartData {
 		for(let i=0; i<2; ++i) cutLongNote('fx', i);
 		for(let i=0; i<2; ++i) cutLaserSegment(i);
 	}
-	
+
 	_setKSONRotationInfo() {
 		this._ksmMeasures.forEach((measure, measure_idx) => {
 			measure.forEach((kshLine) => {
@@ -461,7 +461,7 @@ class KSHData extends VChartData {
 		for(let lane of [0, 1]){
 			const laser = this.getLaserNode(lane, tick);
 		}
-		
+
 		// TODO: which lane?
 	}
 }
