@@ -6,7 +6,7 @@ class VGraphPoint {
 
 		/// Whether the current point is connected to the next point
 		this.connected = !!params.connected;
-		
+
 		this.wide = params.wide || 1;
 		this.a = params.a || 0;
 		this.b = params.b || 0;
@@ -90,7 +90,7 @@ VGraphSegment.fromPoints = function VGraphSegment$fromPoints(tree, isRelative){
 	if(tree.size === 0) return [];
 
 	const sections = [];
-	const currSection = null;
+	let currSection = null;
 	tree.traverse((node) => {
 		if(!currSection){
 			currSection = {
