@@ -1,10 +1,11 @@
 /// Managing a laser graph point
 class VLaserRenderPoint {
-	constructor(render, lane, currNode, nextNode) {
+	constructor(render, lane, tick, currData, nextNode, drawing) {
 		this.render = render;
 		this.view = render.view;
 		this.lane = lane;
 		this.object = new THREE.Object3D();
+		this.drawing = drawing;
 
 		// Will be updated to the proper value later.
 		const TEMPLATE_RECT = [[0, 0], [1, 0], [1, 1], [0, 1]];
@@ -21,14 +22,15 @@ class VLaserRenderPoint {
 		this.editV = this._createEdit();
 		this.editVF = this._createEdit();
 
-		this.update(currNode, nextNode);
+		this.update(tick, currData, nextNode);
 		this.selSlam(false);
 		this.selEdge(false);
 		this.selEditPoint(false, false);
 		this.selEditPoint(true, false);
 	}
 	getMaterial() {
-		return this.render.laserBodyMaterials[this.lane];
+		if(this.drawing) return this.render.laserDrawingMaterials[this.lane];
+		else return this.render.laserBodyMaterials[this.lane];
 	}
 	getX(v) {
 		return this._wide * (v-0.5) * this.view.scale.laserPosWidth;
@@ -36,17 +38,24 @@ class VLaserRenderPoint {
 	getY(ry) {
 		return this.view.t2p(ry);
 	}
-	update(currNode, nextNode) {
-		this._wide = currNode.data.wide;
-		this._x = this.getX(currNode.data.v);
-		this._xf = this.getX(currNode.data.vf);
-		this._y = this.getY(currNode.y);
+	update(tick, currData, nextNode) {
+		if(!currData){
+			this.object.visible = false;
+			return;
+		}else{
+			this.object.visible = true;
+		}
+
+		this._wide = currData.wide;
+		this._x = this.getX(currData.v);
+		this._xf = this.getX(currData.vf);
+		this._y = this.getY(tick);
 		this.object.position.y = this._y;
 
-		this._updateSlam(currNode);
-		this._updateEdge(currNode, nextNode);
-		this._updateTail(currNode, nextNode);
-		this._updateEdit(currNode);
+		this._updateSlam(currData);
+		this._updateEdge(currData, nextNode);
+		this._updateTail(currData, nextNode);
+		this._updateEdit(currData);
 	}
 	selSlam(slam) {
 		this.slam[1].visible = this.slam[0].visible && slam;
@@ -60,8 +69,8 @@ class VLaserRenderPoint {
 		if(isVF) this.editVF.visible = this.slam[0].visible && selected;
 		else this.editV.visible = selected;
 	}
-	_updateSlam(node) {
-		if(!node.data.isSlam()){
+	_updateSlam(currData) {
+		if(!currData.isSlam()){
 			this.slam[0].visible = false;
 			this.slam[1].visible = false;
 			return;
@@ -78,8 +87,8 @@ class VLaserRenderPoint {
 		this.slam[0].visible = true;
 		RenderHelper.updateGeometry(this.slam[0], points);
 	}
-	_updateEdge(currNode, nextNode) {
-		if(!nextNode || !currNode.data.connected){
+	_updateEdge(currData, nextNode) {
+		if(!nextNode || !currData.connected){
 			this.edge[0].visible = false;
 			this.edge[1].visible = false;
 			return;
@@ -92,7 +101,7 @@ class VLaserRenderPoint {
 		const ny = this.getY(nextNode.y) - this._y;
 
 		let y = 0;
-		if(currNode.data.isSlam()) y = SLAM_HEIGHT;
+		if(currData.isSlam()) y = SLAM_HEIGHT;
 
 		const points = [];
 		QUAD(points,
@@ -105,28 +114,28 @@ class VLaserRenderPoint {
 		this.edge[0].visible = true;
 		RenderHelper.updateGeometry(this.edge[0], points);
 	}
-	_updateTail(currNode, nextNode) {
-		if(nextNode && currNode.data.connected){
+	_updateTail(currData, nextNode) {
+		if(nextNode && currData.connected){
 			this.tail[0].visible = false;
 			this.tail[1].visible = false;
 			return;
 		}
 
-		if(!currNode.data.isSlam()){
+		if(!this.drawing && !currData.isSlam()){
 			this.tail[0].visible = false;
 			this.tail[1].visible = false;
 			return;
 		}
 
-		const tailY = currNode.data.isSlam() ? this.view.scale.laserSlamHeight : 0;
+		const tailY = currData.isSlam() ? this.view.scale.laserSlamHeight : 0;
 
 		this.tail[0].visible = true;
 		this.tail[0].position.set(this._xf, tailY, 0);
 		this.tail[1].position.copy(this.tail[0].position);
 	}
-	_updateEdit(currNode) {
+	_updateEdit(currData) {
 		this.editV.position.x = this._x;
-		if(currNode.data.isSlam()){
+		if(currData.isSlam()){
 			this.editVF.position.x = this._xf;
 		}else{
 			this.editVF.visible = false;

@@ -199,7 +199,7 @@ class VViewRender {
 		this.lasersByY = [];
 	}
 	addLaser(lane, currNode, nextNode) {
-		const laserGraphPoint = new VLaserRenderPoint(this, lane, currNode, nextNode);
+		const laserGraphPoint = new VLaserRenderPoint(this, lane, currNode.y, currNode.data, nextNode, false);
 		this.lasers.add(laserGraphPoint.object);
 
 		while(lane >= this.lasersByY.length) this.lasersByY.push({});
@@ -229,7 +229,14 @@ class VViewRender {
 	updateLaser(lane, currNode, nextNode) {
 		if(lane >= this.lasersByY.length) return;
 		if(!(currNode.y in this.lasersByY[lane])) return;
-		this.lasersByY[lane][currNode.y].update(currNode, nextNode);
+		this.lasersByY[lane][currNode.y].update(currNode.y, currNode.data, nextNode);
+	}
+
+	showLaserDrawing(lane, tick, prevNode, nextNode, point) {
+		if(lane >= this.laserDrawingPoints.length) return;
+		if(prevNode && !(prevNode.y in this.lasersByY[lane])) return;
+
+		this.laserDrawingPoints[lane].update(tick, point, nextNode);
 	}
 
 	/** Drawing tick props **/
@@ -348,21 +355,32 @@ class VViewRender {
 	}
 
 	_initLaserDrawData() {
-		this.lasers = this._createGroup(CLIP(this.view.scale.laserFloat, 1, VVIEW_EDITOR_UI_Z));
+		const laserZ = CLIP(this.view.scale.laserFloat, 1, VVIEW_EDITOR_UI_Z);
+		this.lasers = this._createGroup(laserZ);
+		this.laserDrawings = this._createGroup(laserZ);
 		this.lasersByY = [];
 
 		this.laserBodyMaterials = [];
-		this.view.color.hueLasers.forEach((hue) => this.laserBodyMaterials.push(this._createLaserBodyMaterial(hue)));
-
 		this.laserEditPointTemplate = new VModelTemplate(
 			THREE.Mesh,
 			this._createPlaneGeometry(-4, -4, 8, 8),
 			new THREE.MeshBasicMaterial({'color': this.view.color.selected, 'opacity': 0.7, 'transparent': true})
 		);
+
+		this.laserDrawingMaterials = [];
+		this.laserDrawingPoints = [];
+		this.view.color.hueLasers.forEach((hue, lane) => {
+			this.laserBodyMaterials.push(this._createLaserBodyMaterial(hue, 0.6));
+			this.laserDrawingMaterials.push(this._createLaserBodyMaterial(hue, 0.9));
+
+			const drawing = new VLaserRenderPoint(this, lane, 0, null, null, true);
+			this.laserDrawings.add(drawing.object);
+			this.laserDrawingPoints.push(drawing);
+		});
 	}
-	_createLaserBodyMaterial(hue) {
+	_createLaserBodyMaterial(hue, lightness) {
 		const color = new THREE.Color();
-		color.setHSL(hue/360, 1.0, 0.6);
+		color.setHSL(hue/360, 1.0, lightness);
 		return new THREE.MeshBasicMaterial({
 			'color': color,
 			'opacity': 0.5,

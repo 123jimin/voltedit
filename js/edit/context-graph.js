@@ -6,7 +6,7 @@ class VEditGraphContext extends VEditContext {
 	areSamePos(e1, e2) {
 		return e1.tick === e2.tick && e1.v === e2.v;
 	}
-	
+
 	getObjectAt(event) {
 		const points = this.getPoints();
 		if(!points) return null;
@@ -43,6 +43,23 @@ class VEditLaserContext extends VEditGraphContext {
 		super(editor, `laser-${['left','right'][lane]}`);
 		this.lane = lane;
 		this.wide = false;
+	}
+	_showHoverDrawing(event) {
+		if(!this.canMakeObjectAt(event)) return false;
+		this.view.showLaserDrawing(this.lane, event.tick, new VGraphPoint({
+			'v': event.v, 'vf': event.v,
+			'connected': false, 'wide': this.wide,
+		}));
+		return true;
+	}
+	_showDragDrawing(event) {
+		if(!this.canMakeObjectAt(event) || !this.canMakeObjectAt(this.startEvent)) return false;
+
+		this.view.showLaserDrawing(this.lane, event.tick, new VGraphPoint({
+			'v': this.startEvent.v, 'vf': event.v,
+			'connected': false, 'wide': this.wide,
+		}));
+		return true;
 	}
 	canMakeObjectAt(event) {
 		return event.tick >= 0 && event.v >= 0 && event.v <= 1;
@@ -94,7 +111,7 @@ class VEditLaserContext extends VEditGraphContext {
 			newPoint.wide = prevPoint.data.wide;
 			connectPrev = forceConnect || prevPoint.data.connected;
 		}
-		
+
 		const addTask = new VGraphPointAddTask(this.editor, points, this.view.getLaserCallbacks(this.lane),
 			startEvent.tick, newPoint, connectPrev);
 

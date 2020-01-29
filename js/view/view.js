@@ -188,9 +188,9 @@ class VView {
 		if(!laserData) return;
 
 		const prevNode = laserData.getLE(tick);
-		const nextNode = laserData.getGE(tick);
+		const nextNode = laserData.getGE(tick+1);
 
-		// TODO
+		this.render.showLaserDrawing(lane, tick, prevNode, nextNode, point);
 
 		this._checkRedrawMesaures(tick);
 		this.refresh();
