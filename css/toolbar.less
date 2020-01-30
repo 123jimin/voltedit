@@ -22,7 +22,7 @@ div.veditor div.toolbar {
 		font-size: .9em;
 		cursor: pointer;
 		background-color: @TOOLBAR_BG;
-		border: solid 1px desaturate(@KEY_COLOR, 50%, relative);
+		border: solid 1px @TOOLBAR_HOVER;
 		padding: 0; margin: 0;
 
 		&:focus {
@@ -49,20 +49,25 @@ div.veditor div.toolbar {
 	}
 
 	div.toolbar-tab {
-		&>ul li {
-			display: inline-block;
-			padding: .2em .4em .3em;
-			margin-left: .2em;
+		&>ul {
+			box-shadow: inset 0 -8px 10px -12px black;
+			li {
+				display: inline-block;
+				padding: .2em .4em .3em;
+				margin-left: .2em;
 
-			color: white;
-			cursor: pointer;
+				color: darken(@TOOLBAR_BG, 20%, relative);
+				cursor: pointer;
 
-			&:hover {
-				background-color: @TOOLBAR_HOVER;
-			}
-			&.active {
-				background-color: @TOOLBAR_BG;
-				color: black;
+				&:hover {
+					background-color: @TOOLBAR_HOVER;
+					color: @TOOLBAR_BG;
+				}
+				&.active {
+					box-shadow: 0 0 10px -3px black;
+					background-color: @TOOLBAR_BG;
+					color: black;
+				}
 			}
 		}
 	}
@@ -72,6 +77,13 @@ div.veditor div.toolbar {
 		background-color: @TOOLBAR_BG;
 		overflow-x: auto;
 		overflow-x: overlay;
+		overflow-y: hidden;
+
+		-ms-overflow-style: none;
+		scrollbar-width: none;
+		&::-webkit-scrollbar {
+			display: none;
+		}
 	}
 
 	div.toolbar-panel {
@@ -83,8 +95,6 @@ div.veditor div.toolbar {
 			flex-flow: row;
 			min-width: max-content;
 			position: absolute; left: 0; top: 0; bottom: 0;
-
-			background-color: @TOOLBAR_BG;
 		}
 	}
 
@@ -133,12 +143,13 @@ div.veditor div.toolbar {
 		button {
 			padding: 0 .4em;
 			height: 4.5em;
+			border-radius: 3px;
 		}
 		span.toolbar-edit-tick-disp {
 			display: inline-block;
 			font-size: 2em;
-			min-width: 2.75em;
-			max-width: 4em;
+			width: 2.25em;
+			overflow: visible;
 			position: relative;
 			top: .15em;
 
