@@ -377,7 +377,7 @@ class VViewRender {
 		this.laserDrawingPoints = [];
 		this.view.color.hueLasers.forEach((hue, lane) => {
 			this.laserBodyMaterials.push(this._createLaserBodyMaterial(hue, 0.6));
-			this.laserDrawingMaterials.push(this._createLaserBodyMaterial(hue, 0.9));
+			this.laserDrawingMaterials.push(this._createLaserBodyMaterial(hue, 0.75));
 
 			const drawing = new VLaserRenderPoint(this, lane, 0, null, null, true);
 			this.laserDrawings.add(drawing.object);

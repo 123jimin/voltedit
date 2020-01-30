@@ -165,6 +165,9 @@ task-add-bt
 task-add-fx
 	en: adding an FX note
 	ko: FX 노트 추가
+task-add-graph-point
+	en: adding a graph point
+	ko: 그래프 점 추가
 task-add-laser-point
 	en: adding a laser point
 	ko: 레이저 점 추가

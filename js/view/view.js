@@ -183,11 +183,11 @@ class VView {
 		this._checkRedrawMesaures(tick+len);
 		this.refresh();
 	}
-	showLaserDrawing(lane, tick, point) {
+	showLaserDrawing(lane, tick, connectPrev, point) {
 		const laserData = this.editor.chartData && this.editor.chartData.getNoteData('laser', lane);
 		if(!laserData) return;
 
-		const prevNode = laserData.getLE(tick);
+		const prevNode = connectPrev ? laserData.getLE(tick) : null;
 		const nextNode = laserData.getGE(tick+1);
 
 		this.render.showLaserDrawing(lane, tick, prevNode, nextNode, point);
