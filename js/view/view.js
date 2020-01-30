@@ -351,7 +351,7 @@ class VView {
 		}
 	}
 	onMouseMove(event) {
-		if(event.which === 0){
+		if(event.buttons === 0){
 			this.editor.context.onMouseHover(this.toChartViewEvent(event));
 		}
 		if(this.scrollBar.scrolling){
@@ -403,7 +403,7 @@ class VView {
 		}
 		return {
 			'tick': ALIGN(this.editor.editSnapTick, coord[0]), 'lane': coord[1], 'v': v,
-			'which': event.which, 'ctrlKey': event.ctrlKey, 'altKey': event.altKey, 'shiftKey': event.shiftKey,
+			'which': event.buttons, 'ctrlKey': event.ctrlKey, 'altKey': event.altKey, 'shiftKey': event.shiftKey,
 		};
 	}
 	_updateLocation() {

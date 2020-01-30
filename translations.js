@@ -144,6 +144,20 @@ toolbar-jacket-author
 	en: Jacket by:
 	ko: 자켓 제작자:
 
+toolbar-difficulty-name
+	en: Custom name:
+	ko: 커스텀 이름:
+toolbar-difficulty-short-name
+	en: Custom abbr.:
+	ko: 커스텀 축약어:
+toolbar-gauge-total
+	en: Gauge total:
+	ko: 게이지 토탈값:
+
+toolbar-path
+	en: Path:
+	ko: 경로:
+
 toolbar-margin-side
 	en: Side margin:
 	ko: 좌우 여백:
