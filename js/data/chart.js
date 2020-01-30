@@ -13,7 +13,7 @@ class VChartData {
 		this.beat = {
 			'bpm': new AATree([{'y': 0, 'data': 120}]),
 			'time_sig': [{'idx': 0, 'v': {'n': 4, 'd': 4}}],
-			'resolution': 240,
+			'resolution': 48,
 		};
 		this.gauge = {};
 
