@@ -75,6 +75,11 @@ class VToolbar {
 
 		this._bind('toolbar-difficulty', null, (v) => this.editor.setChartDifficulty(+v), (v) => +v >= 0 && +v <= 4 && Number.isInteger(+v));
 		this._bind('toolbar-level', null, (v) => this.editor.setChartLevel(+v), (v) => +v >= 1 && +v <= 20 && Number.isInteger(+v));
+		
+		this._bind('toolbar-difficulty-name', null, (v) => this.editor.setChartDifficultyName(v));
+		this._bind('toolbar-difficulty-short-name', null, (v) => this.editor.setChartDifficultyShortName(v));
+
+		this._bind('toolbar-gauge-total', null, (v) => this.editor.setGaugeTotal(+v), (v) => +v === 0 || (+v >= 100 && isFinite(+v)));
 	}
 
 	_setupOptions() {

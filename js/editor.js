@@ -153,8 +153,7 @@ class VEditor {
 
 		this.taskManager.clear();
 
-		const trimmedChartName = this.chartData.meta.title.trim();
-		const chartDifficulty = ['NOV','ADV','EXH','INF'][this.chartData.meta.difficulty.idx];
+		this.setWindowTitleFromChartData();
 
 		this.toolbar.setValue('toolbar-song-title', chartData.meta.title || "");
 		this.toolbar.setValue('toolbar-song-subtitle', chartData.meta.subtitle || "");
@@ -164,19 +163,31 @@ class VEditor {
 
 		this.toolbar.setValue('toolbar-difficulty', chartData.meta.difficulty && chartData.meta.difficulty.idx || 0);
 		this.toolbar.setValue('toolbar-level', chartData.meta.level || 1);
-
-		this.setWindowTitle(`${trimmedChartName} [${chartDifficulty}]`);
+		
+		this.toolbar.setValue('toolbar-difficulty-name', chartData.meta.difficulty && chartData.meta.difficulty.name || "");
+		this.toolbar.setValue('toolbar-difficulty-short-name', chartData.meta.difficulty && chartData.meta.difficulty.short_name || "");
+		this.toolbar.setValue('toolbar-gauge-total', chartData.gauge && chartData.gauge.total || "");
+		
 		this.updateEditSnap();
 
 		this.view.setLocation(0);
 		this.view.redraw();
 	}
-	setWindowTitle(title) {
-		if(title === ""){
-			document.title = "VOLTEdit";
-		}else{
-			document.title = `${title} - VOLTEdit`;
+	setWindowTitleFromChartData() {
+		if(!this.chartData){
+			document.title = 'VOLTEdit';
+			return;
 		}
+
+		let trimmedChartName = this.chartData.meta.title.trim();
+		if(!trimmedChartName) trimmedChartName = L10N.t('untitled');
+
+		let chartDifficulty = ['NOV','ADV','EXH','VVD','MXM'][this.chartData.meta.difficulty.idx];
+		if('short_name' in this.chartData.meta.difficulty) chartDifficulty = this.chartData.meta.difficulty.short_name.trim();
+		
+		let chartLevel = this.chartData.meta.level;
+
+		document.title = `${trimmedChartName} [${chartDifficulty} ${chartLevel}] - VOLTEdit`;
 	}
 
 	_setMeta(className, fieldName, value) {
@@ -186,6 +197,7 @@ class VEditor {
 	}
 	setSongTitle(title) {
 		this._setMeta('toolbar-song-title', 'title', title);
+		this.setWindowTitleFromChartData();
 	}
 	setSongSubtitle(subtitle) {
 		this._setMeta('toolbar-song-subtitle', 'subtitle', subtitle);
@@ -205,9 +217,47 @@ class VEditor {
 		if(!this.chartData.meta.difficulty) this.chartData.meta.difficulty = {};
 		this.chartData.meta.difficulty.idx = +difficulty;
 		this.toolbar.setValue('toolbar-difficulty', difficulty);
+		
+		this.setWindowTitleFromChartData();
+	}
+	setChartDifficultyName(name) {
+		if(!this.chartData) return;
+		if(this.chartData.meta.difficulty && this.chartData.meta.difficulty.name === name) return;
+		if(!this.chartData.meta.difficulty) this.chartData.meta.difficulty = {};
+		if(name.trim()){
+			this.chartData.meta.difficulty.name = name;
+		}else{
+			delete this.chartData.meta.difficulty.name;
+		}
+		this.toolbar.setValue('toolbar-difficulty-name', name);
+	}
+	setChartDifficultyShortName(shortName) {
+		if(!this.chartData) return;
+		if(this.chartData.meta.difficulty && this.chartData.meta.difficulty.short_name === shortName) return;
+		if(!this.chartData.meta.difficulty) this.chartData.meta.difficulty = {};
+		if(shortName.trim()){
+			this.chartData.meta.difficulty.short_name = shortName;
+		}else{
+			delete this.chartData.meta.difficulty.short_name;
+		}
+		this.toolbar.setValue('toolbar-difficulty-short-name', shortName);
+		
+		this.setWindowTitleFromChartData();
 	}
 	setChartLevel(level) {
 		this._setMeta('toolbar-level', 'level', +level);
+		this.setWindowTitleFromChartData();
+	}
+	setGaugeTotal(total) {
+		if(!this.chartData) return;
+		if(this.chartData.gauge && this.chartData.gauge.total === total) return;
+		if(!this.chartData.gauge) this.chartData.gauge = {};
+		if(total >= 100){
+			this.chartData.gauge.total = total;
+		}else{
+			delete this.chartData.gauge.total;
+		}
+		this.toolbar.setValue('toolbar-gauge-total', total);
 	}
 
 	/* Drag Events */

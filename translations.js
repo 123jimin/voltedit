@@ -4,6 +4,10 @@ not-yet-implemented
 	en: Not yet implemented.
 	ko: 아직 구현되지 않은 기능입니다.
 
+untitled
+	en: Untitled
+	ko: 무제
+
 ### Toolbar ###
 
 tab-home

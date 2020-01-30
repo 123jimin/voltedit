@@ -150,7 +150,7 @@ class KSHData extends VChartData {
 		this._setKSONBgInfo();
 
 		if('total' in this._ksmMeta) {
-			let total = parseInt(this._ksmMeta.total);
+			let total = parseFloat(this._ksmMeta.total);
 			if(!isFinite(total)) throw new Error(L10N.t('ksh-import-error-value', 'total', -1));
 			if(total < 100) total = 100;
 			this.gauge = {'total': total};
