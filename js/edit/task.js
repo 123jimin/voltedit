@@ -16,7 +16,7 @@ class VTask {
 	}
 	commit() {
 		if(this._commonValidate() && this._validate()){
-			// Creates an inverse job and commit it.
+			// Creates an inverse job and commit this.
 			if(!this._inverse){
 				this._inverse = this._makeInverse();
 				this._inverse._inverse = this;
@@ -32,7 +32,24 @@ class VTask {
 	_commonValidate() { return !!(this.editor && this.chartData && this.editor.chartData === this.chartData); }
 }
 
-class VTaskCollection extends VTask {
+/// A no-op task
+class VEmptyTask extends VTask {
+	constructor(editor) { super(editor); }
+	_validate() { return true; }
+	_commit() { return true; }
+	_makeInverse() { return this; }
+}
+
+/// Tasks containing other tasks must override `commit()` directly.
+class VTaskWrapper extends VTask {
+	_validate() { TODO(); }
+	_commit() { TODO(); }
+	_makeInverse() { TODO(); }
+
+	commit() { TODO(); }
+}
+
+class VTaskCollection extends VTaskWrapper {
 	constructor(editor, tasks) {
 		super(editor);
 		this.tasks = tasks;
@@ -67,6 +84,7 @@ class VTaskCollection extends VTask {
 				throw new Error(L10N.t('task-collection-commit-revert-error'));
 			}
 		}
+		return false;
 	}
 }
 
@@ -90,50 +108,38 @@ VTask.join = function VTask$merge(tasks) {
 	return new VTaskCollection(tasks[0].editor, arr);
 };
 
-/// A no-op task
-class VEmptyTask extends VTask {
-	constructor(editor) { super(editor); }
-	_validate() { return true; }
-	_commit() { return true; }
-	_makeInverse() { return this; }
-}
-
 /// A task that may be failed silently
-class VMaybeTask extends VTask {
+class VMaybeTask extends VTaskWrapper {
 	constructor(task) {
 		super(task.editor);
 		this.task = task;
 		this.no_op = false;
 	}
-	_validate() {
-		this.no_op = !this.task._validate();
+	commit() {
+		if(this.task.commit()){
+			this._inverse = this.task._inverse;
+		}else{
+			this._inverse = new VEmptyTask(this.editor);
+		}
+		// Do not set _inverse._inverse
 		return true;
-	}
-	_commit() {
-		if(this.no_op) return true;
-		return this.task._commit();
-	}
-	_makeInverse() {
-		if(this.no_op) return new VEmptyTask(this.editor);
-		else return this.task._makeInverse();
 	}
 }
 
-/// A task which will be created just before being validated
-class VLazyTask extends VTask {
+/// A task which will be created just before being committed
+class VLazyTask extends VTaskWrapper {
 	constructor(editor, taskGen) {
 		super(editor);
 		this.taskGen = taskGen;
 		this.task = null;
 	}
-	_validate() {
+	commit() {
 		this.task = this.taskGen(this.editor);
-		return this.task && this.task._validate();
-	}
-	_commit() {
-		return this.task && this.task._commit();
-	}
-	_makeInverse() {
-		return this.task._makeInverse();
+		if(this.task.commit()){
+			this._inverse = this.task._inverse;
+			return true;
+		}else{
+			return false;
+		}
 	}
 }

@@ -116,8 +116,10 @@ class VLaserEditPoint extends VLaserEditObject {
 	}
 	delTask(editor) {
 		const point = this.getGraphPoint(editor);
-		if(!point) return null;
-			
+
+		// It is possible that the point is already removed (when multiple points are deleted at once)
+		if(!point) return new VEmptyTask(editor);
+
 		const prevPoint = point.prev();
 		const prevConnected = prevPoint && prevPoint.data.connected;
 		const nextPoint = point.next();
@@ -144,7 +146,7 @@ class VLaserEditPoint extends VLaserEditObject {
 		}
 
 		// Would want to be able to customize this
-		let stayConnected = true;
+		let stayConnected = NOP(/* to suppress warning */) || true;
 		const pointsToRemove = [this.tick];
 
 		if(prevConnected && !prevPoint.data.isSlam()){

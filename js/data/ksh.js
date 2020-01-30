@@ -460,6 +460,9 @@ class KSHData extends VChartData {
 
 		for(let lane of [0, 1]){
 			const laser = this.getLaserNode(lane, tick);
+
+			// To suppress warnings
+			NOP(args, laser);
 		}
 
 		// TODO: which lane?
