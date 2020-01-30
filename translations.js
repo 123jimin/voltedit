@@ -157,6 +157,9 @@ toolbar-difficulty-short-name
 toolbar-gauge-total
 	en: Gauge total:
 	ko: 게이지 토탈값:
+toolbar-gauge-total-desc
+	en: (0 (default) or 100+)
+	ko: (0 (기본) 또는 100 이상)
 
 toolbar-path
 	en: Path:
