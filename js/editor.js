@@ -163,11 +163,14 @@ class VEditor {
 
 		this.toolbar.setValue('toolbar-difficulty', chartData.meta.difficulty && chartData.meta.difficulty.idx || 0);
 		this.toolbar.setValue('toolbar-level', chartData.meta.level || 1);
-		
+
 		this.toolbar.setValue('toolbar-difficulty-name', chartData.meta.difficulty && chartData.meta.difficulty.name || "");
 		this.toolbar.setValue('toolbar-difficulty-short-name', chartData.meta.difficulty && chartData.meta.difficulty.short_name || "");
 		this.toolbar.setValue('toolbar-gauge-total', chartData.gauge && chartData.gauge.total || "");
-		
+
+		this.toolbar.setValue('toolbar-music-path', chartData.audio && chartData.audio.bgm && chartData.audio.bgm.filename || "");
+		this.toolbar.setValue('toolbar-jacket-path', chartData.meta && chartData.meta.jacket_filename || "");
+
 		this.updateEditSnap();
 
 		this.view.setLocation(0);
@@ -184,7 +187,7 @@ class VEditor {
 
 		let chartDifficulty = ['NOV','ADV','EXH','VVD','MXM'][this.chartData.meta.difficulty.idx];
 		if('short_name' in this.chartData.meta.difficulty) chartDifficulty = this.chartData.meta.difficulty.short_name.trim();
-		
+
 		let chartLevel = this.chartData.meta.level;
 
 		document.title = `${trimmedChartName} [${chartDifficulty} ${chartLevel}] - VOLTEdit`;
@@ -217,7 +220,7 @@ class VEditor {
 		if(!this.chartData.meta.difficulty) this.chartData.meta.difficulty = {};
 		this.chartData.meta.difficulty.idx = +difficulty;
 		this.toolbar.setValue('toolbar-difficulty', difficulty);
-		
+
 		this.setWindowTitleFromChartData();
 	}
 	setChartDifficultyName(name) {
@@ -241,7 +244,7 @@ class VEditor {
 			delete this.chartData.meta.difficulty.short_name;
 		}
 		this.toolbar.setValue('toolbar-difficulty-short-name', shortName);
-		
+
 		this.setWindowTitleFromChartData();
 	}
 	setChartLevel(level) {
@@ -258,6 +261,22 @@ class VEditor {
 			delete this.chartData.gauge.total;
 		}
 		this.toolbar.setValue('toolbar-gauge-total', total);
+	}
+
+	setMusicPath(path) {
+		if(!this.chartData) return;
+		if(this.chartData.audio && this.chartData.audio.bgm && this.chartData.audio.bgm.filename === path) return;
+		if(!this.chartData.audio) this.chartData.audio = {};
+		if(!this.chartData.audio.bgm) this.chartData.audio.bgm = {};
+		if(path.trim()){
+			this.chartData.audio.bgm.filename = path;
+		}else{
+			delete this.chartData.audio.bgm.filename;
+		}
+		this.toolbar.setValue('toolbar-music-path', path);
+	}
+	setJacketPath(path) {
+		this._setMeta('toolbar-jacket-path', 'jacket_filename', path);
 	}
 
 	/* Drag Events */
