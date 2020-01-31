@@ -21,6 +21,10 @@ const KSH_VERSIONS = Object.freeze({
 
 const GET_KSH_VER = (str) => (str in KSH_VERSIONS) ? KSH_VERSIONS[str] : 0;
 
+const KSH_TILT_VALUES = Object.freeze({
+	'NORMAL': 14, 'BIGGER': 21, 'BIGGEST': 28
+});
+
 /// For experimental compact storage of Interval[]
 const INTERVAL_INFLATE = (arr, callback) => {
 	let y = 0;
