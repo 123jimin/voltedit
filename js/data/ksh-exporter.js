@@ -27,8 +27,9 @@ class KSHExporter {
 		const p = this.putProperty.bind(this);
 
 		p('title', chart.meta.title || "");
+		p('title_img', chart['meta.legacy'] && chart['meta.legacy'].title_img || "");
 		p('artist', chart.meta.artist);
-		// TODO: title_img, artist_img
+		p('artist_img', chart['meta.legacy'] && chart['meta.legacy'].artist_img || "");
 		p('effect', chart.meta.chart_author);
 		p('jacket', chart.meta.jacket_filename);
 		p('illustrator', chart.meta.jacket_author);
@@ -67,7 +68,8 @@ class KSHExporter {
 		}
 
 		p('total', chart.gauge && chart.gauge.total);
-		// TODO: chokkakuautovol, pfilterdelay
+		p('chokkakuautovol', chart['audio.legacy'] && chart['audio.legacy'].laser_slam_auto_vol);
+		// TODO: pfilterdelay
 		p('ver', this.getVersion());
 		p('information', chart.meta.information);
 	}

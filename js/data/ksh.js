@@ -187,6 +187,17 @@ class KSHData extends VChartData {
 		if('information' in ksmMeta) meta.information = ksmMeta.information;
 
 		meta.ksh_version = ksmMeta.ver;
+
+		if(('title_img' in ksmMeta) || ('artist_img' in ksmMeta)){
+			const legacyMeta = this['meta.legacy'] = {};
+			if('title_img' in ksmMeta) legacyMeta.title_img = ksmMeta.title_img;
+			if('artist_img' in ksmMeta) legacyMeta.artist_img = ksmMeta.artist_img;
+		}
+
+		if('chokkakuautovol' in ksmMeta){
+			const legacyAudio = this['audio.legacy'] = {};
+			legacyAudio.laser_slam_auto_vol = parseInt(ksmMeta.chokkakuautovol);
+		}
 	}
 	_setKSONBgmInfo() {
 		const bgmInfo = this.audio.bgm = {};
@@ -222,7 +233,7 @@ class KSHData extends VChartData {
 		if('bg' in ksmMeta) legacyInfo.bg = ksmMeta.bg.split(';').map((s) => ({'filename': s}));
 		if('layer' in ksmMeta){
 			const separator = GET_KSH_VER(ksmMeta.ver) >= 166 ? ';' : '/';
-			const arr = ksmMeta.layer.split(spearator);
+			const arr = ksmMeta.layer.split(separator);
 			const layer = {'filename': arr[0], 'duration': +arr[1]};
 			if(arr.length >= 3){
 				const v = +arr[2];
