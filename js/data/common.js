@@ -1,4 +1,5 @@
 const CURR_KSON_VERSION = "0.0.0";
+const CURR_KSH_VERSION = "167";
 
 const KSH_DEFAULT_MEASURE_TICK = 192;
 const KSH_LASER_SLAM_TICK = KSH_DEFAULT_MEASURE_TICK / 32;
@@ -17,6 +18,8 @@ const KSH_VERSIONS = Object.freeze({
 	"166": 166,
 	"167": 167,
 });
+
+const GET_KSH_VER = (str) => (str in KSH_VERSIONS) ? KSH_VERSIONS[str] : 0;
 
 /// For experimental compact storage of Interval[]
 const INTERVAL_INFLATE = (arr, callback) => {

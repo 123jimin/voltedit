@@ -56,7 +56,8 @@ class KSHExporter {
 			if(legacyBGInfo.layer) p('layer', legacyBGInfo.layer.map((layer) => {
 				const rotation = layer.rotation ?
 					(layer.rotation.tilt ? 1 : 0) + (layer.rotation.spin ? 2 : 0) : 0;
-				return `${layer.filename};${layer.duration};${rotation}`;
+				const sep = GET_KSH_VER(this.getVersion()) >= 166 ? ';' : '/';
+				return `${layer.filename}${sep}${layer.duration}${sep}${rotation}`;
 			})[0]);
 
 			if(legacyBGInfo.movie) {
@@ -67,13 +68,13 @@ class KSHExporter {
 
 		p('total', chart.gauge && chart.gauge.total);
 		// TODO: chokkakuautovol, pfilterdelay
-		p('ver', this.getVersion(chart.version));
+		p('ver', this.getVersion());
 		p('information', chart.meta.information);
 	}
 	getVersion() {
-		const version = this.chart.version;
-		if(version in KSH_VERSIONS) return version;
-		return "167";
+		const version = this.chart.meta.ksh_version;
+		if(version != null && (version in KSH_VERSIONS)) return version;
+		return CURR_KSH_VERSION;
 	}
 	getBPM() {
 		const bpm = this.chart.beat.bpm;

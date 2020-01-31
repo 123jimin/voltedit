@@ -109,7 +109,7 @@ class KSHData extends VChartData {
 
 		const parser = new KSHParser(this);
 		this._ksmMeta = {
-			'version': "",
+			'ver': "",
 		};
 		this._ksmMeasures = [];
 
@@ -185,6 +185,8 @@ class KSHData extends VChartData {
 		if('jacket' in ksmMeta) meta.jacket_filename = ksmMeta.jacket;
 		if('illustrator' in ksmMeta) meta.jacket_author = ksmMeta.illustrator;
 		if('information' in ksmMeta) meta.information = ksmMeta.information;
+
+		meta.ksh_version = ksmMeta.ver;
 	}
 	_setKSONBgmInfo() {
 		const bgmInfo = this.audio.bgm = {};
@@ -218,7 +220,17 @@ class KSHData extends VChartData {
 		this.bg = {'legacy': legacyInfo};
 
 		if('bg' in ksmMeta) legacyInfo.bg = ksmMeta.bg.split(';').map((s) => ({'filename': s}));
-		// TODO: handle layer info
+		if('layer' in ksmMeta){
+			const separator = GET_KSH_VER(ksmMeta.ver) >= 166 ? ';' : '/';
+			const arr = ksmMeta.layer.split(spearator);
+			const layer = {'filename': arr[0], 'duration': +arr[1]};
+			if(arr.length >= 3){
+				const v = +arr[2];
+				layer.rotation = {'tilt':!!(v&1), 'spin':!!(v&2)};
+			}
+
+			legacyInfo.layer = [layer];
+		}
 
 		if('v' in ksmMeta || 'vo' in ksmMeta){
 			const movieInfo = {};
