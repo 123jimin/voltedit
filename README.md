@@ -17,7 +17,7 @@ Currently, these features are available.
 		* Stops and KSH `zoom_bottom`, `zoom_side`, `zoom_top`
 	* [Native file system](https://web.dev/native-file-system/) is supported (if enabled via `chrome://flags`)
 		* Ctrl+S actually updates the original ksh/kson file!
-		* Be careful that currently some informations such as camera zooms and FX effects are lost while done on KSH.
+		* Be careful that currently some informations such as slam rotations and FX effects are lost while done on KSH.
 	* No internal restriction on number of lanes/lasers
 		* To enable for VOLTEdit to edit other games' chart such as Pop'n Music, DDR, PIU, ...
 		* Data structure and edit operations have no fundamental limitations on them.
@@ -26,10 +26,12 @@ Currently, these features are available.
 	* Currently only notes, lasers, and beat lines are visible.
 	* Scrolling view can be done via scrollbar / mouse wheel.
 * **Editing chart**
-	* Currently, inserting/moving/deleting short FX/BTs are supported.
+	* Ribbon UI is used for toolbar.
+	* Inserting/moving/deleting short FX/BTs are supported.
+	* Inserting/deleting laser points are supported.
+	* Editing important chart metadata is supported.
 	* Full redo/undo support for most edit operations.
 	* Editor settings are saved via `localStorage`.
-	* Ribbon UI available.
 * **Available in English and Korean**
 
 Also see the "Planned Features" section.
@@ -129,9 +131,14 @@ I hope to be able to implement these features in this year, but not sure whether
 These are problems in [the current KSON spec](https://gist.github.com/m4saka/a89594a17dc9422d75e01998bcfd2722), discovered during developing this editor.
 Refer to the spec and [the discussion thread](https://github.com/m4saka/kshootmania-v2/issues/1) for the up-to-date status of these issues.
 
+### Recently Addressed Problems
+Resolutions to these issues are available in the discussion thread.
+* `CamInfo.tilt_assign`: It is unclear how NORMAL/BIGGER/BIGGEST tilts can be translated.
+	* Using `rotation_z@tilt_assign` is suggested.
+	* NORMAL/BIGGER/BIGGEST corresponds to +14/+21/+28.
+
 ### Major Problems
 These are problems which prevent implementing the related functionalities.
-* `CamInfo.tilt_assign`: It is unclear how NORMAL/BIGGER/BIGGEST tilts can be translated. The note below is unhelpful.
 * It is unclear how `CameraInfo.tilt` and `CamGraphs.rotation_z` interacts.
 * KSH slam rotations can't be translated to KSON easily.
 	* It seems that `CamPatternInfo.note_event` should be used.
