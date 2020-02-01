@@ -1,6 +1,6 @@
 /// Managing a laser graph point
 class VLaserRenderPoint {
-	constructor(render, lane, tick, currData, nextNode, drawing) {
+	constructor(render, lane, tick, prevNode, currData, nextNode, drawing) {
 		this.render = render;
 		this.view = render.view;
 		this.lane = lane;
@@ -22,7 +22,7 @@ class VLaserRenderPoint {
 		this.editV = this._createEdit();
 		this.editVF = this._createEdit();
 
-		this.update(tick, currData, nextNode);
+		this.update(tick, prevNode, currData, nextNode);
 		this.selSlam(false);
 		this.selEdge(false);
 		this.selEditPoint(false, false);
@@ -38,7 +38,7 @@ class VLaserRenderPoint {
 	getY(ry) {
 		return this.view.t2p(ry);
 	}
-	update(tick, currData, nextNode) {
+	update(tick, prevNode, currData, nextNode) {
 		if(!currData){
 			this.object.visible = false;
 			return;
@@ -49,11 +49,16 @@ class VLaserRenderPoint {
 		this._wide = currData.wide;
 		this._x = this.getX(currData.v);
 		this._xf = this.getX(currData.vf);
-		this._y = this.getY(tick);
-		this.object.position.y = this._y;
+		this.object.position.y = this.getY(tick);
 
 		this._updateSlam(currData);
-		this._updateEdge(currData, nextNode);
+		
+		if(this.drawing){
+			if(prevNode) this._updateEdge(tick, prevNode.y, prevNode.data, {'y': tick, 'data': currData}, true);
+			else this._updateEdge(tick, tick, currData, null, false);
+		}else{
+			this._updateEdge(tick, tick, currData, nextNode, false);
+		}
 		this._updateTail(currData, nextNode);
 		this._updateEdit(currData);
 	}
@@ -87,8 +92,8 @@ class VLaserRenderPoint {
 		this.slam[0].visible = true;
 		RenderHelper.updateGeometry(this.slam[0], points);
 	}
-	_updateEdge(currData, nextNode) {
-		if(!nextNode || !currData.connected){
+	_updateEdge(tick, currTick, currData, nextNode, forceConnect) {
+		if(!nextNode || !(forceConnect || currData.connected)){
 			this.edge[0].visible = false;
 			this.edge[1].visible = false;
 			return;
@@ -98,15 +103,16 @@ class VLaserRenderPoint {
 		const SLAM_HEIGHT = this.view.scale.laserSlamHeight;
 
 		const nx = this.getX(nextNode.data.v);
-		const ny = this.getY(nextNode.y) - this._y;
+		const ny = this.getY(nextNode.y - tick);
 
-		let y = 0;
-		if(currData.isSlam()) y = SLAM_HEIGHT;
+		const xf = this.getX(currData.vf);
+		let y = this.getY(currTick - tick);
+		if(currData.isSlam()) y += SLAM_HEIGHT;
 
 		const points = [];
 		QUAD(points,
-			[this._xf-HALF_LASER, y],
-			[this._xf+HALF_LASER, y],
+			[xf-HALF_LASER, y],
+			[xf+HALF_LASER, y],
 			[nx+HALF_LASER, ny],
 			[nx-HALF_LASER, ny],
 		);

@@ -28,6 +28,17 @@ class VEditGraphContext extends VEditContext {
 
 		return vDist < vfDist ? point.data.editV : point.data.editVF;
 	}
+
+	_forceConnectWhenCreate(tick) {
+		if(!this.prevSelected) return false;
+
+		const points = this.getPoints();
+		const prevPoint = points.getLE(tick);
+		const nextPoint = points.getGE(tick);
+	
+		if(!prevPoint || prevPoint.data.getEndEdit() !== this.prevSelected) return false;
+		return !nextPoint || tick < nextPoint.y;
+	}
 	createObjectAt(startEvent, endEvent) {
 		// TODO: the UX must be improved significantly
 		const newPoint = {
@@ -41,21 +52,16 @@ class VEditGraphContext extends VEditContext {
 		const points = this.getPoints();
 		if(!points) return null;
 
-		let forceConnect = false;
+		const forceConnect = this._forceConnectWhenCreate(startEvent.tick);
 		const prevPoint = points.getLE(startEvent.tick);
-		const nextPoint = points.getGE(startEvent.tick);
 
-		// When the area between the sole selected point and its next point is dragged:
-		if(this.prevSelected && prevPoint && prevPoint.data.getEndEdit() === this.prevSelected){
-			if(!nextPoint || startEvent.tick < nextPoint.y){
-				forceConnect = true;
-				// If the start tick is less than end tick, then a slant, connected to the selected point will be added.
-				// Otherwise, a slam, connected to the selected point will be added.
-				if(startEvent.tick < endEvent.tick){
-					// TODO
-				}else{
-					// TODO
-				}
+		if(forceConnect){
+			// If the start tick is less than end tick, then a slant, connected to the selected point will be added.
+			// Otherwise, a slam, connected to the selected point will be added.
+			if(startEvent.tick < endEvent.tick){
+				// TODO
+			}else{
+				// TODO
 			}
 		}
 
@@ -76,6 +82,7 @@ class VEditGraphContext extends VEditContext {
 		startEvent.v = origV;
 
 		if(created) this.addToSelection(created);
+
 		return created;
 	}
 	getGraphPointEdits(point) {
@@ -102,7 +109,7 @@ class VEditLaserContext extends VEditGraphContext {
 	}
 	_showHoverDrawing(event) {
 		if(!this.canMakeObjectAt(event)) return false;
-		const connectPrev = false;
+		const connectPrev = this._forceConnectWhenCreate(event.tick);
 
 		this.view.showLaserDrawing(this.lane, event.tick, connectPrev, new VGraphPoint({
 			'v': event.v, 'vf': event.v,
@@ -112,7 +119,7 @@ class VEditLaserContext extends VEditGraphContext {
 	}
 	_showDragDrawing(event) {
 		if(!this.canMakeObjectAt(event) || !this.canMakeObjectAt(this.startEvent)) return false;
-		const connectPrev = false;
+		const connectPrev = this._forceConnectWhenCreate(event.tick);
 
 		this.view.showLaserDrawing(this.lane, event.tick, connectPrev, new VGraphPoint({
 			'v': this.startEvent.v, 'vf': event.v,

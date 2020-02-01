@@ -85,7 +85,9 @@ class VView {
 		this.refresh();
 	}
 	addLaser(lane, point) {
-		this.render.addLaser(lane, point, point.data.connected ? point.next() : null);
+		let prevNode = point.prev();
+		if(prevNode && !prevNode.data.connected) prevNode = null;
+		this.render.addLaser(lane, prevNode, point, point.data.connected ? point.next() : null);
 
 		this._checkRedrawMesaures(point.y);
 		this.refresh();
@@ -139,16 +141,18 @@ class VView {
 	}
 	updateLaser(lane, point) {
 		if(!point) return;
-		this.render.updateLaser(lane, point, point.data.connected ? point.next() : null);
+		let prevNode = point.prev();
+		if(prevNode && !prevNode.data.connected) prevNode = null;
+		this.render.updateLaser(lane, prevNode, point, point.data.connected ? point.next() : null);
 		this.refresh();
 	}
 	/// Updates connected lasers
 	updateConnectedLasers(lane, points) {
-		let nextPoint = null;
-		for(let i=points.length; i--;){
+		for(let i=0; i<points.length; ++i){
+			const prevPoint = i > 0 && points[i-1];
 			const currPoint = points[i];
-			this.render.updateLaser(lane, currPoint, nextPoint);
-			nextPoint = currPoint;
+			const nextPoint = i+1 < points.length && points[i+1];
+			this.render.updateLaser(lane, prevPoint, currPoint, nextPoint);
 		}
 	}
 	fakeMoveNoteTo(type, lane, tick, newLane, newTick) {
@@ -189,8 +193,8 @@ class VView {
 
 		const prevNode = connectPrev ? laserData.getLE(tick) : null;
 		const nextNode = laserData.getGE(tick+1);
-
-		this.render.showLaserDrawing(lane, tick, prevNode, nextNode, point);
+		
+		this.render.showLaserDrawing(lane, tick, prevNode, point, nextNode);
 
 		this._checkRedrawMesaures(tick);
 		this.refresh();
@@ -247,11 +251,15 @@ class VView {
 
 		laserData.forEach((tree, lane) => {
 			let prevNode = null;
+			let prevPrevNode = null;
 			tree.traverse((node) => {
-				if(prevNode) this.render.addLaser(lane, prevNode, prevNode.data.connected ? node : null);
+				if(prevNode){
+					this.render.addLaser(lane, prevPrevNode, prevNode, prevNode.data.connected ? node : null);
+				}
+				prevPrevNode = prevNode && prevNode.data.connected ? prevNode : null;
 				prevNode = node;
 			});
-			if(prevNode) this.render.addLaser(lane, prevNode, null);
+			if(prevNode) this.render.addLaser(lane, prevPrevNode, prevNode, null);
 		});
 	}
 	_checkRedrawMesaures(tick) {

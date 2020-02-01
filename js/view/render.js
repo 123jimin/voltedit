@@ -194,8 +194,8 @@ class VViewRender {
 		RenderHelper.clear(this.lasers);
 		this.lasersByY = [];
 	}
-	addLaser(lane, currNode, nextNode) {
-		const laserGraphPoint = new VLaserRenderPoint(this, lane, currNode.y, currNode.data, nextNode, false);
+	addLaser(lane, prevNode, currNode, nextNode) {
+		const laserGraphPoint = new VLaserRenderPoint(this, lane, currNode.y, prevNode, currNode.data, nextNode, false);
 		this.lasers.add(laserGraphPoint.object);
 
 		while(lane >= this.lasersByY.length) this.lasersByY.push({});
@@ -222,17 +222,17 @@ class VViewRender {
 		this.lasersByY[lane][pos].dispose();
 		delete this.lasersByY[lane][pos];
 	}
-	updateLaser(lane, currNode, nextNode) {
+	updateLaser(lane, prevNode, currNode, nextNode) {
 		if(lane >= this.lasersByY.length) return;
 		if(!(currNode.y in this.lasersByY[lane])) return;
-		this.lasersByY[lane][currNode.y].update(currNode.y, currNode.data, nextNode);
+		this.lasersByY[lane][currNode.y].update(currNode.y, prevNode, currNode.data, nextNode);
 	}
 
-	showLaserDrawing(lane, tick, prevNode, nextNode, point) {
+	showLaserDrawing(lane, tick, prevNode, point, nextNode) {
 		if(lane >= this.laserDrawingPoints.length) return;
 		if(prevNode && !(prevNode.y in this.lasersByY[lane])) return;
 
-		this.laserDrawingPoints[lane].update(tick, point, nextNode);
+		this.laserDrawingPoints[lane].update(tick, prevNode, point, nextNode);
 	}
 
 	hideDrawing() {
@@ -379,7 +379,7 @@ class VViewRender {
 			this.laserBodyMaterials.push(this._createLaserBodyMaterial(hue, 0.6));
 			this.laserDrawingMaterials.push(this._createLaserBodyMaterial(hue, 0.75));
 
-			const drawing = new VLaserRenderPoint(this, lane, 0, null, null, true);
+			const drawing = new VLaserRenderPoint(this, lane, 0, null, null, null, true);
 			this.laserDrawings.add(drawing.object);
 			this.laserDrawingPoints.push(drawing);
 		});

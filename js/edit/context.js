@@ -25,6 +25,13 @@ class VEditContext {
 	areSamePos(e1, e2) { return e1.tick === e2.tick && e1.lane === e2.lane; }
 
 	/* Provided */
+	updatePrevSelected() {
+		if(this.selectedObjects.size === 1){
+			this.selectedObjects.forEach((obj) => this.prevSelected = obj);
+		}else{
+			this.prevSelected = null;
+		}
+	}
 	/// tick: y-value, lane and v: x-value
 	/// lane can be -1 or 4 (out of range)
 	/// x-value: 0.0 for left laser pos, and 1.0 for right laser pos
@@ -32,11 +39,7 @@ class VEditContext {
 		this._setDragStart(event);
 		this.view.setCursor();
 
-		if(this.selectedObjects.size === 1){
-			this.selectedObjects.forEach((obj) => this.prevSelected = obj);
-		}else{
-			this.prevSelected = null;
-		}
+		this.updatePrevSelected();
 
 		const obj = this.getObjectAt(event);
 		if(obj) {
@@ -116,6 +119,7 @@ class VEditContext {
 				break;
 		}
 		this.dragIntent = VEDIT_DRAG_INTENT.NONE;
+		this.updatePrevSelected();
 	}
 	addObjectEnabled() {
 		return this.editor.insertMode;
