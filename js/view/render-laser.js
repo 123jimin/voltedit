@@ -59,7 +59,7 @@ class VLaserRenderPoint {
 		}else{
 			this._updateEdge(tick, tick, currData, nextNode, false);
 		}
-		this._updateTail(currData, nextNode);
+		this._updateTail(prevNode, currData, nextNode);
 		this._updateEdit(currData);
 	}
 	selSlam(slam) {
@@ -120,14 +120,14 @@ class VLaserRenderPoint {
 		this.edge[0].visible = true;
 		RenderHelper.updateGeometry(this.edge[0], points);
 	}
-	_updateTail(currData, nextNode) {
+	_updateTail(prevNode, currData, nextNode) {
 		if(nextNode && currData.connected){
 			this.tail[0].visible = false;
 			this.tail[1].visible = false;
 			return;
 		}
 
-		if(!this.drawing && !currData.isSlam()){
+		if(!this.drawing && prevNode && !currData.isSlam()){
 			this.tail[0].visible = false;
 			this.tail[1].visible = false;
 			return;
