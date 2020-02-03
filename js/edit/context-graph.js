@@ -3,9 +3,11 @@ class VEditGraphContext extends VEditContext {
 		super(editor, contextId);
 		this.STR_TASK_ADD_POINT = 'task-add-graph-point';
 		this.STR_TASK_ADJUST_SLAM = 'task-adjust-graph-slam';
+		this.STR_TASK_CONNECT_POINTS = 'task-connect-graph-points';
 	}
 	getPoints() { return null; }
-	_getEditCallbacks() { return null; }
+	_getEditCallbacks() { return NOP; }
+	_getUpdateConnectedCallbacks() { return NOP; }
 	makeEdits(point) {}
 	createGraphPointObject(tick, event) { return null; }
 	createObjectAt(startEvent, endEvent) { return null; }
@@ -39,6 +41,33 @@ class VEditGraphContext extends VEditContext {
 
 		return prevPoint && prevPoint.data.getEndEdit() === this.prevSelected;
 	}
+	_modifyObjectAt(startEvent, endEvent, points, targetPoint) {
+		// Adjusting the slam of the selected point
+		if(targetPoint.data.getEndEdit() === this.prevSelected){
+			const adjustSlamTask = new VGraphPointChangeSlamTask(this.editor, points, (point) => this._getEditCallbacks()(null, point, -1),
+				targetPoint.y, targetPoint.data.v, newPoint.vf, true);
+			if(!this.editor.taskManager.do(this.STR_TASK_ADJUST_SLAM, adjustSlamTask)) return null;
+
+			// The point reference is not invalidated, so this is fine.
+			const endEdit = targetPoint.data.getEndEdit();
+			if(endEdit) this.addToSelection(endEdit);
+			return endEdit;
+		}
+		// Connecting two segments
+		const prevTargetPoint = targetPoint.prev();
+		if(prevTargetPoint && prevTargetPoint.data.getEndEdit() === this.prevSelected){
+			const changeConnectedTask = new VGraphPointChangeConnectedTask(this.editor, points,
+				this._getUpdateConnectedCallbacks(), prevTargetPoint.y, true);
+			if(!this.editor.taskManager.do(this.STR_TASK_CONNECT_POINTS, changeConnectedTask)) return null;
+
+			// The point reference is not invalidated, so this is fine.
+			const startEdit = targetPoint.data.getBeginEdit();
+			if(startEdit) this.addToSelection(startEdit);
+			return startEdit;
+		}
+
+		return null;
+	}
 	createObjectAt(startEvent, endEvent) {
 		const newPoint = {
 			'v': CLIP(startEvent.v, 0, 1),
@@ -54,15 +83,8 @@ class VEditGraphContext extends VEditContext {
 		if(!points) return null;
 
 		const prevPoint = points.getLE(addTick);
-		if(prevPoint && prevPoint.y === addTick){
-			const adjustSlamTask = new VGraphPointChangeSlamTask(this.editor, points, (point) => this._getEditCallbacks()(null, point, -1),
-				prevPoint.y, prevPoint.data.v, newPoint.vf, true);
-			if(!this.editor.taskManager.do(this.STR_TASK_ADJUST_SLAM, adjustSlamTask)) return null;
-
-			// The point reference is not invalidated, so this is fine.
-			const endEdit = prevPoint.data.getEndEdit();
-			if(endEdit) this.addToSelection(endEdit);
-			return endEdit;
+		if(prevPoint && prevPoint.y === addTick && this.prevSelected){
+			return this._modifyObjectAt(startEvent, endEvent, points, prevPoint);
 		}
 
 		const forceConnect = this._forceConnectWhenCreate(addTick);
@@ -109,6 +131,7 @@ class VEditLaserContext extends VEditGraphContext {
 
 		this.STR_TASK_ADD_POINT = 'task-add-laser-point';
 		this.STR_TASK_ADJUST_SLAM = 'task-adjust-laser-slam';
+		this.STR_TASK_CONNECT_POINTS = 'task-connect-laser-points';
 	}
 	_showLaserDrawing(tick, startV, endV) {
 		this.view.showLaserDrawing(this.lane, tick, this._forceConnectWhenCreate(tick),
@@ -134,6 +157,7 @@ class VEditLaserContext extends VEditGraphContext {
 	}
 	getPoints() { return this.editor.chartData.getNoteData('laser', this.lane); }
 	_getEditCallbacks() { return this.view.getLaserCallbacks(this.lane); }
+	_getUpdateConnectedCallbacks() { return (points) => this.view.updateConnectedLasers(this.lane, points); }
 	getGraphPointEdits(point) {
 		this.makeEdits(point);
 		if(point.data.isSlam()) return [point.data.editV, point.data.editVF];

@@ -82,7 +82,7 @@ class VGraphPointDelTask extends VGraphPointTask {
 		let oldConnectPrev = false;
 		const prevPoint = this._point.prev();
 		if(prevPoint) oldConnectPrev = prevPoint.data.connected;
-		
+
 		const pointCopy = new VGraphPoint({
 			'v': this._point.data.v,
 			'vf': this._point.data.vf,
@@ -109,6 +109,44 @@ class VGraphPointChangeConnectedTask extends VGraphPointTask {
 	constructor(editor, points, callback, tick, connected) {
 		super(editor, points, callback, tick);
 		this.connected = connected;
+	}
+	_validate() {
+		if(!this._getPoint()) return false;
+		if(this.connected === this._point.data.connected) return true;
+
+		const nextPoint = this._point.next();
+		if(!nextPoint) return false;
+		if(!this.connected) return true;
+
+		// The case of connecting two lasers
+		// TODO: handle the case when the wide is different
+
+		return this._point.data.wide === nextPoint.data.wide;
+	}
+	_commit() {
+		// Nothing will happen.
+		if(this.connected === this._point.data.connected){
+			return true;
+		}
+
+		const nextPoint = this._point.next();
+		if(!nextPoint) return false;
+
+		if(this.connected){
+			this._point.data.connected = true;
+
+			// TODO: update wide values of the points after `this._point`.
+			this.callback([this._point, nextPoint]);
+		}else{
+			this._point.data.connected = false;
+			this.callback([this._point]);
+			this.callback([nextPoint]);
+		}
+
+		return true;
+	}
+	_makeInverse() {
+		return new VGraphPointChangeConnectedTask(this.editor, this.points, this.callback, this.tick, this._point.connected);
 	}
 }
 

@@ -149,9 +149,16 @@ class VView {
 	/// Updates connected lasers
 	updateConnectedLasers(lane, points) {
 		for(let i=0; i<points.length; ++i){
-			const prevPoint = i > 0 && points[i-1];
+			let prevPoint = null;
+			if(i > 0) prevPoint = points[i-1];
+			else{
+				prevPoint = points[0].prev();
+				if(prevPoint && !prevPoint.data.connected) prevPoint = null;
+			}
 			const currPoint = points[i];
-			const nextPoint = i+1 < points.length && points[i+1];
+			let nextPoint = null;
+			if(i+1 < points.length) nextPoint = points[i+1];
+			else if(currPoint.data.connected) nextPoint = currPoint.next();
 			this.render.updateLaser(lane, prevPoint, currPoint, nextPoint);
 		}
 	}

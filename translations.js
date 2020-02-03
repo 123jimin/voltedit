@@ -192,12 +192,18 @@ task-add-graph-point
 task-adjust-graph-slam
 	en: adjusting a graph slam
 	ko: 그래프 직각 조정
+task-connect-graph-points
+	en: connecting two graph points
+	ko: 두 그래프 점 연결
 task-add-laser-point
 	en: adding a laser point
 	ko: 레이저 점 추가
 task-adjust-laser-slam
 	en: adjusting a laser slam
 	ko: 레이저 직각 조정
+task-connect-laser-points
+	en: connecting two laser segments
+	ko: 레이저 연결
 task-move-selection
 	en: moving selection
 	ko: 선택 영역 이동
