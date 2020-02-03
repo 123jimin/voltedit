@@ -1,1 +1,1 @@
-const voltedit = window.voltedit = new VEditor(document.getElementById('editor'));
+const voltedit = window.voltedit = VOLTEDIT_VERSION && new VEditor(document.getElementById('editor'));
