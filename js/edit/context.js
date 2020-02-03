@@ -154,7 +154,7 @@ class VEditContext {
 
 		this.editor.taskManager.do('task-delete-selected', VTask.join(delTasks));
 
-		this.selectedObjects.clear();
+		this.invalidateSelections();
 	}
 	moveSelection(startEvent, endEvent) {
 		if(!this.hasSelection()) return;
@@ -175,8 +175,9 @@ class VEditContext {
 
 		this.editor.taskManager.do('task-move-selection', VTask.join([delTask, moveTask]));
 
-		this.selectedObjects = new Set();
+		this.invalidateSelections();
 		this.addToSelection(obj.getMoved(this.editor, startEvent, endEvent));
+		this.updatePrevSelected();
 	}
 	moveSelectionByTick(tick) {
 		if(!this.hasSelection()) return;
@@ -191,8 +192,10 @@ class VEditContext {
 		this.editor.taskManager.do('task-move-selection', VTask.join([VTask.join(delTasks), VTask.join(moveTasks)]));
 
 		const oldSelected = this.selectedObjects;
-		this.selectedObjects = new Set();
+
+		this.invalidateSelections();
 		oldSelected.forEach((obj) => this.addToSelection(obj.getTickMoved(this.editor, tick)));
+		this.updatePrevSelected();
 	}
 	resizeSelectionByTick(tick) {
 		if(!this.hasSelection()) return;

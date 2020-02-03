@@ -35,11 +35,9 @@ class VEditGraphContext extends VEditContext {
 		if(!this.prevSelected) return false;
 
 		const points = this.getPoints();
-		const prevPoint = points.getLE(tick);
-		const nextPoint = points.getGE(tick);
+		const prevPoint = points.getLE(tick-1);
 
-		if(!prevPoint || prevPoint.data.getEndEdit() !== this.prevSelected) return false;
-		return !nextPoint || tick < nextPoint.y;
+		return prevPoint && prevPoint.data.getEndEdit() === this.prevSelected;
 	}
 	createObjectAt(startEvent, endEvent) {
 		const newPoint = {
@@ -57,7 +55,7 @@ class VEditGraphContext extends VEditContext {
 
 		const prevPoint = points.getLE(addTick);
 		if(prevPoint && prevPoint.y === addTick){
-			const adjustSlamTask = new VGraphPointChangeSlamTask(this.editor, points, this._getEditCallbacks(),
+			const adjustSlamTask = new VGraphPointChangeSlamTask(this.editor, points, (point) => this._getEditCallbacks()(null, point, -1),
 				prevPoint.y, prevPoint.data.v, newPoint.vf, true);
 			if(!this.editor.taskManager.do(this.STR_TASK_ADJUST_SLAM, adjustSlamTask)) return null;
 
