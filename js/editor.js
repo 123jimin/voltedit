@@ -41,7 +41,7 @@ class VEditor {
 	}
 	setContext(context) {
 		if(this.context && this.context.contextId === context.contextId) return;
-		if(this.context) this.context.clearSelection();
+		if(this.context) this.context.invalidateSelections();
 		this.context = context;
 
 		for(let elem of this.elem.querySelectorAll(".toolbar table.toolbar-edit-contexts button[class^='btn-toolbar-context-']")){
@@ -125,9 +125,11 @@ class VEditor {
 
 	/* Editing File */
 	undo() {
+		this.context.invalidateSelections();
 		this.taskManager.undo();
 	}
 	redo() {
+		this.context.invalidateSelections();
 		this.taskManager.redo();
 	}
 	addNote(type, index) {

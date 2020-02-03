@@ -49,7 +49,7 @@ class VEditContext {
 			this.dragIntent = VEDIT_DRAG_INTENT.SELECT;
 		}
 
-		if(!obj || !this.selectedObjects.has(obj)){
+		if(!(obj && this.selectedObjects.has(obj))){
 			if(!(event.ctrlKey || event.shiftKey)){
 				this.clearSelection();
 				if(!obj){
@@ -141,6 +141,10 @@ class VEditContext {
 	clearSelection() {
 		this.selectedObjects.forEach((obj) => this.removeFromSelection(obj));
 		this.selectedObjects.clear();
+	}
+	invalidateSelections() {
+		this.clearSelection();
+		this.prevSelected = null;
 	}
 	deleteSelection() {
 		if(!this.hasSelection()) return;

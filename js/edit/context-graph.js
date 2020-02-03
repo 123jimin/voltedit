@@ -22,12 +22,13 @@ class VEditGraphContext extends VEditContext {
 
 		this.makeEdits(point);
 
-		if(!point.data.editVF) return point.data.editV;
+		const vDist = Math.abs(event.v - point.data.v * point.data.wide);
+		const vfDist = Math.abs(event.v - point.data.vf * point.data.wide);
 
-		const vDist = Math.abs(event.v - point.data.v);
-		const vfDist = Math.abs(event.v - point.data.vf);
+		const maxAllowedDist = 1/this.editor.laserSnap;
+		if(vDist > maxAllowedDist && vfDist > maxAllowedDist) return null;
 
-		return vDist < vfDist ? point.data.editV : point.data.editVF;
+		return vDist < vfDist ? point.data.getBeginEdit() : point.data.getEndEdit();
 	}
 
 	_forceConnectWhenCreate(tick) {
@@ -55,13 +56,15 @@ class VEditGraphContext extends VEditContext {
 		if(!points) return null;
 
 		const prevPoint = points.getLE(addTick);
-		if(prevPoint && prevPoint.tick === addTick){
+		if(prevPoint && prevPoint.y === addTick){
 			const adjustSlamTask = new VGraphPointChangeSlamTask(this.editor, points, this._getEditCallbacks(),
 				prevPoint.y, prevPoint.data.v, newPoint.vf, true);
-			if(!this.editor.taskmanager.do(this.STR_TASK_ADJUST_SLAM, adjustSlamTask)) return null;
+			if(!this.editor.taskManager.do(this.STR_TASK_ADJUST_SLAM, adjustSlamTask)) return null;
 
-			// The point reference is not invalidated
-			return prevPoint.getEndEdit();
+			// The point reference is not invalidated, so this is fine.
+			const endEdit = prevPoint.data.getEndEdit();
+			if(endEdit) this.addToSelection(endEdit);
+			return endEdit;
 		}
 
 		const forceConnect = this._forceConnectWhenCreate(addTick);
