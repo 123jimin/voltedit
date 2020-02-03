@@ -47,8 +47,7 @@ This is the WIP sepcification for laser editing.
 
 #### Adding
 * When the area between the sole selected point and its next point is dragged:
-	* If the start tick is less than end tick, then a slant, connected to the selected point will be added.
-	* Otherwise, a slam, connected to the selected point will be added.
+	* A slam, connected to the selected point will be added.
 * When the tick corresponding to the point right after the sole selected point is clicked:
 	* If the beginning of the next segment is clicked, then two points are connected.
 	* If the next segment does not start with a slam, and the existing start point is not clicked, then a slam is added.

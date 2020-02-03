@@ -189,9 +189,15 @@ task-add-fx
 task-add-graph-point
 	en: adding a graph point
 	ko: 그래프 점 추가
+task-adjust-graph-slam
+	en: adjusting a graph slam
+	ko: 그래프 직각 조정
 task-add-laser-point
 	en: adding a laser point
 	ko: 레이저 점 추가
+task-adjust-laser-slam
+	en: adjusting a laser slam
+	ko: 레이저 직각 조정
 task-move-selection
 	en: moving selection
 	ko: 선택 영역 이동

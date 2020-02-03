@@ -2,6 +2,7 @@ class VEditGraphContext extends VEditContext {
 	constructor(editor, contextId) {
 		super(editor, contextId);
 		this.STR_TASK_ADD_POINT = 'task-add-graph-point';
+		this.STR_TASK_ADJUST_SLAM = 'task-adjust-graph-slam';
 	}
 	getPoints() { return null; }
 	_getEditCallbacks() { return null; }
@@ -35,12 +36,11 @@ class VEditGraphContext extends VEditContext {
 		const points = this.getPoints();
 		const prevPoint = points.getLE(tick);
 		const nextPoint = points.getGE(tick);
-	
+
 		if(!prevPoint || prevPoint.data.getEndEdit() !== this.prevSelected) return false;
 		return !nextPoint || tick < nextPoint.y;
 	}
 	createObjectAt(startEvent, endEvent) {
-		// TODO: the UX must be improved significantly
 		const newPoint = {
 			'v': CLIP(startEvent.v, 0, 1),
 			'vf': CLIP(endEvent.v, 0, 1),
@@ -49,22 +49,22 @@ class VEditGraphContext extends VEditContext {
 			'a': 0, 'b': 0,
 		};
 
+		const addTick = startEvent.tick;
+
 		const points = this.getPoints();
 		if(!points) return null;
 
-		const forceConnect = this._forceConnectWhenCreate(startEvent.tick);
-		const prevPoint = points.getLE(startEvent.tick);
+		const prevPoint = points.getLE(addTick);
+		if(prevPoint && prevPoint.tick === addTick){
+			const adjustSlamTask = new VGraphPointChangeSlamTask(this.editor, points, this._getEditCallbacks(),
+				prevPoint.y, prevPoint.data.v, newPoint.vf, true);
+			if(!this.editor.taskmanager.do(this.STR_TASK_ADJUST_SLAM, adjustSlamTask)) return null;
 
-		if(forceConnect){
-			// If the start tick is less than end tick, then a slant, connected to the selected point will be added.
-			// Otherwise, a slam, connected to the selected point will be added.
-			if(startEvent.tick < endEvent.tick){
-				// TODO
-			}else{
-				// TODO
-			}
+			// The point reference is not invalidated
+			return prevPoint.getEndEdit();
 		}
 
+		const forceConnect = this._forceConnectWhenCreate(addTick);
 		let connectPrev = false;
 		if(prevPoint){
 			newPoint.connected = prevPoint.data.connected;
@@ -72,7 +72,7 @@ class VEditGraphContext extends VEditContext {
 			connectPrev = forceConnect || prevPoint.data.connected;
 		}
 
-		const addTask = new VGraphPointAddTask(this.editor, points, this._getEditCallbacks(), startEvent.tick, newPoint, connectPrev);
+		const addTask = new VGraphPointAddTask(this.editor, points, this._getEditCallbacks(), addTick, newPoint, connectPrev);
 
 		if(!addTask) return null;
 		if(!this.editor.taskManager.do(this.STR_TASK_ADD_POINT, addTask)) return null;
@@ -103,28 +103,29 @@ class VEditGraphContext extends VEditContext {
 class VEditLaserContext extends VEditGraphContext {
 	constructor(editor, lane) {
 		super(editor, `laser-${lane < 2 ? ['left','right'][lane] : (lane+1).toString()}`);
-		this.STR_TASK_ADD_POINT = 'task-add-laser-point';
 		this.lane = lane;
 		this.wide = false;
+
+		this.STR_TASK_ADD_POINT = 'task-add-laser-point';
+		this.STR_TASK_ADJUST_SLAM = 'task-adjust-laser-slam';
+	}
+	_showLaserDrawing(tick, startV, endV) {
+		this.view.showLaserDrawing(this.lane, tick, this._forceConnectWhenCreate(tick),
+			new VGraphPoint({'v': startV, 'vf': endV,'connected': false, 'wide': this.wide}));
 	}
 	_showHoverDrawing(event) {
 		if(!this.canMakeObjectAt(event)) return false;
-		const connectPrev = this._forceConnectWhenCreate(event.tick);
-
-		this.view.showLaserDrawing(this.lane, event.tick, connectPrev, new VGraphPoint({
-			'v': event.v, 'vf': event.v,
-			'connected': false, 'wide': this.wide,
-		}));
+		let startV = event.v;
+		if(this.prevSelected && (this.prevSelected instanceof VLaserEditPoint)){
+			const point = this.prevSelected.getGraphPoint(this.editor);
+			if(point.y === event.tick) startV = point.data.v;
+		}
+		this._showLaserDrawing(event.tick, startV, event.v);
 		return true;
 	}
 	_showDragDrawing(event) {
 		if(!this.canMakeObjectAt(event) || !this.canMakeObjectAt(this.startEvent)) return false;
-		const connectPrev = this._forceConnectWhenCreate(event.tick);
-
-		this.view.showLaserDrawing(this.lane, event.tick, connectPrev, new VGraphPoint({
-			'v': this.startEvent.v, 'vf': event.v,
-			'connected': false, 'wide': this.wide,
-		}));
+		this._showLaserDrawing(this.startEvent.tick, this.startEvent.v, event.v);
 		return true;
 	}
 	canMakeObjectAt(event) {
