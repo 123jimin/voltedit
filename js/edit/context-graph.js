@@ -91,8 +91,8 @@ class VEditGraphContext extends VEditContext {
 		let connectPrev = false;
 		if(prevPoint){
 			newPoint.connected = prevPoint.data.connected;
-			newPoint.wide = prevPoint.data.wide;
 			connectPrev = forceConnect || prevPoint.data.connected;
+			newPoint.wide = connectPrev ? prevPoint.data.wide : 1;
 		}
 
 		const addTask = new VGraphPointAddTask(this.editor, points, this._getEditCallbacks(), addTick, newPoint, connectPrev);
