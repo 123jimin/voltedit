@@ -37,21 +37,21 @@ class VNoteForceAddTask extends VNoteAddTask {
 		super(editor, type, lane, tick, len);
 		this.task = null;
 	}
+	_validate() { UNREACHABLE(); }
 
 	commit() {
 		if(this.tick < 0) return false;
 
 		const noteData = this.chartData.getNoteData(this.type, this.lane);
 		if(!noteData){
-			return super.commit();
+			return super._commitWithoutValidating();
 		}
 
-		// Used `map` to keep all nodes valid.
-		const intersects = noteData.getAll(this.tick, this.len+1).map((node) => ({'y': node.y, 'l': node.l}));
+		const intersects = noteData.getAll(this.tick, this.len+1);
 
 		// There's no intersection; proceed to add the note.
 		if(intersects.length === 0){
-			return super.commit();
+			return super._commitWithoutValidating();
 		}
 
 		// The short note to be added is already occupied by another long or short note; do nothing.
@@ -101,6 +101,7 @@ class VNoteForceAddTask extends VNoteAddTask {
 	}
 }
 
+/// Resizes a note (fails if there's an overlapping note)
 class VNoteResizeTask extends VNoteTask {
 	constructor(editor, type, lane, tick, oldLen, newLen) {
 		super(editor, type, lane, tick);
@@ -121,6 +122,9 @@ class VNoteResizeTask extends VNoteTask {
 		return true;
 	}
 	_commit() {
+		// Do nothing when `oldLen` = `newLen`
+		if(this.oldLen === this.newLen) return true;
+
 		// Get the note we're editing
 		const noteData = this.chartData.getNoteData(this.type, this.lane);
 		if(!noteData) return false;
@@ -139,6 +143,61 @@ class VNoteResizeTask extends VNoteTask {
 	}
 	_makeInverse() {
 		return new VNoteResizeTask(this.editor, this.type, this.lane, this.tick, this.newLen, this.oldLen);
+	}
+}
+
+/// Resizes a note (overwriting existing notes)
+class VNoteForceResizeTask extends VNoteResizeTask {
+	constructor(editor, type, lane, tick, oldLen, newLen) {
+		super(editor, type, lane, tick, oldLen, newLen);
+		this.task = null;
+	}
+	_validate() { UNREACHABLE(); }
+
+	commit() {
+		if(this.tick < 0 || this.newLen < 0) return false;
+		const noteData = this.chartData.getNoteData(this.type, this.lane);
+		if(!noteData) return false;
+
+		// Shrinking the long note is not different from the parent task.
+		if(this.newLen <= this.oldLen){
+			return super._commitWithoutValidating();
+		}
+
+		const notes = noteData.getAll(this.tick, this.newLen+1);
+
+		// Check that the first note is the expected one.
+		if(notes.length === 0) return false;
+		if(notes[0].y !== this.tick) return false;
+		if(notes[0].l !== this.oldLen) return false;
+
+		// If there's no other note, then just do it.
+		if(notes.length === 1){
+			return super._commitWithoutValidating();
+		}
+
+		const tasks = [];
+		let extendEnd = this.tick + this.newLen;
+
+		notes.forEach((node, ind) => {
+			if(ind === 0) return;
+
+			if(node.y + node.l >= extendEnd){
+				extendEnd = node.y + node.l;
+			}
+
+			tasks.push(new VNoteDelTask(this.editor, this.type, this.lane, node.y));
+		});
+
+		tasks.push(new VNoteResizeTask(this.editor, this.type, this.lane, this.tick, this.oldLen, extendEnd - this.tick));
+
+		this.task = VTask.join(tasks);
+		if(this.task && this.task.commit()){
+			this._inverse = this.task._inverse;
+			return true;
+		}else{
+			return false;
+		}
 	}
 }
 

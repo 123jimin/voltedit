@@ -70,7 +70,7 @@ class VNoteObject extends VEditObject {
 	resizeTask(editor, tick) {
 		let newLen = this.len+tick;
 		if(newLen < 0) newLen = 0;
-		return new VMaybeTask(new VNoteResizeTask(editor, this.type, this.lane, this.tick, this.len, newLen));
+		return new VNoteForceResizeTask(editor, this.type, this.lane, this.tick, this.len, newLen);
 	}
 
 	serialize() { return [this.type, this.lane, this.tick, this.len]; }

@@ -9,24 +9,30 @@ class VTask {
 	_commit() { TODO(); }
 	_makeInverse() { return null; }
 
+	// `commit` should be overriden when a task is calling other tasks.
+	// When doing that, make sure to set `this._inverse` after a successful commit.
+	commit() {
+		if(this._commonValidate() && this._validate()){
+			return this._commitWithoutValidating();
+		}
+		return false;
+	}
+
 	// Things provided
 	inverse() {
 		if(this._inverse) return this._inverse;
 		throw new Error(L10N.t('task-undo-invalid'));
 	}
-	commit() {
-		if(this._commonValidate() && this._validate()){
-			// Creates an inverse job and commit this.
-			if(!this._inverse){
-				this._inverse = this._makeInverse();
-				this._inverse._inverse = this;
-			}
-
-			if(this._commit()) return true;
-			this.editor.error(L10N.t('task-commit-error', this.constructor.name));
-			console.error(this);
-			return false;
+	_commitWithoutValidating() {
+		// Creates an inverse job and commit this.
+		if(!this._inverse){
+			this._inverse = this._makeInverse();
+			this._inverse._inverse = this;
 		}
+
+		if(this._commit()) return true;
+		this.editor.error(L10N.t('task-commit-error', this.constructor.name));
+		console.error(this);
 		return false;
 	}
 	_commonValidate() { return !!(this.editor && this.chartData && this.editor.chartData === this.chartData); }
