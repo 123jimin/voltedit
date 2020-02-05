@@ -3,6 +3,9 @@ let L10N_STRING = `
 not-yet-implemented
 	en: Not yet implemented.
 	ko: 아직 구현되지 않은 기능입니다.
+unreachable-code
+	en: Internal error (unreachable code)
+	ko: 내부 오류 (접근 불가능한 코드)
 
 untitled
 	en: Untitled

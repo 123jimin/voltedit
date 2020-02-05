@@ -327,9 +327,9 @@ class VEditor {
 		});
 	}
 	error(err) {
-		if(err instanceof Error){
+		if(err instanceof Error || err instanceof ErrorEvent){
 			err.message && this.alert(err.message);
-			console.error(err, err.stack);
+			console.error(err.stack);
 		}else{
 			this.alert(err);
 			console.error(err);

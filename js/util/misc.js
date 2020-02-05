@@ -5,6 +5,7 @@ const GCD = (a, b) => a === 0 ? b : b === 0 ? a : a === 1 || b === 1 ? 1 : GCD(b
 const LCM = (a, b) => (a/GCD(a, b))*b;
 
 const TODO = () => { throw new Error(L10N.t('not-yet-implemented')); };
+const UNREACHABLE = () => { throw new Error(L10N.t('unreachable-code')); };
 
 // const SIGN = (x) => { x < 0 ? -1 : x > 0 ? 1 : 0; };
 const IS_POSITIVE_INT = (x) => isFinite(x) && Number.isInteger(x) && x > 0;

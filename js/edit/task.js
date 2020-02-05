@@ -42,9 +42,9 @@ class VEmptyTask extends VTask {
 
 /// Tasks containing other tasks must override `commit()` directly.
 class VTaskWrapper extends VTask {
-	_validate() { TODO(); }
-	_commit() { TODO(); }
-	_makeInverse() { TODO(); }
+	_validate() { UNREACHABLE(); }
+	_commit() { UNREACHABLE(); }
+	_makeInverse() { UNREACHABLE(); }
 
 	commit() { TODO(); }
 }
