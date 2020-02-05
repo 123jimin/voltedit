@@ -58,7 +58,7 @@ class VEditNoteContext extends VEditContext {
 			len = -len;
 		}
 
-		const addTask = new VNoteAddTask(this.editor, this.type, lane, startTick, len);
+		const addTask = new VNoteForceAddTask(this.editor, this.type, lane, startTick, len);
 		if(this.editor.taskManager.do(`task-add-${this.type}`, addTask)) {
 			const created = this.getObjectAt(startEvent);
 			if(created) this.addToSelection(created);

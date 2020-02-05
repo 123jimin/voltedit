@@ -43,8 +43,7 @@ class VNoteObject extends VEditObject {
 		return new VNoteDelTask(editor, this.type, this.lane, this.tick);
 	}
 	moveTickTask(editor, tick) {
-		// TODO: maybe remove all overlapping notes?
-		return new VMaybeTask(new VNoteAddTask(editor, this.type, this.lane, this.tick+tick, this.len));
+		return new VNoteForceAddTask(editor, this.type, this.lane, this.tick+tick, this.len);
 	}
 	getTickMoved(editor, tick) {
 		if(!editor.chartData) return null;
@@ -54,7 +53,9 @@ class VNoteObject extends VEditObject {
 
 		const newY = this.tick+tick;
 		const data = noteData.get(newY);
-		if(!data || data.y !== newY || data.l !== this.len) return null;
+
+		if(!data) return null;
+		// Don't check y or l (long notes can be merged)
 
 		return data.data;
 	}

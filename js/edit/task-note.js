@@ -1,10 +1,16 @@
-/// Creates a note (fails if there's an overlapping note)
-class VNoteAddTask extends VTask {
-	constructor(editor, type, lane, tick, len) {
+class VNoteTask extends VTask {
+	constructor(editor, type, lane, tick) {
 		super(editor);
 		this.type = type;
 		this.lane = lane;
 		this.tick = tick;
+	}
+}
+
+/// Creates a note (fails if there's an overlapping note)
+class VNoteAddTask extends VNoteTask {
+	constructor(editor, type, lane, tick, len) {
+		super(editor, type, lane, tick);
 		this.len = len;
 	}
 	_validate() {
@@ -25,12 +31,79 @@ class VNoteAddTask extends VTask {
 	}
 }
 
-class VNoteResizeTask extends VTask {
+/// Creates a note (overwriting existing notes)
+class VNoteForceAddTask extends VNoteAddTask {
+	constructor(editor, type, lane, tick, len) {
+		super(editor, type, lane, tick, len);
+		this.task = null;
+	}
+
+	commit() {
+		if(this.tick < 0) return false;
+
+		const noteData = this.chartData.getNoteData(this.type, this.lane);
+		if(!noteData){
+			return super.commit();
+		}
+
+		// Used `map` to keep all nodes valid.
+		const intersects = noteData.getAll(this.tick, this.len+1).map((node) => ({'y': node.y, 'l': node.l}));
+
+		// There's no intersection; proceed to add the note.
+		if(intersects.length === 0){
+			return super.commit();
+		}
+
+		// The short note to be added is already occupied by another long or short note; do nothing.
+		if(this.len === 0){
+			this._inverse = new VEmptyTask(this.editor);
+			return true;
+		}
+
+		// Adding this note will do nothing; do nothing.
+		if(intersects.length === 1 && intersects[0].y <= this.tick && intersects[0].y + intersects[0].l >= this.tick + this.len){
+			this._inverse = new VEmptyTask(this.editor);
+			return true;
+		}
+
+		const tasks = [];
+		let extendEnd = this.tick + this.len;
+		let extendNode = null;
+
+		// First, remove all notes, except the first one when they can be extended.
+		intersects.forEach((node) => {
+			if(node.y <= this.tick){
+				extendNode = node;
+				return;
+			}
+			// It doesn't matter whether `extendEnd` or `this.tick + this.l` is used.
+			if(node.y + node.l >= extendEnd){
+				extendEnd = node.y + node.l;
+			}
+			tasks.push(new VNoteDelTask(this.editor, this.type, this.lane, node.y));
+		});
+
+		// If the first note can be extended, extend it.
+		// Else, add the long note
+		if(extendNode){
+			tasks.push(new VNoteResizeTask(this.editor, this.type, this.lane, extendNode.y, extendNode.l, extendEnd - extendNode.y));
+		}else{
+			tasks.push(new VNoteAddTask(this.editor, this.type, this.lane, this.tick, extendEnd - this.tick));
+		}
+
+		this.task = VTask.join(tasks);
+		if(this.task && this.task.commit()){
+			this._inverse = this.task._inverse;
+			return true;
+		}else{
+			return false;
+		}
+	}
+}
+
+class VNoteResizeTask extends VNoteTask {
 	constructor(editor, type, lane, tick, oldLen, newLen) {
-		super(editor);
-		this.type = type;
-		this.lane = lane;
-		this.tick = tick;
+		super(editor, type, lane, tick);
 		this.oldLen = oldLen;
 		this.newLen = newLen;
 	}
@@ -69,13 +142,7 @@ class VNoteResizeTask extends VTask {
 	}
 }
 
-class VNoteDelTask extends VTask {
-	constructor(editor, type, lane, tick) {
-		super(editor);
-		this.type = type;
-		this.lane = lane;
-		this.tick = tick;
-	}
+class VNoteDelTask extends VNoteTask {
 	_validate() {
 		const noteData = this.chartData.getNoteData(this.type, this.lane);
 		if(!noteData) return false;
