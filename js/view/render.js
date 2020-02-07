@@ -227,6 +227,12 @@ class VViewRender {
 		if(!(currNode.y in this.lasersByY[lane])) return;
 		this.lasersByY[lane][currNode.y].update(currNode.y, prevNode, currNode.data, nextNode);
 	}
+	fakeMoveLaserPointTo(lane, tick, newTick) {
+		if(lane >= this.lasersByY.length) return;
+		if(!(tick in this.lasersByY[lane])) return;
+
+		this.lasersByY[lane][tick].object.position.y = this.view.t2p(newTick);
+	}
 
 	showLaserDrawing(lane, tick, prevNode, point, nextNode) {
 		if(lane >= this.laserDrawingPoints.length) return;

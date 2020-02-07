@@ -187,6 +187,13 @@ class VLaserEditPoint extends VLaserEditObject {
 	}
 	getTickMoved(editor, tick) {
 	}
+	
+	fakeMoveTo(view, startEvent, event) {
+		view.fakeMoveLaserPointTo(this.lane, this.tick, this.tick+event.tick-startEvent.tick);
+	}
+	resetFakeMoveTo(view) {
+		view.fakeMoveLaserPointTo(this.lane, this.tick, this.tick);
+	}
 }
 
 class VLaserEditEdge extends VLaserEditObject {

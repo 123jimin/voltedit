@@ -81,7 +81,7 @@ class VView {
 				break;
 		}
 
-		this._checkRedrawMesaures(tick);
+		this._checkRedrawMeasures(tick);
 		this.refresh();
 	}
 	addLaser(lane, point) {
@@ -89,7 +89,7 @@ class VView {
 		if(prevNode && !prevNode.data.connected) prevNode = null;
 		this.render.addLaser(lane, prevNode, point, point.data.connected ? point.next() : null);
 
-		this._checkRedrawMesaures(point.y);
+		this._checkRedrawMeasures(point.y);
 		this.refresh();
 	}
 	delNote(type, lane, tick) {
@@ -162,6 +162,7 @@ class VView {
 			this.render.updateLaser(lane, prevPoint, currPoint, nextPoint);
 		}
 	}
+	
 	fakeMoveNoteTo(type, lane, tick, newLane, newTick) {
 		switch(type){
 			case 'bt':
@@ -171,7 +172,12 @@ class VView {
 				this.render.fakeMoveFxNoteTo(lane, tick, newLane, newTick);
 				break;
 		}
-		this._checkRedrawMesaures(newTick);
+		this._checkRedrawMeasures(newTick);
+		this.refresh();
+	}
+	fakeMoveLaserPointTo(lane, tick, newTick) {
+		this.render.fakeMoveLaserPointTo(lane, tick, newTick);
+		this._checkRedrawMeasures(newTick);
 		this.refresh();
 	}
 
@@ -191,7 +197,7 @@ class VView {
 				else this.render.showFXDrawing(lane, tick);
 				break;
 		}
-		this._checkRedrawMesaures(tick+len);
+		this._checkRedrawMeasures(tick+len);
 		this.refresh();
 	}
 	showLaserDrawing(lane, tick, connectPrev, point) {
@@ -203,7 +209,7 @@ class VView {
 
 		this.render.showLaserDrawing(lane, tick, prevNode, point, nextNode);
 
-		this._checkRedrawMesaures(tick);
+		this._checkRedrawMeasures(tick);
 		this.refresh();
 	}
 	hideDrawing() {
@@ -269,7 +275,7 @@ class VView {
 			if(prevNode) this.render.addLaser(lane, prevPrevNode, prevNode, null);
 		});
 	}
-	_checkRedrawMesaures(tick) {
+	_checkRedrawMeasures(tick) {
 		const newLastTick = Math.max(tick || 0, this.editor.chartData ? this.editor.chartData.getLastTick() : 0);
 		if(this.lastTick < newLastTick){
 			this.lastTick = newLastTick;
