@@ -27,8 +27,10 @@ class VEditGraphContext extends VEditContext {
 		const vDist = Math.abs(event.v - point.data.v * point.data.wide);
 		const vfDist = Math.abs(event.v - point.data.vf * point.data.wide);
 
-		const maxAllowedDist = 1/this.editor.laserSnap;
-		if(vDist > maxAllowedDist && vfDist > maxAllowedDist) return null;
+		if(!this.prevSelected || this.prevSelected !== point.data.getBeginEdit() && this.prevSelected !== point.data.getEndEdit()){
+			const maxAllowedDist = 1/this.editor.laserSnap;
+			if(vDist > maxAllowedDist && vfDist > maxAllowedDist) return null;
+		}
 
 		return vDist < vfDist ? point.data.getBeginEdit() : point.data.getEndEdit();
 	}
@@ -45,10 +47,12 @@ class VEditGraphContext extends VEditContext {
 		// Adjusting the slam of the selected point
 		if(targetPoint.data.getEndEdit() === this.prevSelected){
 			const adjustSlamTask = new VGraphPointChangeSlamTask(this.editor, points, (point) => this._getEditCallbacks()(null, point, -1),
-				targetPoint.y, targetPoint.data.v, newPoint.vf, true);
+				targetPoint.y, targetPoint.data.v, endEvent.v, false);
 			if(!this.editor.taskManager.do(this.STR_TASK_ADJUST_SLAM, adjustSlamTask)) return null;
 
 			// The point reference is not invalidated, so this is fine.
+			this.removeFromSelection(this.prevSelected);
+			this.makeEdits(targetPoint);
 			const endEdit = targetPoint.data.getEndEdit();
 			if(endEdit) this.addToSelection(endEdit);
 			return endEdit;
@@ -61,6 +65,8 @@ class VEditGraphContext extends VEditContext {
 			if(!this.editor.taskManager.do(this.STR_TASK_CONNECT_POINTS, changeConnectedTask)) return null;
 
 			// The point reference is not invalidated, so this is fine.
+			this.removeFromSelection(this.prevSelected);
+			this.makeEdits(targetPoint);
 			const startEdit = targetPoint.data.getBeginEdit();
 			if(startEdit) this.addToSelection(startEdit);
 			return startEdit;

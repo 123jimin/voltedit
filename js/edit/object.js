@@ -152,7 +152,7 @@ class VLaserEditPoint extends VLaserEditObject {
 
 		if(prevConnected && !prevPoint.data.isSlam()){
 			const prevPrevPoint = prevPoint.prev();
-			if(!prevPrevPoint && !prevPrevPoint.data.connected) pointsToRemove.push(prevPoint.y);
+			if(!prevPrevPoint || !prevPrevPoint.data.connected) pointsToRemove.push(prevPoint.y);
 		}
 
 		if(nextConnected && !nextPoint.data.isSlam()){
@@ -163,10 +163,27 @@ class VLaserEditPoint extends VLaserEditObject {
 			this.getCallbacks(editor), tick, stayConnected && nextConnected)));
 	}
 	moveTask(editor, startEvent, endEvent) {
-		if(startEvent.tick === endEvent.tick) {
-		}
+		return super.moveTask(editor, startEvent, endEvent);
 	}
 	moveTickTask(editor, tick) {
+		const point = this.getGraphPoint(editor);
+		if(!point) return null;
+
+		let connectPrev = false;
+		const prevPoint = point.prev();
+		if(prevPoint && prevPoint.data.connected) connectPrev = true;
+
+		const copiedPoint = {
+			'v': point.data.v,
+			'vf': point.data.vf,
+			'connected': point.data.connected,
+			'wide': point.data.wide,
+			'a': point.data.a,
+			'b': point.data.b,
+		};
+
+		return new VMaybeTask(new VGraphPointAddTask(editor, this.getGraphPoints(editor),
+			this.getCallbacks(editor), this.tick+tick, copiedPoint, connectPrev));
 	}
 	getTickMoved(editor, tick) {
 	}

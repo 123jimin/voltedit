@@ -68,6 +68,9 @@ class VEditContext {
 				this.view.hideDrawing();
 				return;
 			}
+			if(obj === this.prevSelected){
+				this.dragIntent = VEDIT_DRAG_INTENT.CREATE;
+			}
 		}
 		this.addToSelection(obj);
 		this.view.hideDrawing();
@@ -184,6 +187,7 @@ class VEditContext {
 		if(tick === 0) return;
 
 		const delTasks = [];
+		// Force for objects to create task after previous tasks are completed.
 		this.selectedObjects.forEach((obj) => delTasks.push(new VLazyTask(this.editor, () => obj.delTask(this.editor))));
 
 		const moveTasks = [];
