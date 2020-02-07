@@ -150,13 +150,16 @@ class VLaserEditPoint extends VLaserEditObject {
 		let stayConnected = NOP(/* to suppress warning */) || true;
 		const pointsToRemove = [this.tick];
 
-		if(prevConnected && !prevPoint.data.isSlam()){
-			const prevPrevPoint = prevPoint.prev();
-			if(!prevPrevPoint || !prevPrevPoint.data.connected) pointsToRemove.push(prevPoint.y);
-		}
+		// If a point is going to be left out, remove it too.
+		if(!stayConnected || !(prevConnected && nextConnected)){
+			if(prevConnected && !prevPoint.data.isSlam()){
+				const prevPrevPoint = prevPoint.prev();
+				if(!prevPrevPoint || !prevPrevPoint.data.connected) pointsToRemove.push(prevPoint.y);
+			}
 
-		if(nextConnected && !nextPoint.data.isSlam()){
-			if(!nextPoint.data.connected || !nextPoint.next()) pointsToRemove.push(nextPoint.y);
+			if(nextConnected && !nextPoint.data.isSlam()){
+				if(!nextPoint.data.connected || !nextPoint.next()) pointsToRemove.push(nextPoint.y);
+			}
 		}
 
 		return VTask.join(pointsToRemove.map((tick) => new VGraphPointDelTask(editor, this.getGraphPoints(editor),
