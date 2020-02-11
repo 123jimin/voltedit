@@ -81,7 +81,7 @@ class VGraphSegment {
 		if(this.points.size > 0){
 			this.points.last().data.connected = true;
 		}
- 		const point = new VGraphPoint({'v': data.v, 'vf': data.vf, 'connected': false, 'a': data.a, 'b': data.b});
+ 		const point = new VGraphPoint({'v': data.v, 'vf': data.vf, 'connected': false, 'wide': this.wide, 'a': data.a, 'b': data.b});
  		this.points.add(this.iy + (this.isRelative ? data.ry : data.y), 0, point);
     }
 }
