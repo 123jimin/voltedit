@@ -4,6 +4,28 @@ const KSH_REGEX = Object.freeze({
 	'LINE': /^([012]{4})\|(.{2})\|([0-9A-Za-o\-:]{2})((?:@\(|@\)|@<|@>|S<|S>)[0-9;]+)?$/
 });
 
+const KSH_FX_EFFECTS = Object.freeze({
+	'R': "Retrigger;4",
+	'S': "Retrigger;8",
+	'V': "Retrigger;12",
+	'T': "Retrigger;16",
+	'W': "Retrigger;24",
+	'U': "Retrigger;32",
+	'G': "Gate;4",
+	'H': "Gate;8",
+	'K': "Gate;12",
+	'I': "Gate;16",
+	'L': "Gate;24",
+	'J': "Gate;32",
+	'F': "Flanger",
+	'P': "PitchShift",
+	'B': "BitCrusher",
+	'Q': "Phaser",
+	'X': "Wobble;12",
+	'A': "TapeStop",
+	'D': "SideChain",
+});
+
 /// Just a data class representing time signatures
 class KSHTimeSig {
 	constructor(str) {
@@ -366,6 +388,10 @@ class KSHData extends VChartData {
 	_setKSONNoteInfo() {
 		// Stores [start, len] long note infos
 		let longInfo = {'bt': [null, null, null, null], 'fx': [null, null]};
+
+		// Stores [start, effect] FX audio effects
+		let fxAudioEffects = [null, null];
+
 		const cutLongNote = (type, lane) => {
 			const lit = longInfo[type];
 			if(lit[lane] === null) return;
