@@ -206,6 +206,3 @@ class VLaserEditPoint extends VGraphEditPoint {
 		view.fakeMoveLaserPointTo(this.lane, this.tick, this.tick);
 	}
 }
-
-class VLaserEditEdge extends VLaserEditObject {
-}
