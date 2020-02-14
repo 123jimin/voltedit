@@ -77,40 +77,36 @@ class VNoteObject extends VEditObject {
 	unserialize(data) { [this.type, this.lane, this.tick, this.len] = data; }
 }
 
-class VGraphEditObject extends VEditObject {
+class VGraphEditPoint extends VEditObject {
 	constructor(point) {
 		super();
 		this.tick = point.y;
 
 		// Do not store nodes in an edit object, since it can be invalidated by other edits.
 	}
+
 	getGraphPoints(editor) {
 		return null;
 	}
-
 	getGraphPoint(editor) {
 		const points = this.getGraphPoints(editor);
 		return points && points.get(this.tick);
 	}
+	getCallbacks(editor) {
+		return null;
+	}
 }
-
-class VLaserEditObject extends VGraphEditObject {
-	constructor(lane, point) {
+class VLaserEditPoint extends VGraphEditPoint {
+	constructor(lane, point, isVF) {
 		super(point);
 		this.lane = lane;
+		this.isVF = isVF;
 	}
 	getGraphPoints(editor) {
 		return editor.chartData.getNoteData('laser', this.lane);
 	}
 	getCallbacks(editor) {
 		return editor.view.getLaserCallbacks(this.lane);
-	}
-}
-
-class VLaserEditPoint extends VLaserEditObject {
-	constructor(lane, point, isVF) {
-		super(lane, point);
-		this.isVF = isVF;
 	}
 	sel(view, selected) {
 		view.selLaserEditPoint(this.lane, this.tick, this.isVF, selected);
@@ -166,6 +162,18 @@ class VLaserEditPoint extends VLaserEditObject {
 			this.getCallbacks(editor), tick, stayConnected && nextConnected)));
 	}
 	moveTask(editor, startEvent, endEvent) {
+		const newTick = (endEvent.tick - startEvent.tick) + this.tick;
+		if(newTick < 0) return null;
+
+		const point = this.getGraphPoint(editor);
+		if(!point) return null;
+
+		const isEnd = point.data.editVF === this ? true : false;
+		const newV = CLIP(endEvent.v - startEvent.v + (iseNd ? point.data.vf : point.data.v), 0, 1);
+
+		NOP(newV);
+
+		// TODO: impl
 		return super.moveTask(editor, startEvent, endEvent);
 	}
 	moveTickTask(editor, tick) {
@@ -190,7 +198,7 @@ class VLaserEditPoint extends VLaserEditObject {
 	}
 	getTickMoved(editor, tick) {
 	}
-	
+
 	fakeMoveTo(view, startEvent, event) {
 		view.fakeMoveLaserPointTo(this.lane, this.tick, this.tick+event.tick-startEvent.tick);
 	}

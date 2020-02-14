@@ -391,6 +391,7 @@ class KSHData extends VChartData {
 
 		// Stores [start, effect] FX audio effects
 		let fxAudioEffects = [null, null];
+		NOP(fxAudioEffects);
 
 		const cutLongNote = (type, lane) => {
 			const lit = longInfo[type];
