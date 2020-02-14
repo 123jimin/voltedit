@@ -169,7 +169,7 @@ class VLaserEditPoint extends VGraphEditPoint {
 		if(!point) return null;
 
 		const isEnd = point.data.editVF === this ? true : false;
-		const newV = CLIP(endEvent.v - startEvent.v + (iseNd ? point.data.vf : point.data.v), 0, 1);
+		const newV = CLIP(endEvent.v - startEvent.v + (isEnd ? point.data.vf : point.data.v), 0, 1);
 
 		NOP(newV);
 
