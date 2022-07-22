@@ -1,6 +1,8 @@
 # VOLTEdit
 VOLTEdit is a web-based SDVX chart editor, planned to support KSH and KSON chart formats.
 
+**NOTE: this project is deprecated in favor of another editor project which is yet to be released**
+
 You can use VOLTEdit on [here](https://0xF.kr/tools/voltedit).
 However, note that this editor is in *very* early stage of active development now, so everything can break unexpectedly.
 Moreover I'm developing it on live, so possibility of things breaking is pretty high.
@@ -66,7 +68,7 @@ npm install -g uglify-es less less-plugin-clean-css
 
 Then use `make` to build the JS and CSS files.
 
-## Planned Features
+## Planned Features (DEPRECATED)
 These are planned features as of 29 Jan 2020.
 Some of plans may be changed later.
 
